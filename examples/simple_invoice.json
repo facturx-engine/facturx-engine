@@ -1,0 +1,29 @@
+{
+  "invoice_number": "INV-2024-001",
+  "issue_date": "2024-01-17",
+  "seller": {
+    "name": "Acme Freelance",
+    "country_code": "FR",
+    "vat_number": "FR123456789"
+  },
+  "buyer": {
+    "name": "StartUp SAS",
+    "country_code": "FR",
+    "vat_number": "FR987654321"
+  },
+  "line_items": [
+    {
+      "name": "Web Development Services",
+      "quantity": 1.0,
+      "unit_price": 500.00,
+      "tax_rate": 20.0
+    }
+  ],
+  "amounts": {
+    "tax_basis_total": "500.00",
+    "tax_total": "100.00",
+    "grand_total": "600.00",
+    "due_payable": "600.00"
+  },
+  "profile": "en16931"
+}
