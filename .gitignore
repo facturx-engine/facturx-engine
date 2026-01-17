@@ -53,6 +53,7 @@ validate_*.py
 *.md
 !README.md
 !CHANGELOG.md
+!DOCKER_HUB_README.md
 !deploy/selfhosted/*.md
 
 # Clean Folders

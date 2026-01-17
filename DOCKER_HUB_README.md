@@ -1,0 +1,142 @@
+# Factur-X Engine (Community Edition)
+
+[![View Source](https://img.shields.io/badge/View_Source_Code-GitHub-181717?style=for-the-badge&logo=github)](https://github.com/facturx-engine/facturx-engine)
+[![Docker Pulls](https://img.shields.io/docker/pulls/facturxengine/facturx-engine?style=for-the-badge)](https://hub.docker.com/r/facturxengine/facturx-engine)
+[![License](https://img.shields.io/badge/License-Community-0052CC?style=for-the-badge)](https://github.com/facturx-engine/facturx-engine#legal)
+[![Standard](https://img.shields.io/badge/Standard-EN16931-2EA44F?style=for-the-badge)](https://fnfe-mpe.org/factur-x/)
+
+**The simplest self-hosted **Docker Middleware** to generate compliant **Factur-X** (French E-Invoicing) and **ZUGFeRD 2.2** PDFs.**
+Turn standard PDFs into valid Hybrid Invoices (PDF/A-3 + XML) via a simple REST API.
+
+---
+
+## ⚡ Why Factur-X Engine?
+
+As the 2026/2027 e-invoicing mandate approaches, developers need a reliable way to generate **EN 16931 compliant** invoices without rebuilding their entire billing stack.
+
+* ✅ **Instant Compliance**: Generates valid **ZUGFeRD 2.2 / Factur-X 1.0 (1.08 ready)** files.
+* ✅ **Chorus Pro Standards**: Generates files following the EN 16931 standard requirements used by the French public portal.
+* ✅ **Simple Integration**: It's a microservice. POST a PDF + JSON, get a Factur-X back.
+* ✅ **100% Offline & Private**: Runs on your server. No data ever leaves your infrastructure, simplifying GDPR compliance.
+
+## 📋 Technical Specs
+
+* **Input**: Standard PDF (1.4+), any size.
+* **Output**: PDF/A-3 compliant file with embedded `factur-x.xml`.
+* **Profiles**: `MINIMUM`, `BASIC`, `BASIC WL`, `EN 16931` (Standard), `EXTENDED`.
+* **Validation**: Returns a detailed JSON report (Format, Flavor, and list of errors).
+
+## 🏗️ Architecture
+
+### 1. Generation (Community Edition)
+
+Turn any PDF into a Factur-X file in one API call.
+
+```text
+[Input PDF] + [JSON Metadata]
+       ⬇️ POST /convert
+┌──────────────────────────────┐
+│      Factur-X Engine         │
+│  (Merge PDF + Embedded XML)  │
+└──────────────────────────────┘
+       ⬇️ Returns
+   [Factur-X PDF]
+   (PDF/A-3 + XML)
+```
+
+### 2. Extraction (Pro Feature)
+
+Parse incoming invoices accurately.
+
+```text
+   [Factur-X PDF]
+       ⬇️ POST /extract
+┌──────────────────────────────┐
+│    Factur-X Engine Pro       │
+│  (Read XML & Vendor Data)    │
+└──────────────────────────────┘
+       ⬇️ Returns
+      [JSON Data]
+ (Unmasked, Ready for ERP)
+```
+
+## 🚀 Features
+
+* **PDF to Factur-X**: Embeds the required XML metadata into your existing PDF layouts.
+* **Validation API**: Check your existing invoices against strict schema rules (XSD + Schematron).
+* **Data Extraction**: Parse incoming Factur-X invoices to JSON (Demo Mode in Community, Full in Pro).
+* **Standards Support**: Supports profiles `MINIMUM`, `BASIC`, `BASIC WL`, and `EN 16931`.
+* **Dev-Friendly**: Swagger UI documentation and JSON Validation reports.
+
+## 📦 Quick Start
+
+Run the container in 1 command:
+
+```bash
+docker run -p 8000:8000 facturxengine/facturx-engine:latest
+```
+
+👉 Open **[http://localhost:8000/docs](http://localhost:8000/docs)** to see the Swagger UI.
+
+### 1. Generate an Invoice
+
+Send your PDF and metadata to the API.
+See `/docs` for full JSON schema properties.
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8000/v1/convert' \
+  -F 'pdf=@invoice.pdf' \
+  -F 'metadata={
+    "invoice_number": "INV-2024-001",
+    "issue_date": "20240117",
+    "seller": {"name": "My Corp", "country_code": "FR", "vat_number": "FR123456789"},
+    "buyer": {"name": "Client SAS"},
+    "amounts": {"tax_basis_total": "100.00", "tax_total": "20.00", "grand_total": "120.00", "due_payable": "120.00"},
+    "profile": "en16931"
+  }' \
+  --output factur-x_invoice.pdf
+```
+
+### 2. Validate an Invoice
+
+Check if a file complies with the standard:
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8000/v1/validate' \
+  -F 'file=@factur-x_invoice.pdf'
+```
+
+---
+
+## 💼 Free vs Pro
+
+| Feature | Community Edition 🆓 | Pro Edition 💎 |
+| :--- | :---: | :---: |
+| **Generation** (PDF to Factur-X) | ✅ Unlimited | ✅ Unlimited |
+| **Validation** (Compliance Check) | ✅ Unlimited | ✅ Unlimited |
+| **Extraction** (Factur-X to JSON) | ⚠️ **Demo Mode** (Masked Data) | ✅ **Full Data Access** |
+| **License** | Community (Free) | Commercial / Production |
+
+### Upgrade to Pro
+
+Need to **EXTRACT** real data from incoming supplier invoices for your ERP/Accounting software?
+The Community Edition masks sensitive values (e.g., `TOTAL` becomes `***`).
+
+**Get Factur-X Engine Pro to unlock:**
+
+* 💎 **Full JSON Data Extraction** (OCR-free, 100% accuracy).
+* 💎 **Production License** (Unlimited commercial use).
+* 💎 **Priority Support**.
+* 💎 **Security Updates** (SLA on patches).
+
+**Contact:** [facturx.engine@protonmail.com](mailto:facturx.engine@protonmail.com)
+
+👉 **[Get Factur-X Engine Pro](https://facturx-engine.lemonsqueezy.com)**
+
+---
+
+## 🏷️ Keywords
+
+*Factur-X, ZUGFeRD, Chorus Pro, PDP, PPF, E-Invoicing, Facture Electronique, EN 16931, PDF/A-3, Python, Docker, API, Microservice, Offline, Odoo, Compliance.*
