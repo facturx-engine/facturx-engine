@@ -63,7 +63,7 @@ sequenceDiagram
 * **PDF to Factur-X**: Embeds the required XML metadata into your existing PDF layouts.
 * **Validation API**: Check your existing invoices against strict schema rules (XSD + Schematron).
 * **Data Extraction**: Parse incoming Factur-X invoices to JSON (Demo Mode in Community, Full in Pro).
-* **Standards Support**: Supports profiles `MINIMUM`, `BASIC`, `BASIC WL`, and `EN 16931`.
+* **Standards Support**: Fully compliant with **EN 16931**, **ZUGFeRD 2.2** and **Factur-X 1.0** (including latest 1.0x updates).
 * **Dev-Friendly**: Swagger UI documentation and JSON Validation reports.
 
 ## 📦 Quick Start
@@ -137,7 +137,7 @@ curl -X 'POST' \
 | **Generation** | ✅ Unlimited | ✅ Unlimited | ✅ Unlimited |
 | **Validation** | ✅ Unlimited | ✅ Unlimited | ✅ Unlimited |
 | **Extraction** | ⚠️ **Demo Mode** | ✅ **Full Data Access** | ✅ **Full Data Access** |
-| **License** | Open Source | **Business License** | **Commercial OEM** |
+| **License** | **MIT (Open Source)** | **Business License** | **Commercial OEM** |
 | **Privacy** | ✅ Self-Hosted | ✅ Self-Hosted | ✅ Self-Hosted |
 | **Support** | Community Issues | Email Priority | Direct CTO Access |
 | **Price** | **Free** | **€499 / year** | **[Contact Us](mailto:facturx.engine@protonmail.com)** |
@@ -149,7 +149,7 @@ curl -X 'POST' \
 ## ⚖️ Legal
 
 * **Vendor**: Factur-X Engine (Paris, France)
-* **License**: Community Edition is provided for testing and integration. Commercial use for extraction requires a Pro license.
+* **License**: **MIT License** (Community Edition). Commercial use for extraction requires a Pro license.
 * **Sales**: [facturx-engine.lemonsqueezy.com](https://facturx-engine.lemonsqueezy.com)
 * **Contact**: [facturx.engine@protonmail.com](mailto:facturx.engine@protonmail.com)
 
