@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+python-multipart
+factur-x
+pypdf
+jinja2
+xmlschema
+pytest
+httpx
+reportlab
+lxml
+psutil
+requests
+pynacl

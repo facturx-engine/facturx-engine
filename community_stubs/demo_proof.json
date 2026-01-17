@@ -1,0 +1,49 @@
+{
+  "invoice_number": "urn:factur-x.eu:1p0:minimum",
+  "invoice_date": "20240113",
+  "currency": "EUR",
+  "seller": {
+    "name": "Ma So****",
+    "vat_number": "FRDEMO_INVALID_VAT",
+    "address": "DEMO ADDRESS, 75000 PARIS"
+  },
+  "buyer": {
+    "name": "Clien****"
+  },
+  "totals": {
+    "net_amount": "1234.56",
+    "tax_amount": "246.91",
+    "gross_amount": "1481.47",
+    "payable_amount": "1481.47",
+    "_demo": true,
+    "_watermark": "VALUES_ARE_DEMO_NOT_FOR_ACCOUNTING"
+  },
+  "tax_breakdown": [
+    {
+      "vat_rate": "20.00",
+      "tax_amount": "246.91",
+      "taxable_amount": "1234.56",
+      "_demo": true
+    }
+  ],
+  "line_items": [],
+  "_meta": {
+    "filename": "demo_test.pdf",
+    "demo_mode": true,
+    "license_notice": "UNLICENSED_DEMO_OUTPUT_NOT_FOR_ACCOUNTING. Upgrade to Factur-X Engine Pro for full data.",
+    "warnings": [
+      {
+        "code": "NO_LINE_ITEMS_IN_XML",
+        "message": "No line items found in XML."
+      }
+    ]
+  },
+  "_demo": {
+    "policy": "2026-01-Smart-Obfuscation",
+    "watermarked_fields": [
+      "totals",
+      "line_items.prices",
+      "seller.vat"
+    ]
+  }
+}

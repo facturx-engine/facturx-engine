@@ -16,10 +16,12 @@ build/
 *.egg-info/
 
 # Logs & Outputs (Blocking All)
+# Logs & Outputs (Blocking All)
 *.log
 *.txt
 *.out
 *.err
+!requirements.txt
 
 # Testing & QA Artifacts
 *.pdf
@@ -54,6 +56,7 @@ validate_*.py
 !deploy/selfhosted/*.md
 
 # Clean Folders
-community_stubs/
+# Clean Folders
+!community_stubs/
+!tools/
 marketing_assets/
-tools/
