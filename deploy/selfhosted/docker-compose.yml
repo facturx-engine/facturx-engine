@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  facturx-api:
+    image: facturx-api:1.0.0
+    container_name: facturx-api
+    ports:
+      - "${API_PORT:-8000}:8000"
+    environment:
+      - APP_MODE=${APP_MODE:-production}
+      - WORKERS=${WORKERS:-4}
+      - MAX_UPLOAD_SIZE_MB=${MAX_UPLOAD_SIZE_MB:-10}
+      - LICENSE_KEY=${LICENSE_KEY:-}
+      - DISABLE_CONVERT=${DISABLE_CONVERT:-false}
+    volumes:
+      - ./logs:/logs
+    mem_limit: ${MEM_LIMIT:-512m}
+    cpus: ${CPU_LIMIT:-1.0}
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

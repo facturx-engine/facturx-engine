@@ -1,0 +1,59 @@
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+.venv/
+
+# Artifacts & Build
+*.tar
+*.gz
+*.zip
+dist/
+build/
+*.egg-info/
+
+# Logs & Outputs (Blocking All)
+*.log
+*.txt
+*.out
+*.err
+
+# Testing & QA Artifacts
+*.pdf
+test_*.py
+verify_*.py
+audit_*.py
+demo_*.py
+check_*.py
+
+# IDE
+.vscode/
+.idea/
+
+# SECURITY - PROTECT PRO CODE & KEYS
+*_pro.py
+admin_keygen.py
+*.hex
+*.pem
+*.key
+tools/private_key.pem
+app/services/extractor_pro.py
+
+# INTERNAL DOCS & SCRIPTS
+publish_*.ps1
+generate_*.py
+validate_*.py
+
+# IGNORE ALL MARKDOWN BY DEFAULT (Except README)
+*.md
+!README.md
+!CHANGELOG.md
+!deploy/selfhosted/*.md
+
+# Clean Folders
+community_stubs/
+marketing_assets/
+tools/

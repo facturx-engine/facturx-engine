@@ -1,0 +1,106 @@
+name: Security Scan, Build & Release (EU Compliance)
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # DAILY Scan (Required for EU Cyber Resilience Act responsiveness)
+  workflow_dispatch:      # Manual trigger for releases
+
+jobs:
+  security-compliance:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write     # To create releases
+      packages: write     # If pushing to GHCR later
+      # id-token: write   # Uncomment for OIDC/Cosign signing
+
+    steps:
+      - uses: actions/checkout@v3
+
+      # ------------------------------------------------------------------
+      # PHASE 1: PRE-BUILD SECURITY (Supply Chain Defense)
+      # ------------------------------------------------------------------
+      
+      # [P2] Scan Base Image to avoid inheriting upstream vulnerabilities
+      - name: Scan Base Image (Python 3.11)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'python:3.11-slim'
+          format: 'table'
+          exit-code: '1' # Fail pipeline if base image is rotten
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+      # ------------------------------------------------------------------
+      # PHASE 2: BUILD & IDENTIFY
+      # ------------------------------------------------------------------
+
+      - name: Set Version
+        run: echo "VERSION=$(date +%Y.%m.%d)-$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+      - name: Build Docker Image
+        run: docker build -t facturx-engine:${{ env.VERSION }} -t facturx-engine:latest .
+
+      # [P0] Generate SBOM (Software Bill of Materials) - LEGALLY REQUIRED 2026
+      # This proves what is inside your black box.
+      - name: Generate SBOM (CycloneDX)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'facturx-engine:${{ env.VERSION }}'
+          format: 'cyclonedx'
+          output: 'sbom-${{ env.VERSION }}.json'
+          exit-code: '0' # Don't fail on SBOM gen
+          
+      # [P0] Scan Final Image for Vulnerabilities
+      - name: Scan Final Image (Trivy)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'facturx-engine:${{ env.VERSION }}'
+          format: 'table'
+          exit-code: '1' # FAIL BUILD if critical bugs found
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
+
+      # ------------------------------------------------------------------
+      # PHASE 3: PACKAGE & NOTIFY
+      # ------------------------------------------------------------------
+
+      - name: Export Versioned Artifact
+        if: success()
+        run: |
+          docker save facturx-engine:${{ env.VERSION }} | gzip > facturx-engine-pro-${{ env.VERSION }}.tar.gz
+          SHA256=$(sha256sum facturx-engine-pro-${{ env.VERSION }}.tar.gz | awk '{print $1}')
+          echo "SHA256=${SHA256}" >> $GITHUB_ENV
+          echo "Artifact SHA256: ${SHA256}"
+
+      # [P1] Notification (Skeleton - Requires Secrets)
+      - name: Notify Failure (Slack/Email)
+        if: failure()
+        run: |
+          echo "::error::🚨 SECURITY SCAN FAILED! Immediate action required."
+          # To enable Slack notifications:
+          # 1. Add SLACK_WEBHOOK to repo secrets
+          # 2. Uncomment 'uses: slackapi/slack-github-action@v1' block
+
+      # ------------------------------------------------------------------
+      # PHASE 4: RELEASE (If Manual Trigger + Success)
+      # ------------------------------------------------------------------
+
+      - name: Create Release with SBOM
+        if: success() && github.event_name == 'workflow_dispatch'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ env.VERSION }}
+          name: Security Release v${{ env.VERSION }}
+          body: |
+             ### Security & Compliance Update
+             - **Date**: ${{ env.VERSION }}
+             - **Scan Status**: PASSED (No Critical/High CVEs)
+             - **Checksum**: `${{ env.SHA256 }}`
+             
+             #### Assets
+             - Docker Image: `facturx-engine-pro-${{ env.VERSION }}.tar.gz`
+             - SBOM: `sbom-${{ env.VERSION }}.json` (EU Cyber Resilience Compliant)
+          files: |
+            facturx-engine-pro-${{ env.VERSION }}.tar.gz
+            sbom-${{ env.VERSION }}.json

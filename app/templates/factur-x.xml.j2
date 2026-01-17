@@ -1,0 +1,48 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<rsm:CrossIndustryInvoice xmlns:rsm="urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100" xmlns:qdt="urn:un:unece:uncefact:data:standard:QualifiedDataType:100" xmlns:ram="urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:udt="urn:un:unece:uncefact:data:standard:UnqualifiedDataType:100">
+  <rsm:ExchangedDocumentContext>
+   <ram:GuidelineSpecifiedDocumentContextParameter>
+      <ram:ID>urn:factur-x.eu:1p0:{{ profile | default('minimum') }}</ram:ID>
+    </ram:GuidelineSpecifiedDocumentContextParameter>
+  </rsm:ExchangedDocumentContext>
+  <rsm:ExchangedDocument>
+    <ram:ID>{{ invoice_number }}</ram:ID>
+    <ram:TypeCode>{{ document_type_code | default('380') }}</ram:TypeCode>
+    <ram:IssueDateTime>
+      <udt:DateTimeString format="102">{{ issue_date }}</udt:DateTimeString>
+    </ram:IssueDateTime>
+  </rsm:ExchangedDocument>
+  <rsm:SupplyChainTradeTransaction>
+    <ram:ApplicableHeaderTradeAgreement>
+      <ram:SellerTradeParty>
+        <ram:Name>{{ seller.name }}</ram:Name>
+        <ram:PostalTradeAddress>
+          <ram:CountryID>{{ seller.country_code }}</ram:CountryID>
+        </ram:PostalTradeAddress>
+        {% if seller.tax_number %}
+        <ram:SpecifiedTaxRegistration>
+          <ram:ID schemeID="FC">{{ seller.tax_number }}</ram:ID>
+        </ram:SpecifiedTaxRegistration>
+        {% endif %}
+        {% if seller.vat_number %}
+        <ram:SpecifiedTaxRegistration>
+          <ram:ID schemeID="VA">{{ seller.vat_number }}</ram:ID>
+        </ram:SpecifiedTaxRegistration>
+        {% endif %}
+      </ram:SellerTradeParty>
+      <ram:BuyerTradeParty>
+        <ram:Name>{{ buyer.name }}</ram:Name>
+      </ram:BuyerTradeParty>
+    </ram:ApplicableHeaderTradeAgreement>
+    <ram:ApplicableHeaderTradeDelivery/>
+    <ram:ApplicableHeaderTradeSettlement>
+      <ram:InvoiceCurrencyCode>{{ currency_code | default('EUR') }}</ram:InvoiceCurrencyCode>
+      <ram:SpecifiedTradeSettlementHeaderMonetarySummation>
+        <ram:TaxBasisTotalAmount>{{ amounts.tax_basis_total }}</ram:TaxBasisTotalAmount>
+        <ram:TaxTotalAmount currencyID="{{ currency_code | default('EUR') }}">{{ amounts.tax_total }}</ram:TaxTotalAmount>
+        <ram:GrandTotalAmount>{{ amounts.grand_total }}</ram:GrandTotalAmount>
+		<ram:DuePayableAmount>{{ amounts.due_payable }}</ram:DuePayableAmount>
+      </ram:SpecifiedTradeSettlementHeaderMonetarySummation>
+    </ram:ApplicableHeaderTradeSettlement>
+  </rsm:SupplyChainTradeTransaction>
+</rsm:CrossIndustryInvoice>
