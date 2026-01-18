@@ -61,3 +61,5 @@ validate_*.py
 !community_stubs/
 !tools/
 marketing_assets/
+
+CONTEXT_FOR_AI.md
