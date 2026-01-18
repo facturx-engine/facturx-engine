@@ -1,69 +1,45 @@
+# === INTERNAL / PRIVATE (Vault) ===
+_INTERNAL/
+.env
 
-# Python
+# === Python Standard ===
 __pycache__/
 *.py[cod]
 *$py.class
 venv/
-.env
 .venv/
-
-# Artifacts & Build
-*.tar
-*.gz
-*.zip
 dist/
 build/
 *.egg-info/
+.pytest_cache/
 
-# Logs & Outputs (Blocking All)
-# Logs & Outputs (Blocking All)
+# === IDE ===
+.vscode/
+.idea/
+
+# === Logs & Temporary ===
 *.log
-*.txt
-*.out
-*.err
-!requirements.txt
+*.tmp
+*.bak
 
-# Testing & QA Artifacts
+# === Build Artifacts ===
+*.tar
+*.gz
+*.zip
+
+# === LEGACY PRO PROTECTION (Double Check) ===
+*_pro.py
+*.hex
+*.pem
+*.key
+admin_keygen.py
+
+# === Temp Testing Files (To be moved to _INTERNAL eventually) ===
 *.pdf
 test_*.py
 verify_*.py
 audit_*.py
 demo_*.py
 check_*.py
-
-# IDE
-.vscode/
-.idea/
-
-# SECURITY - PROTECT PRO CODE & KEYS
-*_pro.py
-admin_keygen.py
-*.hex
-*.pem
-*.key
-tools/private_key.pem
-app/services/extractor_pro.py
-
-# INTERNAL DOCS & SCRIPTS
-publish_*.ps1
-generate_*.py
 validate_*.py
-
-# IGNORE ALL MARKDOWN BY DEFAULT (Except README)
-*.md
-!README.md
-!CHANGELOG.md
-!DOCKER_HUB_README.md
-!deploy/selfhosted/*.md
-
-# Clean Folders
-# Clean Folders
-!community_stubs/
-!tools/
-marketing_assets/
-
-CONTEXT_FOR_AI.md
-
-BUILD.md
-PROJECT_HISTORY.md
-NEXT_STEPS.md
+generate_*.py
