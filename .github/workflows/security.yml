@@ -44,7 +44,7 @@ jobs:
       - name: Set Version
         run: echo "VERSION=$(date +%Y.%m.%d)-$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
-      - name: Build Docker Image
+      - name: Build Docker Image (Community Security Check)
         run: docker build -t facturx-engine:${{ env.VERSION }} -t facturx-engine:latest .
 
       # [P0] Generate SBOM (Software Bill of Materials) - LEGALLY REQUIRED 2026
@@ -96,21 +96,14 @@ jobs:
       # PHASE 4: RELEASE (If Manual Trigger + Success)
       # ------------------------------------------------------------------
 
-      - name: Create Release with SBOM
-        if: success() && github.event_name == 'workflow_dispatch'
-        uses: softprops/action-gh-release@v1
+      # [P2] Internal Artifact Upload (For Lemon Squeezy Admin)
+      # We do NOT create a public Release here because this contains PRO code.
+      - name: Upload Pro Artifact
+        if: success()
+        uses: actions/upload-artifact@v4
         with:
-          tag_name: v${{ env.VERSION }}
-          name: Security Release v${{ env.VERSION }}
-          body: |
-             ### Security & Compliance Update
-             - **Date**: ${{ env.VERSION }}
-             - **Scan Status**: PASSED (No Critical/High CVEs)
-             - **Checksum**: `${{ env.SHA256 }}`
-             
-             #### Assets
-             - Docker Image: `facturx-engine-pro-${{ env.VERSION }}.tar.gz`
-             - SBOM: `sbom-${{ env.VERSION }}.json` (EU Cyber Resilience Compliant)
-          files: |
+          name: facturx-engine-pro-build
+          path: |
             facturx-engine-pro-${{ env.VERSION }}.tar.gz
             sbom-${{ env.VERSION }}.json
+          retention-days: 5
