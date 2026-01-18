@@ -1,5 +1,14 @@
 # 📅 Project History Log
 
+## 2026-01-18: 🛡️ Security Hardening & Compliance (Hotfix)
+
+* **Incident**: Automated security scan failed due to new CVEs in base image and Python packages.
+* **Resolution**:
+  * **OS Level**: Forced `apt-get upgrade` in Dockerfile to patch Debian vulnerabilities.
+  * **Dependencies**: Pinned all Python requirements to secure versions (e.g., `lxml>=6.0.0`, `jinja2>=3.1.6`).
+  * **Deep Clean**: Implemented surgical removal of vendored `jaraco` packages inside `setuptools` to fix persistent false positives.
+* **Status**: Security Scan is **GREEN** (Clean). API Runtime verified locally.
+
 ## 2026-01-17: 🔌 Odoo Integration & Import Robustness
 
 * **Milestone**: Successfully integrated **Factur-X Engine** with **Odoo 16.0**.
