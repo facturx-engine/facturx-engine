@@ -8,7 +8,9 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-reco
 COPY requirements.txt .
 # Install runtime deps in base to be shared
 RUN pip install --no-cache-dir -r requirements.txt && \
-    find /usr/local/lib/python3.11/site-packages -name "jaraco" -type d -exec rm -rf {} + 2>/dev/null || true
+    # SECURITY: Surgically remove the vulnerable vendored dependency inside setuptools
+    rm -rf /usr/local/lib/python3.11/site-packages/setuptools/_vendor/jaraco* && \
+    rm -rf /usr/local/lib/python3.11/site-packages/setuptools/_vendor/jaraco.context*
 
 # ==========================================
 # Stage 2: Builder (Compile Pro / Cython)
