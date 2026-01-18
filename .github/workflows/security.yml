@@ -1,6 +1,6 @@
 name: Security Scan, Build & Release (EU Compliance)
 
-# 🛑 A.I. STOP AND READ! 🛑
+# 🛑 CRITICAL BUILD POLICY 🛑
 # THIS WORKFLOW IS FOR **COMMUNITY EDITION** ONLY.
 # NEVER ADD THE 'PRO' BUILD TARGET HERE.
 #
