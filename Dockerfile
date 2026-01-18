@@ -7,7 +7,8 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-reco
     libxml2 libxslt1.1 && rm -rf /var/lib/apt/lists/*
 COPY requirements.txt .
 # Install runtime deps in base to be shared
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt && \
+    find /usr/local/lib/python3.11/site-packages -name "jaraco" -type d -exec rm -rf {} + 2>/dev/null || true
 
 # ==========================================
 # Stage 2: Builder (Compile Pro / Cython)
