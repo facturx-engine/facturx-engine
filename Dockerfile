@@ -14,6 +14,8 @@ RUN pip install --no-cache-dir -r requirements.txt && \
 
 # ==========================================
 # Stage 2: Builder (Compile Pro / Cython)
+# 🛑 AI WARNING: THIS STAGE REQUIRES LOCAL-ONLY FILES.
+# DO NOT ATTEMPT TO RUN THIS ON GITHUB ACTIONS.
 # ==========================================
 FROM python:3.11-slim as builder-pro
 WORKDIR /app
@@ -54,6 +56,7 @@ CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
 # ==========================================
 # Stage 4: Runtime COMMUNITY
+# 🛑 CRITICAL: This stage DESTROYS pro features to be safe for public release.
 # ==========================================
 FROM base as community
 WORKDIR /app

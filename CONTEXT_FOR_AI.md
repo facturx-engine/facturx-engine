@@ -9,17 +9,23 @@ Any deviation could leak proprietary `PRO` code or the `MASTER PRIVATE KEY`.
 
 ## 🔐 1. Security Invariants (DO NOT TOUCH)
 
-1. **`private_key.hex` is the Master Key.**
+1. **PRO BUILD IS LOCAL ONLY.** (🚨 CRITICAL AI RULE 🚨)
+    * The Pro version (`facturx-engine-pro-*.tar.gz`) requires files that are `.gitignore`d.
+    * It **CANNOT** be built on GitHub Actions (Cloud).
+    * It **MUST** be built locally using `.\publish_release.ps1`.
+    * **NEVER** edit `.github/workflows/security.yml` to target the `pro` stage.
+
+2. **`private_key.hex` is the Master Key.**
     * It signs commercial licenses.
     * **NEVER** commit it to Git.
     * **NEVER** output its content in logs or chat (unless explicitly asked for backup).
     * **NEVER** upload it to a cloud CI/CD (GitHub Actions) unless strictly encrypted (currently: we build LOCALLY).
 
-2. **`admin_keygen.py` is Internal Only.**
+3. **`admin_keygen.py` is Internal Only.**
     * It must **NEVER** be reachable in the public Community Edition code.
     * It is excluded via `.gitignore`.
 
-3. **Community vs Pro Separation.**
+4. **Community vs Pro Separation.**
     * **Community Edition:** Public on Docker Hub & GitHub. Code in `app/` (with stubs).
     * **Pro Edition:** Private. Code contains complex extraction logic.
     * **Protection Mechanism:** The `Dockerfile` explicitly **overwrites** key files when building the Community image:

@@ -1,5 +1,15 @@
 name: Security Scan, Build & Release (EU Compliance)
 
+# 🛑 A.I. STOP AND READ! 🛑
+# THIS WORKFLOW IS FOR **COMMUNITY EDITION** ONLY.
+# NEVER ADD THE 'PRO' BUILD TARGET HERE.
+#
+# REGLE ABSOLUE : La version PRO contient des secrets et ne doit JAMAIS
+# être construite sur GitHub Actions (Cloud).
+# Elle doit être construite LOCALEMENT via `.\publish_release.ps1`
+#
+# Voir CONTEXT_FOR_AI.md Section "Deployment Procedures"
+
 on:
   push:
     branches: [ "main" ]
