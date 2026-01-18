@@ -1,6 +1,12 @@
 name: Security Scan, Build & Release (EU Compliance)
 
 on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'Dockerfile'
+      - 'requirements.txt'
+      - '.github/workflows/security.yml'
   schedule:
     - cron: '0 0 * * *'  # DAILY Scan (Required for EU Cyber Resilience Act responsiveness)
   workflow_dispatch:      # Manual trigger for releases
