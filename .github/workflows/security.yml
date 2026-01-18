@@ -60,6 +60,10 @@ jobs:
           exit-code: '1' # FAIL BUILD if critical bugs found
           ignore-unfixed: true
           severity: 'CRITICAL,HIGH'
+      
+      - name: Show Trivia Scan Results (On Failure)
+        if: failure()
+        run: cat trivy-results.txt || echo "No results file found, check logs above."
 
       # ------------------------------------------------------------------
       # PHASE 3: PACKAGE & NOTIFY
