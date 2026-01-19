@@ -4,20 +4,32 @@
 [![Docker Pulls](https://img.shields.io/docker/pulls/facturxengine/facturx-engine?style=for-the-badge)](https://hub.docker.com/r/facturxengine/facturx-engine)
 [![License](https://img.shields.io/badge/License-Community-0052CC?style=for-the-badge)](https://github.com/facturx-engine/facturx-engine#legal)
 [![Standard](https://img.shields.io/badge/Standard-EN16931-2EA44F?style=for-the-badge)](https://fnfe-mpe.org/factur-x/)
+[![CRA](https://img.shields.io/badge/EU_CRA-Compliant-blueviolet?style=for-the-badge)](https://github.com/facturx-engine/facturx-engine/blob/main/_INTERNAL/docs/CRA_COMPLIANCE.md)
 
-**The simplest self-hosted **Docker Middleware** to generate compliant **Factur-X** (French E-Invoicing) and **ZUGFeRD 2.2** PDFs.**
+**The simplest self-hosted Docker Middleware to generate compliant Factur-X (French E-Invoicing) and ZUGFeRD 2.2 PDFs.**
 Turn standard PDFs into valid Hybrid Invoices (PDF/A-3 + XML) via a simple REST API.
 
 ---
 
+## 🇪🇺 Trust & Sovereignty (GDPR)
+
+In the era of the **Cyber Resilience Act (CRA)** and strict **GDPR** enforcement, Factur-X Engine is designed as a "Privacy-First" component.
+
+### 🔒 100% Offline & Private (GDPR-by-Design)
+
+* **Zero Data Exfiltration**: The container runs without *any* outbound internet connection. Your invoices (and your clients' data) never leave your infrastructure.
+* **Stateless Processing**: Data is processed in RAM and discarded immediately. No databases, no logs of sensitive content.
+* **Sovereign**: Ideal for Banks, Healthcare, and Public Sector entities requiring strict data locality.
+
+### 🛡️ Security & Compliance
+
+* **CRA Ready**: We provide a full "Security by Design" compliance statement and vulnerability management process.
+* **SBOM Included**: Every release comes with a **Software Bill of Materials** (CycloneDX) for your CISO's peace of mind.
+* **Read-Only Architecture**: The engine works perfectly with read-only filesystems to prevent malware persistence.
+
+---
+
 ## ⚡ Why Factur-X Engine?
-
-As the 2026/2027 e-invoicing mandate approaches, developers need a reliable way to generate **EN 16931 compliant** invoices without rebuilding their entire billing stack.
-
-* ✅ **Instant Compliance**: Generates valid **ZUGFeRD 2.2 / Factur-X 1.0 (1.08 ready)** files.
-* ✅ **Chorus Pro Standards**: Generates files following the EN 16931 standard requirements used by the French public portal.
-* ✅ **Simple Integration**: It's a microservice. POST a PDF + JSON, get a Factur-X back.
-* ✅ **100% Offline & Private**: Runs on your server. No data ever leaves your infrastructure, simplifying GDPR compliance.
 
 ## 📋 Technical Specs
 
