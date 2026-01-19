@@ -120,6 +120,16 @@ curl -X 'POST' \
   -F 'file=@factur-x_invoice.pdf'
 ```
 
+### 3. Extract Data (Demo Mode)
+
+Test the powerful OCR-free extraction (returns masked numbers in Community Edition):
+
+```bash
+curl -X POST "http://localhost:8000/v1/extract" \
+  -F "file=@factur-x.pdf"
+# Returns JSON with masked values (e.g. "total": "***.00")
+```
+
 ---
 
 ## 💼 Free vs Pro
