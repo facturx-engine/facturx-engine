@@ -89,6 +89,60 @@ extractInvoice();
 
 ---
 
+## 🐘 PHP (Guzzle)
+
+Essential for integrating with **Laravel**, **Symfony**, **Dolibarr**, or **PrestaShop**.
+
+**Scenario**: Generate a Factur-X invoice from a PHP backend.
+
+```php
+<?php
+require 'vendor/autoload.php';
+
+use GuzzleHttp\Client;
+
+$client = new Client();
+$apiUrl = 'http://localhost:8000/v1/convert';
+
+try {
+    $response = $client->request('POST', $apiUrl, [
+        'multipart' => [
+            [
+                'name'     => 'pdf',
+                'contents' => fopen('./invoice.pdf', 'r'),
+                'filename' => 'invoice.pdf'
+            ],
+            [
+                'name'     => 'metadata',
+                'contents' => json_encode([
+                    'invoice_number' => 'INV-2024-001',
+                    'seller' => ['name' => 'My PHP Shop', 'country_code' => 'FR'],
+                    'buyer'  => ['name' => 'Client SAS'],
+                    'amounts' => [
+                        'tax_basis_total' => '100.00',
+                        'tax_total' => '20.00',
+                        'grand_total' => '120.00',
+                        'due_payable' => '120.00'
+                    ],
+                    'profile' => 'en16931'
+                ])
+            ]
+        ]
+    ]);
+
+    // Save the resulting PDF
+    $body = $response->getBody();
+    file_put_contents('factur-x_invoice.pdf', $body);
+    
+    echo "✅ Success! Invoice generated.";
+
+} catch (\Exception $e) {
+    echo "❌ Error: " . $e->getMessage();
+}
+```
+
+---
+
 ## #️⃣ C# (.NET Core)
 
 Standard for Enterprise ERPs.
