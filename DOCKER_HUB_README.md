@@ -6,8 +6,8 @@
 [![Standard](https://img.shields.io/badge/Standard-EN16931-2EA44F?style=for-the-badge)](https://fnfe-mpe.org/factur-x/)
 [![CRA](https://img.shields.io/badge/EU_CRA-Compliant-blueviolet?style=for-the-badge)](https://github.com/facturx-engine/facturx-engine/blob/main/_INTERNAL/docs/CRA_COMPLIANCE.md)
 
-**The simplest self-hosted Docker Middleware to generate compliant Factur-X (French E-Invoicing) and ZUGFeRD 2.2 PDFs.**
-Turn standard PDFs into valid Hybrid Invoices (PDF/A-3 + XML) via a simple REST API.
+**The Sovereign E-Invoicing Infrastructure for the CRA Era.**
+Generate, Validate, and Extract Factur-X / ZUGFeRD 2.2 files in a **100% Private, Offline Docker Container**.
 
 ---
 
@@ -85,7 +85,7 @@ Parse incoming invoices accurately.
 Run the container in 1 command:
 
 ```bash
-docker run -p 8000:8000 facturxengine/facturx-engine:latest
+docker run -p 8000:8000 facturxengine.docker.scarf.sh/facturxengine/facturx-engine:latest
 ```
 
 👉 Open **[http://localhost:8000/docs](http://localhost:8000/docs)** to see the Swagger UI.
