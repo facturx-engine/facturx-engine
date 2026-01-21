@@ -25,6 +25,8 @@ wheels/
 MANIFEST
 
 # Security
+*_pro.py
+*.c
 admin_keygen.py
 generate_audit_kit.py
 private_key.hex

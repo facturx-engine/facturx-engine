@@ -104,8 +104,8 @@ def is_licensed() -> bool:
     # 2. Security Checks (Fast)
     
     # CRITICAL SECURITY CHECK #1: BUILD_DATE injection
-    if BUILD_DATE == "BUILD_DATE_PLACEHOLDER":
-        logger.error("Security Error: BUILD_DATE not injected. License verification disabled.")
+    if BUILD_DATE == "BUILD_DATE" + "_PLACEHOLDER":
+        logger.error("Security Error: BUILD_DATE not injected. License verification disabled. Application is refusing to start to prevent accidental fallback to Demo Mode.")
         with _cache_lock:
             _license_cache["valid"] = False
             _license_cache["expires"] = now + 60 # Penalty cache
