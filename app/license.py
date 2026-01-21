@@ -14,11 +14,11 @@ logger = logging.getLogger(__name__)
 
 from app.constants import LICENSE_SALT
 # HARDCODED PUBLIC KEY (Obfuscated XOR)
-# Real Key: 5e78a793037512905464c0d3d6fd5aa43709aba0c9e8e4c6fb09210c69f3045b
+# Real Key: 05b1b99640fb18cb81ed4ab70877db232eb753f29212acac8aab08fb04d1d360
 # We store it obfuscated to prevent simple 'strings' command extraction
 # XOR Key: LICENSE_SALT
 _XOR_SEED = hashlib.sha256(LICENSE_SALT).digest()
-_OBFUSCATED_KEY_HEX = "b745c7f0cf74d797afa510dc25622f5ea6f5ec8a77f2d81a0f522325b04466c5"
+_OBFUSCATED_KEY_HEX = "7fd1630e5f5a90228cfd243234ec497c1e174dca9aacb5d5f596666197b54985"
 
 BUILD_DATE = "BUILD_DATE_PLACEHOLDER"
 
