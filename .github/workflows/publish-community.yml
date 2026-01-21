@@ -45,8 +45,21 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          # Community Edition builds DO NOT have the LICENSE_KEY build arg
-          # or private_key.pem, so they naturally default to the stub/demo mode.
+      # Community Edition builds DO NOT have the LICENSE_KEY build arg
+      # or private_key.pem, so they naturally default to the stub/demo mode.
+
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{ env.DOCKER_IMAGE }}:latest
+          format: cyclonedx-json
+          output-file: sbom.cyclonedx.json
+
+      - name: Upload SBOM Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-cyclonedx
+          path: sbom.cyclonedx.json
       
       - name: Update Docker Hub Description
         uses: peter-evans/dockerhub-description@v4

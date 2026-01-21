@@ -9,6 +9,13 @@ Licensor grants Licensee a non-exclusive license to use "Factur-X Engine Pro".
 * **Active Subscription**: Access to Docker images, security updates, and new features.
 * **Subscription Expiry (Perpetual Fallback)**: If Licensee cancels the subscription, Licensee retains the right to use the **last downloaded version** indefinitely (Perpetual Rights). However, access to the download repository and future security updates is revoked immediately.
 
+## 1.1 PROHIBITED USES (NON-COMPETE)
+
+Licensee may **NOT** use the Software to build, power, or support a competing commercial Software-as-a-Service (SaaS), Platform-as-a-Service (PaaS), or public API.
+
+* **Forbidden**: Wrapping the Docker Container to sell "Factur-X Generation" or "Factur-X Validation" as a public API or paid online service.
+* **Allowed**: Integrating the Software into Licensee's internal ERP, accounting software, or a commercial software product (On-Premise/SaaS) where Factur-X processing is an *auxiliary* feature, not the *primary* value proposition.
+
 ## 2. LEGAL WARRANTY & SECURITY UPDATES (EU CRA COMPLIANCE)
 
 In accordance with EU Cyber Resilience Act (CRA):

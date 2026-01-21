@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   facturx-api:
-    image: facturx-api:1.0.0
+    image: facturxengine.docker.scarf.sh/facturxengine/facturx-engine:latest
     container_name: facturx-api
     ports:
       - "${API_PORT:-8000}:8000"
