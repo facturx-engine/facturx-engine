@@ -31,7 +31,7 @@ RUN echo "$BUILD_DATE" | grep -E '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' || (echo "Invali
     sed -i "s/BUILD_DATE_PLACEHOLDER/$BUILD_DATE/g" /app/app/license.py && \
     rm -rf build && \
     python setup.py build_ext --inplace --verbose && \
-    python -c "import app.license as m; print(f'VERIFICATION: BUILD_DATE={m.BUILD_DATE}'); assert m.BUILD_DATE == '$BUILD_DATE', f'FAILED: {m.BUILD_DATE}'" && \
+    python -c "import app.license as m; print(f'VERIFICATION: BUILD_DATE={m.BUILD_DATE}'); print(f'VERIFICATION: PUB_KEY={m._deobfuscate_key()}'); assert m.BUILD_DATE == '$BUILD_DATE', f'FAILED: {m.BUILD_DATE}'" && \
     rm /app/app/license.py
 RUN rm -f app/license.py app/services/extractor.py app/services/generator.py app/services/validator.py
 RUN rm -f app/services/*.c app/*.c
