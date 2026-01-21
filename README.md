@@ -144,12 +144,11 @@ curl -X 'POST' \
 
 | Feature | Community Edition 🆓 | Pro Edition 💎 | OEM / Source 🏢 |
 | :--- | :---: | :---: | :---: |
-| **Delivery** | Docker Hub (Public) | Docker Image (`.tar`) | Source Code Access |
+| **Delivery** | Docker Hub (Public) | Docker Hub (Public) + Key | Source Code Access |
 | **Generation** | ✅ Unlimited | ✅ Unlimited | ✅ Unlimited |
 | **Validation** | ✅ Unlimited | ✅ Unlimited | ✅ Unlimited |
 | **Extraction** | ⚠️ **Demo Mode** | ✅ **Full Data Access** | ✅ **Full Data Access** |
-| **License** | **MIT (Open Source)** | **Business License** | **Commercial OEM** |
-| **Privacy** | ✅ Self-Hosted | ✅ Self-Hosted | ✅ Self-Hosted |
+| **Activation** | None | **License Key** | Custom |
 | **Support** | Community Issues | Email Priority | Direct CTO Access |
 | **Price** | **Free** | **€499 / year** | **[Contact Us](mailto:facturx.engine@protonmail.com)** |
 
