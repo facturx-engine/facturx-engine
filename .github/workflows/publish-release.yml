@@ -1,4 +1,4 @@
-name: Publish Community Edition
+name: Publish Release (Single Image)
 
 on:
   push:
@@ -74,7 +74,6 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             BUILD_DATE=${{ steps.date.outputs.date }}
-      # or private_key.pem, so they naturally default to the stub/demo mode.
 
       - name: Generate SBOM
         uses: anchore/sbom-action@v0
