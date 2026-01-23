@@ -195,15 +195,25 @@ async def extract_facturx(
                 logger.warning("Pro Engine missing, falling back to Demo")
         else:
             # Demo Mode: Import from community stub
-            from app.services.extractor_demo import ExtractionService
-            logger.info("Extracting with DEMO Engine")
+            # Demo Mode: Import from community stub or local dev
+            try:
+                from app.services.extractor_demo import ExtractionService
+                logger.info("Extracting with DEMO Engine (Prod)")
+            except ImportError:
+                # Local dev fallback: extractor.py IS the demo version
+                from app.services.extractor import ExtractionService
+                logger.info("Extracting with DEMO Engine (Local)")
 
         result = ExtractionService.extract_invoice_data(
             file_content,
             file.filename
         )
         
-        return ExtractionResult(**result)
+        try:
+            return ExtractionResult(**result)
+        except Exception as e:
+            logger.error(f"SCHEMA VALIDATION ERROR: {e}")
+            raise HTTPException(status_code=500, detail=f"Schema validation failed: {str(e)}")
         
     except HTTPException:
         raise

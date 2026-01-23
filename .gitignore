@@ -1,6 +1,6 @@
 # === INTERNAL / PRIVATE (Vault) ===
 _INTERNAL/
-.env
+!_INTERNAL/docs/
 
 # === Python Standard ===
 __pycache__/
@@ -15,6 +15,7 @@ build/
 
 # === IDE ===
 .vscode/
+!.vscode/settings.json
 .idea/
 
 # === Logs & Temporary ===
@@ -36,7 +37,7 @@ admin_keygen.py
 
 # === Temp Testing Files (To be moved to _INTERNAL eventually) ===
 *.pdf
-test_*.py
+# test_*.py <-- We want to commit tests/
 verify_*.py
 audit_*.py
 demo_*.py

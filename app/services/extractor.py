@@ -97,8 +97,18 @@ class ExtractionService:
         # --- SMART DEMO MAPPING ---
         
         # 1. Structure (Real)
-        invoice_id = xpath_first(xml_root, ['//ram:ID', '//rsm:HeaderExchangedDocument/ram:ID'])
-        date_str = xpath_first(xml_root, ['//ram:IssueDateTime/udt:DateTimeString', '//rsm:HeaderExchangedDocument/ram:IssueDateTime/udt:DateTimeString'])
+        # 1. Structure (Real)
+        # Use specific paths to avoid matching Profile ID (GuidelineSpecifiedDocumentContextParameter/ID)
+        invoice_id = xpath_first(xml_root, [
+            '//rsm:ExchangedDocument/ram:ID', # Standard CII
+            '//rsm:HeaderExchangedDocument/ram:ID' # Old ZUGFeRD
+        ])
+        
+        date_str = xpath_first(xml_root, [
+            '//rsm:ExchangedDocument/ram:IssueDateTime/udt:DateTimeString', 
+            '//rsm:HeaderExchangedDocument/ram:IssueDateTime/udt:DateTimeString', 
+            '//ram:IssueDateTime/udt:DateTimeString'
+        ])
         currency = xpath_first(xml_root, ['//ram:InvoiceCurrencyCode']) or "EUR"
 
         # 2. Line Items
