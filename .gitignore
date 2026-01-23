@@ -1,6 +1,5 @@
 # === INTERNAL / PRIVATE (Vault) ===
 _INTERNAL/
-!_INTERNAL/docs/
 
 # === Python Standard ===
 __pycache__/
