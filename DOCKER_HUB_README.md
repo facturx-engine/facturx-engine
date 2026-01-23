@@ -1,6 +1,6 @@
 # Factur-X Engine: Docker API for Factur-X, ZUGFeRD 2.2 & EN16931
 
-> **Instantly transform PDFs and JSON data into compliant e-invoices. A self-hosted, lightweight, 100% Offline REST API based on Docker.**
+> **Self-hosted REST API to generate, validate, and extract Factur-X / ZUGFeRD 2.2 files. Runs in a single, stateless Docker container.**
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/facturxengine/facturx-engine)](https://hub.docker.com/r/facturxengine/facturx-engine)
 [![License](https://img.shields.io/badge/license-Community-blue.svg)](https://github.com/facturx-engine/facturx-engine)
@@ -9,9 +9,9 @@
 
 ---
 
-## ⚡ Quickstart
+## Quickstart
 
-Generate your first Factur-X (PDF/A-3) invoice in less than 60 seconds. No Python or Java installation required.
+Runs immediately on any Docker host. No Python/Java dependencies.
 
 ```bash
 # 1. Start the Engine (API)
@@ -30,23 +30,23 @@ curl -X POST "http://localhost:8000/v1/convert" \
 echo "✅ Invoice generated: invoice_compliant.pdf"
 ```
 
-👉 **[Swagger UI Documentation](http://localhost:8000/docs)** : <http://localhost:8000/docs>
+**[Swagger UI Documentation](http://localhost:8000/docs)** : <http://localhost:8000/docs>
 
 ---
 
-## ✨ Key Features
+## Technical Specifications
 
-Factur-X Engine solves **EN 16931** compliance complexity for developers.
+High-performance compliance engine for **EN 16931**.
 
-* **Native PDF/A-3 Conversion**: Forget **Ghostscript** configuration hell and color profile issues. The engine handles ISO 19005-3 compliance automatically.
-* **ZUGFeRD & Factur-X Validation**: Validate your XML files against official schemas (XSD + Schematron). Supports profiles: `MINIMUM`, `BASIC WL`, `BASIC`, `EN 16931`, `EXTENDED` (and `XRechnung` via mapping).
-* **Stateless REST API**: Microservice architecture ideal for Kubernetes, Docker Swarm, or CI/CD pipelines. **Zero data persistence** (Privacy by Design).
-* **100% Offline & Sovereign**: The container requires no internet connection. Your financial data never leaves your infrastructure.
-* **Data Extraction**: Transform incoming Factur-X PDFs into structured JSON for your ERP (Odoo, SAP, Dolibarr).
+* **Native PDF/A-3 Conversion**: Internal engine handles ISO 19005-3 conformance. **No external Ghostscript dependency**.
+* **Standards Compliance**: Validates against official XSD & Schematron (Profiles: `MINIMUM`, `BASIC`, `EN 16931`, `EXTENDED`, `ZUGFeRD 2.2`).
+* **Stateless Architecture**: Zero persistence. Input data is processed in-memory and discarded. Ideal for GDPR/Privacy.
+* **Air-Gapped Ready**: 100% Offline execution. No outbound network requests required.
+* **Structured Extraction**: Parses Factur-X XML into standard JSON for ERP integration.
 
 ---
 
-## 🚀 Use Cases & Integrations
+## Use Cases & Integrations
 
 The Docker architecture makes the tool agnostic to your programming language.
 
@@ -64,7 +64,7 @@ The Docker architecture makes the tool agnostic to your programming language.
 
 ---
 
-## 🛠 Configuration
+## Configuration
 
 The container is configurable via environment variables:
 
@@ -76,20 +76,20 @@ The container is configurable via environment variables:
 
 ---
 
-## 🤝 Community vs Pro
+## Community vs Pro
 
 This **Community** version is feature-complete, unlimited, and production-ready. The **Pro** edition offers guarantees and services for businesses.
 
-| Feature | Community Edition (This Repo) 🆓 | Pro / Enterprise Edition 💎 |
+| Feature | Community Edition (This Repo) | Pro / Enterprise Edition |
 | :--- | :--- | :--- |
 | **License** | Open Source (MIT) | Commercial / Proprietary |
 | **Usage** | Unlimited (Self-hosted) | Unlimited + **Legal Warranty** |
-| **Generation** | ✅ Unlimited | ✅ Unlimited |
-| **Validation** | ✅ Unlimited | ✅ Unlimited |
-| **Extraction** | ⚠️ **Demo Mode** (Data masked `***`) | ✅ **Full Data Access** |
+| **Generation** | Included | Included |
+| **Validation** | Included | Included |
+| **Extraction** | **Demo Mode** (Data masked `***`) | **Full Data Access** |
 | **Support** | Community (GitHub Interactions) | Priority Email / SLA |
 
-### 💰 Pricing & Licenses
+### Pricing & Licenses
 
 **1. For Internal Use (SME / Bank / Corporate)**
 
@@ -100,16 +100,16 @@ This **Community** version is feature-complete, unlimited, and production-ready.
 * **OEM Growth**: Commercial Redistribution. Standard Liability Terms.
 * **OEM Scale (Contact Only)**: Enterprise Redistribution. **Includes Legal Indemnification & Insurance**.
 
-> **ℹ️ Perpetual Fallback**: You keep the version you bought forever. The subscription covers updates, security patches & warranty.
+> **Perpetual Fallback**: You keep the version you bought forever. The subscription covers updates, security patches & warranty.
 
-👉 **[View Pricing & Licenses](https://facturx-engine.lemonsqueezy.com)**
+**[View Pricing & Licenses](https://facturx-engine.lemonsqueezy.com)**
 
 ---
 
-## ⚖️ Legal & Compliance
+## Legal & Compliance
 
 * **Vendor**: Factur-X Engine (Paris, France).
 * **Compliance**: Designed to respect the EU **Cyber Resilience Act (CRA)**.
 * **Security**: Image scanned (Trivy), SBOM available.
 
-*Built with ❤️ in Paris.*
+*Maintained by the Factur-X Engine Team.*
