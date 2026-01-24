@@ -14,7 +14,7 @@ RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
 # 🛑 DEV WARNING: THIS STAGE REQUIRES LOCAL-ONLY FILES.
 # DO NOT ATTEMPT TO RUN THIS ON GITHUB ACTIONS.
 # ==========================================
-FROM python:3.11-slim as builder-pro
+FROM python:3.11-slim-bookworm as builder-pro
 WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential python3-dev gcc && rm -rf /var/lib/apt/lists/*
