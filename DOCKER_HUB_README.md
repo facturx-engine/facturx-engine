@@ -113,3 +113,4 @@ This **Community** version is feature-complete, unlimited, and production-ready.
 * **Security**: Image scanned (Trivy), SBOM available.
 
 *Maintained by the Factur-X Engine Team.*
+<!-- CI Verified -->
