@@ -7,10 +7,10 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-reco
 COPY requirements.txt .
 # Install runtime deps in base to be shared
 # We install build-essential temporarily to compile wheels (like lxml/psutil) if pre-built ones miss
-RUN apt-get update && apt-get install -y --no-install-recommends build-essential python3-dev && \
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential python3-dev libxml2-dev libxslt1-dev zlib1g-dev libfreetype6-dev libjpeg-dev && \
     pip install --no-cache-dir --upgrade pip setuptools wheel && \
     pip install --no-cache-dir -r requirements.txt && \
-    apt-get purge -y --auto-remove build-essential python3-dev && \
+    apt-get purge -y --auto-remove build-essential python3-dev libxml2-dev libxslt1-dev zlib1g-dev libfreetype6-dev libjpeg-dev && \
     rm -rf /var/lib/apt/lists/*
 
 # ==========================================
@@ -21,7 +21,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends build-essential
 FROM python:3.11-slim-bookworm AS builder-pro
 WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential python3-dev gcc && rm -rf /var/lib/apt/lists/*
+    build-essential python3-dev gcc libxml2-dev libxslt1-dev zlib1g-dev libfreetype6-dev libjpeg-dev && rm -rf /var/lib/apt/lists/*
 COPY requirements.txt .
 RUN pip install --no-cache-dir cython wheel setuptools && pip install --no-cache-dir -r requirements.txt
 COPY app/ app/
