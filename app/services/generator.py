@@ -44,6 +44,8 @@ class GeneratorService:
                 "issue_date": metadata.issue_date,
                 "seller": metadata.seller.model_dump(),
                 "buyer": metadata.buyer.model_dump(),
+                "lines": [l.model_dump() for l in metadata.lines],
+                "tax_details": [t.model_dump() for t in metadata.tax_details],
                 "amounts": metadata.amounts.model_dump(),
                 "currency_code": metadata.currency_code,
                 "profile": metadata.profile,

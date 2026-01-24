@@ -1,4 +1,4 @@
-# Factur-X Engine: Docker API for Factur-X, ZUGFeRD 2.2 & EN16931
+# Factur-X Engine v1.2 "Compliance Edition"
 
 > **Self-hosted REST API to generate, validate, and extract Factur-X / ZUGFeRD 2.2 files. Runs in a single, stateless Docker container.**
 
@@ -39,7 +39,7 @@ echo "✅ Invoice generated: invoice_compliant.pdf"
 High-performance compliance engine for **EN 16931**.
 
 * **Native PDF/A-3 Conversion**: Internal engine handles ISO 19005-3 conformance. **No external Ghostscript dependency**.
-* **Standards Compliance**: Validates against official XSD & Schematron (Profiles: `MINIMUM`, `BASIC`, `EN 16931`, `EXTENDED`, `ZUGFeRD 2.2`).
+* **Standards Compliance**: Validates against EN 16931 & ZUGFeRD 2.2 XSD + **Native Schematron Rules** (Business Logic) for France (SIRET, VAT) and Germany (Tax ID). No external Java dependencies.
 * **Stateless Architecture**: Zero persistence. Input data is processed in-memory and discarded. Ideal for GDPR/Privacy.
 * **Air-Gapped Ready**: 100% Offline execution. No outbound network requests required.
 * **Structured Extraction**: Parses Factur-X XML into standard JSON for ERP integration.

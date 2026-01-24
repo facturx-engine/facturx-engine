@@ -24,7 +24,7 @@ router = APIRouter(prefix="/v1", tags=["factur-x"])
                  400: {"model": ErrorResponse, "description": "Invalid input"},
                  500: {"model": ErrorResponse, "description": "Server error"}
              })
-async def convert_to_facturx(
+def convert_to_facturx(
     pdf: UploadFile = File(..., description="Original PDF invoice"),
     metadata: str = Form(..., description="Invoice metadata as JSON")
 ):
@@ -41,8 +41,8 @@ async def convert_to_facturx(
                 detail={"error": "INVALID_FILE_TYPE", "message": "Only PDF files are accepted"}
             )
         
-        # Read PDF content
-        pdf_content = await pdf.read()
+        # Read PDF content (Sync read for sync route)
+        pdf_content = pdf.file.read()
         if not pdf_content:
             raise HTTPException(
                 status_code=400,
@@ -98,7 +98,7 @@ async def convert_to_facturx(
                  400: {"model": ErrorResponse, "description": "Invalid input"},
                  500: {"model": ErrorResponse, "description": "Server error"}
              })
-async def validate_facturx(
+def validate_facturx(
     file: UploadFile = File(..., description="Factur-X PDF or XML file to validate")
 ):
     """
@@ -107,8 +107,8 @@ async def validate_facturx(
     Returns a validation report with detected format, flavor, and any errors.
     """
     try:
-        # Read file content
-        file_content = await file.read()
+        # Read file content (Sync read)
+        file_content = file.file.read()
         if not file_content:
             raise HTTPException(
                 status_code=400,
@@ -144,7 +144,7 @@ async def validate_facturx(
                  400: {"model": ErrorResponse, "description": "Invalid input"},
                  500: {"model": ErrorResponse, "description": "Server error"}
              })
-async def extract_facturx(
+def extract_facturx(
     file: UploadFile = File(..., description="Factur-X PDF file to extract data from")
 ):
     """
@@ -161,8 +161,8 @@ async def extract_facturx(
     - Invoice validation before processing
     """
     try:
-        # Read file content
-        file_content = await file.read()
+        # Read file content (Sync read)
+        file_content = file.file.read()
         if not file_content:
             raise HTTPException(
                 status_code=400,

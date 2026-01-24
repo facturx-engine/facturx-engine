@@ -2,7 +2,7 @@
 <rsm:CrossIndustryInvoice xmlns:rsm="urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100" xmlns:qdt="urn:un:unece:uncefact:data:standard:QualifiedDataType:100" xmlns:ram="urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:udt="urn:un:unece:uncefact:data:standard:UnqualifiedDataType:100">
   <rsm:ExchangedDocumentContext>
    <ram:GuidelineSpecifiedDocumentContextParameter>
-      <ram:ID>urn:factur-x.eu:1p0:{{ profile | default('minimum') }}</ram:ID>
+      <ram:ID>urn:cen.eu:en16931:2017</ram:ID>
     </ram:GuidelineSpecifiedDocumentContextParameter>
   </rsm:ExchangedDocumentContext>
   <rsm:ExchangedDocument>
@@ -13,31 +13,88 @@
     </ram:IssueDateTime>
   </rsm:ExchangedDocument>
   <rsm:SupplyChainTradeTransaction>
+    {% for line in lines %}
+    <ram:IncludedSupplyChainTradeLineItem>
+        <ram:AssociatedDocumentLineDocument>
+            <ram:LineID>{{ line.line_id }}</ram:LineID>
+        </ram:AssociatedDocumentLineDocument>
+        <ram:SpecifiedTradeProduct>
+            <ram:Name>{{ line.name }}</ram:Name>
+        </ram:SpecifiedTradeProduct>
+        <ram:SpecifiedLineTradeAgreement>
+            <ram:NetPriceProductTradePrice>
+                <ram:ChargeAmount>{{ "%.2f"|format(line.net_price) }}</ram:ChargeAmount>
+            </ram:NetPriceProductTradePrice>
+        </ram:SpecifiedLineTradeAgreement>
+        <ram:SpecifiedLineTradeDelivery>
+            <ram:BilledQuantity unitCode="{{ line.unit_code }}">{{ line.quantity }}</ram:BilledQuantity>
+        </ram:SpecifiedLineTradeDelivery>
+        <ram:SpecifiedLineTradeSettlement>
+            <ram:ApplicableTradeTax>
+                <ram:TypeCode>VAT</ram:TypeCode>
+                <ram:CategoryCode>{{ line.vat_category }}</ram:CategoryCode>
+                <ram:RateApplicablePercent>{{ "%.2f"|format(line.vat_rate) }}</ram:RateApplicablePercent>
+            </ram:ApplicableTradeTax>
+            <ram:SpecifiedTradeSettlementLineMonetarySummation>
+                <ram:LineTotalAmount>{{ "%.2f"|format(line.net_total) }}</ram:LineTotalAmount>
+            </ram:SpecifiedTradeSettlementLineMonetarySummation>
+        </ram:SpecifiedLineTradeSettlement>
+    </ram:IncludedSupplyChainTradeLineItem>
+    {% endfor %}
     <ram:ApplicableHeaderTradeAgreement>
       <ram:SellerTradeParty>
         <ram:Name>{{ seller.name }}</ram:Name>
+        <ram:SpecifiedLegalOrganization>
+             <ram:ID schemeID="0002">{{ seller.siret | default('00000000000000') }}</ram:ID>
+        </ram:SpecifiedLegalOrganization>
+        {% if seller.address %}
         <ram:PostalTradeAddress>
-          <ram:CountryID>{{ seller.country_code }}</ram:CountryID>
+            <ram:PostcodeCode>{{ seller.address.postcode }}</ram:PostcodeCode>
+            <ram:LineOne>{{ seller.address.line1 }}</ram:LineOne>
+            {% if seller.address.line2 %}<ram:LineTwo>{{ seller.address.line2 }}</ram:LineTwo>{% endif %}
+            <ram:CityName>{{ seller.address.city }}</ram:CityName>
+            <ram:CountryID>{{ seller.address.country_code }}</ram:CountryID>
         </ram:PostalTradeAddress>
-        {% if seller.tax_number %}
-        <ram:SpecifiedTaxRegistration>
-          <ram:ID schemeID="FC">{{ seller.tax_number }}</ram:ID>
-        </ram:SpecifiedTaxRegistration>
+        {% else %}
+        <ram:PostalTradeAddress><ram:CountryID>{{ seller.country_code }}</ram:CountryID></ram:PostalTradeAddress>
         {% endif %}
         {% if seller.vat_number %}
         <ram:SpecifiedTaxRegistration>
           <ram:ID schemeID="VA">{{ seller.vat_number }}</ram:ID>
         </ram:SpecifiedTaxRegistration>
         {% endif %}
+        {% if seller.tax_number %}
+        <ram:SpecifiedTaxRegistration>
+          <ram:ID schemeID="FC">{{ seller.tax_number }}</ram:ID>
+        </ram:SpecifiedTaxRegistration>
+        {% endif %}
       </ram:SellerTradeParty>
       <ram:BuyerTradeParty>
         <ram:Name>{{ buyer.name }}</ram:Name>
+         {% if buyer.address %}
+        <ram:PostalTradeAddress>
+            <ram:PostcodeCode>{{ buyer.address.postcode }}</ram:PostcodeCode>
+            <ram:LineOne>{{ buyer.address.line1 }}</ram:LineOne>
+            <ram:CityName>{{ buyer.address.city }}</ram:CityName>
+            <ram:CountryID>{{ buyer.address.country_code }}</ram:CountryID>
+        </ram:PostalTradeAddress>
+        {% endif %}
       </ram:BuyerTradeParty>
     </ram:ApplicableHeaderTradeAgreement>
     <ram:ApplicableHeaderTradeDelivery/>
     <ram:ApplicableHeaderTradeSettlement>
       <ram:InvoiceCurrencyCode>{{ currency_code | default('EUR') }}</ram:InvoiceCurrencyCode>
+      {% for tax in tax_details %}
+      <ram:ApplicableTradeTax>
+            <ram:CalculatedAmount>{{ tax.calculated_amount }}</ram:CalculatedAmount>
+            <ram:TypeCode>VAT</ram:TypeCode>
+            <ram:BasisAmount>{{ tax.basis_amount }}</ram:BasisAmount>
+            <ram:CategoryCode>{{ tax.category_code }}</ram:CategoryCode>
+            <ram:RateApplicablePercent>{{ tax.rate }}</ram:RateApplicablePercent>
+      </ram:ApplicableTradeTax>
+      {% endfor %}
       <ram:SpecifiedTradeSettlementHeaderMonetarySummation>
+        <ram:LineTotalAmount>{{ amounts.tax_basis_total }}</ram:LineTotalAmount> <!-- Simplified: often tax basis = line total if no global charges -->
         <ram:TaxBasisTotalAmount>{{ amounts.tax_basis_total }}</ram:TaxBasisTotalAmount>
         <ram:TaxTotalAmount currencyID="{{ currency_code | default('EUR') }}">{{ amounts.tax_total }}</ram:TaxTotalAmount>
         <ram:GrandTotalAmount>{{ amounts.grand_total }}</ram:GrandTotalAmount>
