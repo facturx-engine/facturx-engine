@@ -14,4 +14,4 @@ requests>=2.32.5
 pynacl>=1.5.0
 jaraco.context>=6.1.1
 setuptools>=75.0.0
-trivy>=0.0.1  # Dummy line or comment? No, remove.
+
