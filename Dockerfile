@@ -1,16 +1,13 @@
-# ==========================================
 # Stage 1: Base (Dependencies)
 # ==========================================
-FROM python:3.11-slim as base
+FROM python:3.11-slim-bookworm as base
 WORKDIR /app
 RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
     libxml2 libxslt1.1 && rm -rf /var/lib/apt/lists/*
 COPY requirements.txt .
 # Install runtime deps in base to be shared
-RUN pip install --no-cache-dir -r requirements.txt && \
-    # SECURITY: Surgically remove the vulnerable vendored dependency inside setuptools
-    rm -rf /usr/local/lib/python3.11/site-packages/setuptools/_vendor/jaraco* && \
-    rm -rf /usr/local/lib/python3.11/site-packages/setuptools/_vendor/jaraco.context*
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir -r requirements.txt
 
 # ==========================================
 # Stage 2: Builder (Compile Pro / Cython)
