@@ -1,20 +1,24 @@
 # Stage 1: Base (Dependencies)
 # ==========================================
-FROM python:3.11-slim-bookworm as base
+FROM python:3.11-slim-bookworm AS base
 WORKDIR /app
 RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
     libxml2 libxslt1.1 && rm -rf /var/lib/apt/lists/*
 COPY requirements.txt .
 # Install runtime deps in base to be shared
-RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
-    pip install --no-cache-dir -r requirements.txt
+# We install build-essential temporarily to compile wheels (like lxml/psutil) if pre-built ones miss
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential python3-dev && \
+    pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir -r requirements.txt && \
+    apt-get purge -y --auto-remove build-essential python3-dev && \
+    rm -rf /var/lib/apt/lists/*
 
 # ==========================================
 # Stage 2: Builder (Compile Pro / Cython)
 # 🛑 DEV WARNING: THIS STAGE REQUIRES LOCAL-ONLY FILES.
 # DO NOT ATTEMPT TO RUN THIS ON GITHUB ACTIONS.
 # ==========================================
-FROM python:3.11-slim-bookworm as builder-pro
+FROM python:3.11-slim-bookworm AS builder-pro
 WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential python3-dev gcc && rm -rf /var/lib/apt/lists/*
@@ -38,7 +42,7 @@ RUN find app -name "*.so" -type f | grep -q . || exit 1
 # ==========================================
 # Stage 3: Runtime Unified (Pro + Community)
 # ==========================================
-FROM base as final
+FROM base AS final
 RUN groupadd -r appuser && useradd -r -g appuser appuser
 COPY --from=builder-pro /app/app /app/app
 
