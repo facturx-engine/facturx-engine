@@ -1,5 +1,6 @@
 # === INTERNAL / PRIVATE (Vault) ===
 _INTERNAL/
+.agent/
 
 # === Python Standard ===
 __pycache__/
