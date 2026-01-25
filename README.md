@@ -1,6 +1,6 @@
 # Factur-X Engine v1.3 "Security & Compliance Edition"
 
-> **Self-hosted REST API to generate, validate, and extract Factur-X / ZUGFeRD 2.x (2.4) + XRechnung 3.x files.**
+> **Factur-X Engine** is a stateless, air-gapped Docker container providing a REST API to **Generate**, **Validate**, and **Extract** electronic invoices. It ensures 100% compliance with **EN 16931**, **ZUGFeRD 2.4**, and **XRechnung 3.0** standards without requiring external dependencies or internet access.
 
 ![Docker Pulls](https://img.shields.io/docker/pulls/facturxengine/facturx-engine)
 ![License](https://img.shields.io/badge/license-Community-blue.svg)
@@ -27,7 +27,7 @@ curl -X POST "http://localhost:8000/v1/convert" \
   -F "metadata=$(cat simple_invoice.json)" \
   --output invoice_compliant.pdf
 
-echo "✅ Invoice generated: invoice_compliant.pdf"
+echo "Invoice generated: invoice_compliant.pdf"
 ```
 
 ### 📄 Extract to JSON (Demo Mode)
@@ -39,7 +39,7 @@ curl -X POST "http://localhost:8000/v1/extract" \
 
 **[Swagger UI Documentation](http://localhost:8000/docs)** : <http://localhost:8000/docs>
 
-### ✅ Verification (Smoke Test)
+### Verification (Smoke Test)
 
 You can verify your installation using the built-in smoke test script (Zero-Dependency):
 
@@ -63,7 +63,17 @@ High-performance compliance engine for **EN 16931**.
 
 ---
 
-## Use Cases & Integrations
+## Comparison: Why Factur-X Engine?
+
+| Feature | **Factur-X Engine** (Docker) | **Java Libraries** (Mustang) | **SaaS APIs** (Stripe/Generic) |
+| :--- | :--- | :--- | :--- |
+| **Architecture** | **Stateless Microservice** | Library (embedded) | External Service |
+| **Privacy (GDPR)** | **100% On-Premise (Air-gapped)** | On-Premise | **Data sent to Cloud** |
+| **Dependencies** | **Zero (Docker)** | Java JVM + Deps | None (HTTP) |
+| **Validation** | **Native Schematron (EN 16931)** | Partial / Complex | Varies |
+| **Performance** | **High (C++ PDF Engine)** | JVM Startup overhead | Network latency |
+
+---
 
 The Docker architecture makes the tool agnostic to your programming language.
 
@@ -128,5 +138,21 @@ This **Community** version is production-ready for generation/validation; extrac
 * **Vendor**: Factur-X Engine (Paris, France).
 * **Compliance**: Designed to respect the EU **Cyber Resilience Act (CRA)**.
 * **Security**: Image scanned (Trivy), SBOM available.
+
+## FAQ (Frequently Asked Questions)
+
+### Q: Does it require an internet connection?
+
+**A:** No. The container is strictly **air-gapped** by design. It contains all necessary schemas (XSD) and Schematron rules (XSLT) internally. It makes **zero** outbound network requests, making it safe for banks, defense, and high-security environments.
+
+### Q: Why use a Docker container instead of a library?
+
+**A:** PDF/A-3 conversion requires complex system dependencies (Ghostscript, fonts, color profiles). Using a Docker container isolates this complexity, ensuring an **"Iso-Prod"** environment everywhere (Dev, Staging, Prod) without "Works on my machine" issues.
+
+### Q: Is it compliant with the French 2026 Reform (PDP)?
+
+**A:** Yes. The engine produces files strictly compliant with the **EN 16931** syntax mandated by the French PPF (Portail Public de Facturation) and PDP candidates. It supports the "Minimum", "Basic WL", and "EN 16931" profiles.
+
+---
 
 *Maintained by the Factur-X Engine Team.*
