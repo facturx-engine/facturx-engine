@@ -1,0 +1,25 @@
+name: Update Docker Hub Description
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'DOCKER_HUB_README.md'
+      - '.github/workflows/docker-hub-description.yml'
+  workflow_dispatch:
+
+jobs:
+  docker-hub-description:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Update Docker Hub Description
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: facturxengine/facturx-engine
+          readme-filepath: ./DOCKER_HUB_README.md
