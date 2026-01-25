@@ -92,15 +92,26 @@ class ValidationService:
             failed_asserts = result_tree.xpath("//svrl:failed-assert", namespaces=ns)
             
             for assertion in failed_asserts:
-                text_elem = assertion.xpath("svrl:text", namespaces=ns)
-                msg = None
-                if text_elem and text_elem[0].text:
-                    msg = text_elem[0].text
+                # Check severity
+                severity = assertion.get("severity", "fatal").lower()
+                is_blocking = severity not in ["warning", "info"]
                 
-                if msg:
-                    errors.append(msg.strip())
-                else:
-                    errors.append(assertion.get("id", "Unknown business rule violation"))
+                text_elem = assertion.xpath("svrl:text", namespaces=ns)
+                msg_text = text_elem[0].text if (text_elem and text_elem[0].text) else "Unknown rule violation"
+                
+                # Format: "[WARNING] Message" vs "Message"
+                final_msg = msg_text.strip()
+                if not is_blocking:
+                    logger.warning(f"Schematron Warning: {final_msg}")
+                    # We do NOT add to 'errors' list if we want is_valid=True for warnings
+                    # OR we add it but need a way to distinguish.
+                    # Current contract: is_valid=False if errors is not empty.
+                    continue 
+
+                errors.append(final_msg)
+                
+                if not msg_text:
+                     errors.append(assertion.get("id", "Unknown ID"))
         except Exception as e:
             logger.error(f"Schematron execution failed: {type(e).__name__}: {e}")
             # We don't block the invoice if the validator itself crashes
@@ -147,8 +158,21 @@ class ValidationService:
             # 1. Parse XML and technical validation (XSD)
             try:
                 xml_etree = etree.fromstring(xml_content, parser=ValidationService._SECURE_PARSER)
-                detected_format = get_flavor(xml_etree)
-                detected_flavor = get_level(xml_etree, detected_format)
+                try:
+                    detected_format = get_flavor(xml_etree)
+                    detected_flavor = get_level(xml_etree)
+                except Exception as e:
+                    # Resilience: Handle newer URNs (like XRechnung 3.0) not yet in facturx library
+                    urn_xpath = "//*[local-name()='GuidelineSpecifiedDocumentContextParameter']/*[local-name()='ID']"
+                    urn_el = xml_etree.xpath(urn_xpath)
+                    urn = urn_el[0].text if (urn_el and urn_el[0].text) else ""
+                    
+                    if "en16931" in urn.lower() or "xrechnung" in urn.lower():
+                        logger.info(f"Using fallback flavor detection for URN: {urn}")
+                        detected_format = "factur-x" # Map to CII behavior
+                        detected_flavor = "en16931"
+                    else:
+                        raise e
             except Exception as e:
                 return False, None, None, [f"Invalid XML syntax: {str(e)}"]
             

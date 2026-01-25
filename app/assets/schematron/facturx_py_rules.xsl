@@ -34,7 +34,7 @@
             </xsl:if>
         </xsl:if>
 
-        <xsl:variable name="sum_lines" select="sum(.//ram:LineTotalAmount)"/>
+        <xsl:variable name="sum_lines" select="sum(.//ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeSettlement/ram:SpecifiedTradeSettlementLineMonetarySummation/ram:LineTotalAmount)"/>
         <xsl:variable name="net_total" select=".//ram:SpecifiedTradeSettlementHeaderMonetarySummation/ram:LineTotalAmount"/>
         
         <!-- [BR-CO-13] Total Amount Check (Calculated difference) -->
@@ -45,7 +45,7 @@
             </xsl:choose>
         </xsl:variable>
 
-        <xsl:if test="$diff_lines &gt; 0.10">
+        <xsl:if test="$diff_lines &gt; 0.01">
             <svrl:failed-assert id="BR-CO-13" severity="fatal">
                 <svrl:text>La somme des montants de lignes (<xsl:value-of select="round($sum_lines * 100) div 100"/>) ne correspond pas au total HT déclaré (<xsl:value-of select="$net_total"/>).</svrl:text>
             </svrl:failed-assert>
@@ -63,7 +63,7 @@
             </xsl:choose>
         </xsl:variable>
 
-        <xsl:if test="$diff_vat &gt; 0.10">
+        <xsl:if test="$diff_vat &gt; 0.01">
             <svrl:failed-assert id="BR-CO-16" severity="fatal">
                 <svrl:text>Le montant Total TTC (<xsl:value-of select="$grand_total"/>) est incoherent avec la somme du HT (<xsl:value-of select="$tax_basis"/>) et de la TVA (<xsl:value-of select="$tax_total"/>).</svrl:text>
             </svrl:failed-assert>

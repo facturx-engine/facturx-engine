@@ -57,7 +57,7 @@ class ExtractionService:
             try:
                 xml_root = etree.fromstring(xml_bytes, parser=ExtractionService._SECURE_PARSER)
                 result["format_detected"] = get_flavor(xml_root)
-                result["profile_detected"] = get_level(xml_root, result["format_detected"])
+                result["profile_detected"] = get_level(xml_root)
                 
                 # 4. Map to Intelligent Demo JSON
                 result["invoice_json"] = ExtractionService._parse_demo_invoice(xml_root, result["format_detected"], filename)
@@ -153,7 +153,7 @@ class ExtractionService:
             
             line_items.append({
                 "description": f"{name} [DEMO]",
-                "quantity": qty,
+                "quantity": f"{qty}",
                 "unit_code": xpath_first(item, './/ram:BilledQuantity/@unitCode') or "C62",
                 "unit_price": f"{unit_price:.2f}",
                 "vat_rate": "20.00", 

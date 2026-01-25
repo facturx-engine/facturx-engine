@@ -2,7 +2,7 @@
 <rsm:CrossIndustryInvoice xmlns:rsm="urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100" xmlns:qdt="urn:un:unece:uncefact:data:standard:QualifiedDataType:100" xmlns:ram="urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:udt="urn:un:unece:uncefact:data:standard:UnqualifiedDataType:100">
   <rsm:ExchangedDocumentContext>
    <ram:GuidelineSpecifiedDocumentContextParameter>
-      <ram:ID>urn:cen.eu:en16931:2017</ram:ID>
+      <ram:ID>{% if profile == 'minimum' %}urn:factur-x.eu:1p0:minimum{% elif profile == 'basicwl' %}urn:factur-x.eu:1p0:basicwl{% elif profile == 'basic' %}urn:cen.eu:en16931:2017#compliant#urn:factur-x.eu:1p0:basic{% elif profile == 'extended' %}urn:cen.eu:en16931:2017#conformant#urn:factur-x.eu:1p0:extended{% else %}urn:cen.eu:en16931:2017{% endif %}</ram:ID>
     </ram:GuidelineSpecifiedDocumentContextParameter>
   </rsm:ExchangedDocumentContext>
   <rsm:ExchangedDocument>
@@ -94,7 +94,7 @@
       </ram:ApplicableTradeTax>
       {% endfor %}
       <ram:SpecifiedTradeSettlementHeaderMonetarySummation>
-        <ram:LineTotalAmount>{{ amounts.tax_basis_total }}</ram:LineTotalAmount> <!-- Simplified: often tax basis = line total if no global charges -->
+        {% if profile != 'minimum' %}<ram:LineTotalAmount>{{ amounts.tax_basis_total }}</ram:LineTotalAmount>{% endif %}
         <ram:TaxBasisTotalAmount>{{ amounts.tax_basis_total }}</ram:TaxBasisTotalAmount>
         <ram:TaxTotalAmount currencyID="{{ currency_code | default('EUR') }}">{{ amounts.tax_total }}</ram:TaxTotalAmount>
         <ram:GrandTotalAmount>{{ amounts.grand_total }}</ram:GrandTotalAmount>
