@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use this software in your product or research, please cite it as below."
+authors:
+  - family-names: "Factur-X Engine Team"
+title: "Factur-X Engine: Self-hosted REST API for EN 16931 E-Invoicing"
+version: 1.3.0
+date-released: 2026-01-25
+url: "https://github.com/facturx-engine/facturx-engine"
+repository-code: "https://github.com/facturx-engine/facturx-engine"
+keywords:
+  - "e-invoicing"
+  - "factur-x"
+  - "zugferd"
+  - "en16931"
+  - "api"
+  - "docker"
+  - "fintech"
+  - "pdf-a3"
+  - "xrechnung"
+license: MIT
+type: software
