@@ -37,8 +37,6 @@ curl -X POST "http://localhost:8000/v1/extract" \
   -F "pdf=@invoice_compliant.pdf"
 ```
 
-```
-
 **[Swagger UI Documentation](http://localhost:8000/docs)** : <http://localhost:8000/docs>
 
 ---
