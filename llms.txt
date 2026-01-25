@@ -5,6 +5,9 @@
 ## Documentation Map
 
 - [README (Main)](README.md): Technical Overview, Quickstart, and FAQ.
+- [API Specification](docs/openapi.json): Full OpenAPI 3.0 specification.
+- [Integration Recipes](docs/recipes/): Code examples (Python, Node.js, PHP).
+- [Comparisons](docs/comparisons/): MustangProject vs Factur-X Engine.
 - [Community Edition](README_COMMUNITY.md): Detailed Community features.
 - [Pro Edition](README_PRO.md): Pricing, SLA, and Enterprise features.
 - [CRA Compliance](docs/cra.md): EU Cyber Resilience Act statement.

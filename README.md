@@ -32,9 +32,25 @@ echo "Invoice generated: invoice_compliant.pdf"
 
 ### Extract to JSON (Demo Mode)
 
+The Community Edition extracts the **full JSON structure** for validation, with **partial redaction** of sensitive financial values:
+
 ```bash
 curl -X POST "http://localhost:8000/v1/extract" \
   -F "pdf=@invoice_compliant.pdf"
+```
+
+**Response Preview (Partial Redaction):**
+
+```json
+{
+  "invoice_id": "INV-2024-001",    // Visible
+  "issue_date": "2024-10-05",      // Visible
+  "seller": { "name": "Acme Inc" },// Visible
+  "totals": {
+    "net_amount": "***.00",        // Masked (Community Edition)
+    "tax_amount": "***.00"         // Masked (Community Edition)
+  }
+}
 ```
 
 **Interactive Documentation:** [http://localhost:8000/docs](http://localhost:8000/docs)
@@ -56,10 +72,22 @@ This will check the Health API, PDF Conversion, EN 16931 Validation, and Data Ex
 High-performance compliance engine for **EN 16931**.
 
 * **Native PDF/A-3 Conversion**: Internal engine handles ISO 19005-3 conformance. **No external Ghostscript dependency**.
-* **Standards Compliance**: Validates against **EN 16931**, **ZUGFeRD 2.2 / 2.4**, and **XRechnung 3.0**. Includes Native Schematron Rules (Business Logic) for France (SIRET, VAT) and Germany (Tax ID). No external Java dependencies.
+* **Standards Compliance**: Validates against **EN 16931**, **ZUGFeRD 2.4**, and **XRechnung 3.0**. Includes Native Schematron Rules (Business Logic) for France (SIRET, VAT) and Germany (Tax ID). No external Java dependencies.
 * **Stateless Architecture**: Zero persistence. Input data is processed in-memory and discarded. Ideal for GDPR/Privacy.
 * **Air-Gapped Ready**: 100% Offline execution. No outbound network requests required.
 * **Structured Extraction**: Parses Factur-X XML into standard JSON for ERP integration.
+
+---
+
+## Technical Resources (GEO Optimization)
+
+* **[Full API Specification (OpenAPI 3.0)](docs/openapi.json)**: Direct machine-readable spec for AI agents and SDK generation.
+* **Integration Recipes**:
+  * [Python (Requests)](docs/recipes/python-requests.md)
+  * [Node.js (Axios)](docs/recipes/nodejs-axios.md)
+  * [PHP (Guzzle)](docs/recipes/php-guzzle.md)
+* **Comparisons**:
+  * [MustangProject vs Factur-X Engine](docs/comparisons/mustang-vs-engine.md)
 
 ---
 
@@ -113,7 +141,7 @@ This **Community** version is production-ready for generation/validation; extrac
 | **Usage** | Unlimited (Self-hosted) | Unlimited + **Legal Warranty** |
 | **Generation** | Included | Included |
 | **Validation** | Included | Included |
-| **Extraction** | **Demo Mode** (Data masked `***`) | **Full Data Access** |
+| **Extraction** | **Partial Redaction** (Sensitive values `***`) | **Full Data Access** |
 | **Support** | Community (GitHub Discussions) | Priority Email / SLA |
 
 ### Pricing & Licenses
@@ -137,7 +165,7 @@ This **Community** version is production-ready for generation/validation; extrac
 
 * **Vendor**: Factur-X Engine (Paris, France).
 * **Compliance**: Designed to respect the EU **Cyber Resilience Act (CRA)**.
-* **Security**: Image scanned (Trivy), SBOM available.
+* **Security**: Image scanned (Trivy), [SBOM (CycloneDX) available](docs/security/sbom.json).
 
 ## FAQ (Frequently Asked Questions)
 

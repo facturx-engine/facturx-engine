@@ -1,0 +1,174 @@
+{
+    "openapi": "3.0.3",
+    "info": {
+        "title": "Factur-X Engine API",
+        "description": "Stateless API for generating, validating, and extracting Factur-X / ZUGFeRD 2.4 / XRechnung 3.0 electronic invoices.",
+        "version": "1.3.0",
+        "contact": {
+            "name": "Factur-X Engine Support",
+            "url": "https://github.com/facturx-engine/facturx-engine"
+        },
+        "license": {
+            "name": "MIT / Commercial",
+            "url": "https://github.com/facturx-engine/facturx-engine/blob/main/LICENSE"
+        }
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000",
+            "description": "Local Docker container"
+        }
+    ],
+    "paths": {
+        "/v1/convert": {
+            "post": {
+                "summary": "Convert PDF to Factur-X",
+                "description": "Merge a standard PDF with structured JSON metadata to produce a compliant PDF/A-3 Factur-X invoice.",
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "pdf": {
+                                        "type": "string",
+                                        "format": "binary",
+                                        "description": "The base PDF file."
+                                    },
+                                    "metadata": {
+                                        "type": "string",
+                                        "description": "Structured JSON invoice data (CII/EN16931 mapping)."
+                                    }
+                                },
+                                "required": [
+                                    "pdf",
+                                    "metadata"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "A compliant PDF/A-3 file with embedded Factur-X XML.",
+                        "content": {
+                            "application/pdf": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "binary"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/validate": {
+            "post": {
+                "summary": "Validate Factur-X Compliance",
+                "description": "Check a PDF file against EN 16931 (Schematron) and PDF/A-3 standards.",
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "pdf": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "required": [
+                                    "pdf"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Detailed compliance report.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "compliant"
+                                        },
+                                        "errors": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/extract": {
+            "post": {
+                "summary": "Extract XML to JSON",
+                "description": "Extract the structured XML data from a Factur-X PDF and return it as a unified JSON object. (Partial Redaction in Community Edition).",
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "pdf": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "required": [
+                                    "pdf"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Extracted JSON data.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/health": {
+            "get": {
+                "summary": "Service Health Check",
+                "responses": {
+                    "200": {
+                        "description": "Service is healthy.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "healthy"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
