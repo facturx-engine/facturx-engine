@@ -30,14 +30,14 @@ curl -X POST "http://localhost:8000/v1/convert" \
 echo "Invoice generated: invoice_compliant.pdf"
 ```
 
-### 📄 Extract to JSON (Demo Mode)
+### Extract to JSON (Demo Mode)
 
 ```bash
 curl -X POST "http://localhost:8000/v1/extract" \
   -F "pdf=@invoice_compliant.pdf"
 ```
 
-**[Swagger UI Documentation](http://localhost:8000/docs)** : <http://localhost:8000/docs>
+**Interactive Documentation:** [http://localhost:8000/docs](http://localhost:8000/docs)
 
 ### Verification (Smoke Test)
 
