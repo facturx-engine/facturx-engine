@@ -1,11 +1,11 @@
-# Factur-X Engine v1.2 "Compliance Edition"
+# Factur-X Engine v1.3 "Security & Compliance Edition"
 
-> **Self-hosted REST API to generate, validate, and extract Factur-X / ZUGFeRD 2.2 files. Runs in a single, stateless Docker container.**
+> **Self-hosted REST API to generate, validate, and extract Factur-X / ZUGFeRD 2.x (2.4) + XRechnung 3.x files.**
 
 ![Docker Pulls](https://img.shields.io/docker/pulls/facturxengine/facturx-engine)
 ![License](https://img.shields.io/badge/license-Community-blue.svg)
 ![Standard](https://img.shields.io/badge/standard-EN16931-green.svg)
-[![CRA](https://img.shields.io/badge/EU_CRA-Compliant-blueviolet?style=for-the-badge)](_INTERNAL/docs/CRA_COMPLIANCE.md)
+[![CRA](https://img.shields.io/badge/EU_CRA-Compliant-blueviolet?style=for-the-badge)](docs/cra.md)
 
 ---
 
@@ -18,8 +18,8 @@ Runs immediately on any Docker host. No Python/Java dependencies.
 docker run -d -p 8000:8000 --name facturx-engine facturxengine/facturx-engine:latest
 
 # 2. Download example files (from GitHub)
-curl -O https://raw.githubusercontent.com/facturxengine/facturx-engine/main/examples/invoice_raw.pdf
-curl -O https://raw.githubusercontent.com/facturxengine/facturx-engine/main/examples/simple_invoice.json
+curl -O https://raw.githubusercontent.com/facturx-engine/facturx-engine/main/examples/invoice_raw.pdf
+curl -O https://raw.githubusercontent.com/facturx-engine/facturx-engine/main/examples/simple_invoice.json
 
 # 3. Generate compliant invoice (Merge PDF + Data)
 curl -X POST "http://localhost:8000/v1/convert" \
@@ -28,6 +28,13 @@ curl -X POST "http://localhost:8000/v1/convert" \
   --output invoice_compliant.pdf
 
 echo "✅ Invoice generated: invoice_compliant.pdf"
+```
+
+### 📄 Extract to JSON (Demo Mode)
+
+```bash
+curl -X POST "http://localhost:8000/v1/extract" \
+  -F "pdf=@invoice_compliant.pdf"
 ```
 
 **[Swagger UI Documentation](http://localhost:8000/docs)** : <http://localhost:8000/docs>
@@ -88,7 +95,7 @@ The container is configurable via environment variables:
 
 ## Community vs Pro
 
-This **Community** version is feature-complete, unlimited, and production-ready. The **Pro** edition offers guarantees and services for businesses.
+This **Community** version is production-ready for generation/validation; extraction is demo-masked. The **Pro** edition offers guarantees and services for businesses.
 
 | Feature | Community Edition (This Repo) | Pro / Enterprise Edition |
 | :--- | :--- | :--- |
