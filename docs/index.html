@@ -278,10 +278,10 @@
             <h2 class="text-3xl font-bold text-white mb-16 text-center">Frequently Asked Questions</h2>
             <div class="grid gap-8">
                 <div class="space-y-2">
-                    <h4 class="text-lg font-bold text-amber-500">Can I run it offline / air-gapped?</h4>
-                    <p class="text-slate-400">Yes. The Docker container contains all necessary schemas (XSD), Schematron
-                        artifacts, and logic. It is optimized for air-gapped environments and requires NO internet
-                        connection to function.</p>
+                    <h4 class="text-lg font-bold text-amber-500">Why use a Docker container?</h4>
+                    <p class="text-slate-400">PDF/A-3 conversion is complex. Docker isolates dependencies (no
+                        Ghostscript/Java hell) ensuring a stable <strong>"Iso-Prod" environment</strong> everywhere. You
+                        avoid "It works on my machine" issues entirely.</p>
                 </div>
                 <div class="space-y-2">
                     <h4 class="text-lg font-bold text-amber-500">Does it generate or also validate?</h4>
@@ -290,11 +290,16 @@
                 </div>
                 <div class="space-y-2">
                     <h4 class="text-lg font-bold text-amber-500">Licensing: Community vs Pro?</h4>
-                    <p class="text-slate-400">The <strong>Community Edition</strong> is free for all but limited to CORE
-                        profiles.
-                        The <strong>Pro Edition</strong> unlocks industrial features like automated XRechnung
-                        generation, high-volume
-                        processing, and technical SLA.</p>
+                    <p class="text-slate-400">The <strong>Community Edition</strong> is fully featured for Generation
+                        and Validation (all profiles).
+                        The <strong>Pro Edition</strong> unlocks <strong>unmasked data extraction</strong>,
+                        <strong>commercial OEM redistribution</strong>, and <strong>legal warranty/support</strong>.</p>
+                </div>
+                <div class="space-y-2">
+                    <h4 class="text-lg font-bold text-amber-500">Is it compliant (French Reform 2026 / PDP)?</h4>
+                    <p class="text-slate-400">Yes. The engine produces files strictly compliant with the <strong>EN
+                            16931</strong> syntax mandated by the French PPF and PDP candidates. It supports all
+                        required profiles (Minimum, Basic WL, EN 16931).</p>
                 </div>
                 <div class="space-y-2">
                     <h4 class="text-lg font-bold text-amber-500">Which profiles are supported?</h4>
