@@ -1,0 +1,41 @@
+{
+    "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
+    "@type": "SoftwareApplication",
+    "name": "Factur-X Engine",
+    "description": "Open Source REST API for ZUGFeRD/Factur-X invoice generation and validation.",
+    "applicationCategory": "DeveloperTool",
+    "operatingSystem": "Docker, Linux, Windows, macOS",
+    "softwareRequirements": "Docker Container Runtime",
+    "keywords": [
+        "invoice",
+        "pdf",
+        "xml",
+        "compliance",
+        "fintech",
+        "zugferd",
+        "factur-x",
+        "en16931",
+        "xrechnung"
+    ],
+    "programmingLanguage": [
+        "Python",
+        "C++"
+    ],
+    "license": "https://opensource.org/licenses/MIT",
+    "codeRepository": "https://github.com/facturx-engine/facturx-engine",
+    "issueTracker": "https://github.com/facturx-engine/facturx-engine/issues",
+    "downloadUrl": "https://hub.docker.com/r/facturxengine/facturx-engine",
+    "author": [
+        {
+            "@type": "Organization",
+            "name": "Factur-X Engine Team",
+            "url": "https://facturx-engine.github.io/facturx-engine/"
+        }
+    ],
+    "featureList": [
+        "PDF/A-3 Generation (EN 16931)",
+        "Factur-X / ZUGFeRD Validation",
+        "Data Extraction (Invoice to JSON)",
+        "Stateless Docker Architecture"
+    ]
+}

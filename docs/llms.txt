@@ -1,0 +1,55 @@
+# Factur-X Engine Context for LLMs
+
+Factur-X Engine is a stateless, Docker-based REST API for generating, validating, and extracting Factur-X (ZUGFeRD 2.x) and XRechnung 3.0 e-invoices. It helps developers automate EN 16931 compliance without managing complex PDF/A-3 or XML dependencies.
+
+## Quick Start
+
+Run the container (Air-gapped, No dependencies):
+
+```bash
+docker run -d -p 8000:8000 --name facturx-engine facturxengine/facturx-engine:latest
+```
+
+## API Usage Example
+
+**Endpoint**: `POST /v1/convert`
+**Goal**: Generate a compliant PDF/A-3 invoice by merging a raw PDF with JSON metadata.
+
+```http
+POST /v1/convert HTTP/1.1
+Content-Type: multipart/form-data
+Body:
+  - pdf: (Binary file content)
+  - metadata: (JSON content below)
+```
+
+**Metadata Payload (Minimum Profile):**
+
+```json
+{
+  "profile": "minimum",
+  "invoice_number": "INV-2024-001",
+  "issue_date": "2024-10-05",
+  "seller": {
+    "name": "Acme Corp",
+    "vat_id": "FR12345678900",
+    "country": "FR"
+  },
+  "buyer": {
+    "name": "Client Ltd",
+    "vat_id": "DE987654321",
+    "country": "DE"
+  },
+  "totals": {
+    "net_amount": 1000.00,
+    "tax_amount": 200.00,
+    "gross_amount": 1200.00
+  }
+}
+```
+
+## Documentation Map
+
+- [Main Documentation & FAQ](https://facturx-engine.github.io/facturx-engine/)
+- [OpenAPI Specification](https://facturx-engine.github.io/facturx-engine/openapi.json)
+- [GitHub Repository](https://github.com/facturx-engine/facturx-engine)
