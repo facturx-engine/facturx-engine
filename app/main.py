@@ -2,8 +2,11 @@
 Factur-X API - Main Application Entry Point
 """
 import logging
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from app.api import router
 from app.diagnostics import router as diagnostics_router
 from app.version import __version__
@@ -53,6 +56,11 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc"
 )
+
+# Configuration for Templating and Statics
+app.mount("/assets", StaticFiles(directory="app/assets"), name="assets")
+templates = Jinja2Templates(directory="app/templates")
+
 
 # Switch to on_event which is more robust for logging in some versions
 @app.on_event("startup")
@@ -133,20 +141,13 @@ app.include_router(router)
 app.include_router(diagnostics_router)
 
 
-@app.get("/", tags=["health"])
-async def root():
-    """Health check endpoint."""
-    return {
-        "status": "online",
-        "service": "Factur-X API",
-        "version": __version__,
-        "endpoints": {
-            "extract": "/v1/extract",
-            "convert": "/v1/convert",
-            "validate": "/v1/validate",
-            "docs": "/docs"
-        }
-    }
+@app.get("/", tags=["health"], response_class=HTMLResponse)
+async def root(request: Request):
+    """
+    Landing Page for Factur-X Engine.
+    """
+    return templates.TemplateResponse("index.html", {"request": request})
+
 
 
 @app.get("/health", tags=["health"])
@@ -157,6 +158,16 @@ async def health_check():
         "service": "factur-x-api",
         "version": "1.0.0"
     }
+
+@app.get("/robots.txt", include_in_schema=False)
+async def robots():
+    from fastapi.responses import FileResponse
+    return FileResponse("app/assets/robots.txt")
+
+@app.get("/sitemap.xml", include_in_schema=False)
+async def sitemap():
+    from fastapi.responses import FileResponse
+    return FileResponse("app/assets/sitemap.xml")
 
 
 if __name__ == "__main__":
