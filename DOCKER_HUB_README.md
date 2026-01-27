@@ -43,7 +43,7 @@ curl -X POST "http://localhost:8000/v1/extract" \
 High-performance compliance engine for **EN 16931**.
 
 * **Native PDF/A-3 Conversion**: Internal engine handles ISO 19005-3 conformance. **No external Ghostscript dependency**.
-* **Standards Compliance**: Validates against **EN 16931**, **ZUGFeRD 2.2 / 2.4**, and **XRechnung 3.0**. Includes Native Schematron Rules (Business Logic) for France (SIRET, VAT) and Germany (Tax ID). No external Java dependencies.
+* **Standards Compliance**: Validates against **EN 16931**, **ZUGFeRD 2.4**, and **XRechnung 3.0**. Includes Native Schematron Rules (Business Logic) for France (SIRET, VAT) and Germany (Tax ID). No external Java dependencies.
 * **Stateless Architecture**: Zero persistence. Input data is processed in-memory and discarded. Ideal for GDPR/Privacy.
 * **Air-Gapped Ready**: 100% Offline execution. No outbound network requests required.
 * **Structured Extraction**: Parses Factur-X XML into standard JSON for ERP integration.

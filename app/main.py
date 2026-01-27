@@ -52,7 +52,7 @@ from app.constants import PRODUCT_NAME, PRODUCT_VERSION, COMMUNITY_EDITION_NAME,
 # Create FastAPI application
 app = FastAPI(
     title=PRODUCT_NAME,
-    description="Production-ready REST API for Factur-X (ZUGFeRD 2.2) conversions and data extraction.",
+    description="Production-ready REST API for Factur-X (ZUGFeRD 2.4) conversions and data extraction.",
     version=PRODUCT_VERSION,
     docs_url="/docs",
     redoc_url="/redoc"
