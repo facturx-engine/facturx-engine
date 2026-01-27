@@ -46,6 +46,7 @@ logger = logging.getLogger(__name__)
 
 import os
 
+from fastapi.responses import RedirectResponse
 from app.constants import PRODUCT_NAME, PRODUCT_VERSION, COMMUNITY_EDITION_NAME, PRO_EDITION_NAME
 
 # Create FastAPI application
@@ -57,8 +58,7 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# Configuration for Templating and Statics
-app.mount("/assets", StaticFiles(directory="app/assets"), name="assets")
+# Configuration for Templating (Only for XML generation)
 templates = Jinja2Templates(directory="app/templates")
 
 
@@ -141,12 +141,12 @@ app.include_router(router)
 app.include_router(diagnostics_router)
 
 
-@app.get("/", tags=["health"], response_class=HTMLResponse)
-async def root(request: Request):
+@app.get("/", include_in_schema=False)
+async def root():
     """
-    Landing Page for Factur-X Engine.
+    Redirects to API Documentation.
     """
-    return templates.TemplateResponse("index.html", {"request": request})
+    return RedirectResponse(url="/docs")
 
 
 
