@@ -8,6 +8,7 @@
 [![CRA](https://img.shields.io/badge/EU_CRA-Ready-blueviolet)](docs/cra.md)
 [![SBOM](https://img.shields.io/badge/SBOM-CycloneDX-informational)](https://github.com/facturx-engine/facturx-engine/actions)
 [![Signed](https://img.shields.io/badge/Image-Cosign_Signed-success)](https://github.com/sigstore/cosign)
+[![GitHub](https://img.shields.io/badge/github-repo-181717?logo=github)](https://github.com/facturx-engine/facturx-engine)
 
 ---
 
