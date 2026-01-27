@@ -1,174 +1,934 @@
 {
-    "openapi": "3.0.3",
-    "info": {
-        "title": "Factur-X Engine API",
-        "description": "Stateless API for generating, validating, and extracting Factur-X / ZUGFeRD 2.4 / XRechnung 3.0 electronic invoices.",
-        "version": "1.3.0",
-        "contact": {
-            "name": "Factur-X Engine Support",
-            "url": "https://github.com/facturx-engine/facturx-engine"
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Factur-X Engine",
+    "description": "Production-ready REST API for Factur-X (ZUGFeRD 2.2) conversions and data extraction.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/v1/convert": {
+      "post": {
+        "tags": [
+          "factur-x"
+        ],
+        "summary": "Convert To Facturx",
+        "description": "Convert a standard PDF invoice + JSON metadata into a Factur-X PDF.\n\nThe output PDF is PDF/A-3 compliant with embedded XML.",
+        "operationId": "convert_to_facturx_v1_convert_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_convert_to_facturx_v1_convert_post"
+              }
+            }
+          },
+          "required": true
         },
-        "license": {
-            "name": "MIT / Commercial",
-            "url": "https://github.com/facturx-engine/facturx-engine/blob/main/LICENSE"
+        "responses": {
+          "200": {
+            "description": "Factur-X PDF successfully generated"
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
         }
+      }
     },
-    "servers": [
-        {
-            "url": "http://localhost:8000",
-            "description": "Local Docker container"
+    "/v1/validate": {
+      "post": {
+        "tags": [
+          "factur-x"
+        ],
+        "summary": "Validate Facturx",
+        "description": "Validate a Factur-X PDF or XML file against EN 16931 standards.\n\nReturns a validation report with detected format, flavor, and any errors.",
+        "operationId": "validate_facturx_v1_validate_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_validate_facturx_v1_validate_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
         }
-    ],
-    "paths": {
-        "/v1/convert": {
-            "post": {
-                "summary": "Convert PDF to Factur-X",
-                "description": "Merge a standard PDF with structured JSON metadata to produce a compliant PDF/A-3 Factur-X invoice.",
-                "requestBody": {
-                    "content": {
-                        "multipart/form-data": {
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "pdf": {
-                                        "type": "string",
-                                        "format": "binary",
-                                        "description": "The base PDF file."
-                                    },
-                                    "metadata": {
-                                        "type": "string",
-                                        "description": "Structured JSON invoice data (CII/EN16931 mapping)."
-                                    }
-                                },
-                                "required": [
-                                    "pdf",
-                                    "metadata"
-                                ]
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "A compliant PDF/A-3 file with embedded Factur-X XML.",
-                        "content": {
-                            "application/pdf": {
-                                "schema": {
-                                    "type": "string",
-                                    "format": "binary"
-                                }
-                            }
-                        }
-                    }
-                }
+      }
+    },
+    "/v1/extract": {
+      "post": {
+        "tags": [
+          "factur-x"
+        ],
+        "summary": "Extract Facturx",
+        "description": "Extract Factur-X XML from a PDF and return structured invoice data as JSON.\n\nThis endpoint is designed for invoice reception workflows:\n1. Detects if the PDF contains embedded Factur-X/ZUGFeRD XML\n2. Extracts and parses the XML\n3. Returns structured invoice data (parties, totals, line items)\n\nUse cases:\n- Automated invoice reception\n- ERP integration\n- Invoice validation before processing",
+        "operationId": "extract_facturx_v1_extract_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_extract_facturx_v1_extract_post"
+              }
             }
+          },
+          "required": true
         },
-        "/v1/validate": {
-            "post": {
-                "summary": "Validate Factur-X Compliance",
-                "description": "Check a PDF file against EN 16931 (Schematron) and PDF/A-3 standards.",
-                "requestBody": {
-                    "content": {
-                        "multipart/form-data": {
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "pdf": {
-                                        "type": "string",
-                                        "format": "binary"
-                                    }
-                                },
-                                "required": [
-                                    "pdf"
-                                ]
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Detailed compliance report.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "compliant"
-                                        },
-                                        "errors": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExtractionResult"
                 }
+              }
             }
-        },
-        "/v1/extract": {
-            "post": {
-                "summary": "Extract XML to JSON",
-                "description": "Extract the structured XML data from a Factur-X PDF and return it as a unified JSON object. (Partial Redaction in Community Edition).",
-                "requestBody": {
-                    "content": {
-                        "multipart/form-data": {
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "pdf": {
-                                        "type": "string",
-                                        "format": "binary"
-                                    }
-                                },
-                                "required": [
-                                    "pdf"
-                                ]
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Extracted JSON data.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
+              }
             }
-        },
-        "/health": {
-            "get": {
-                "summary": "Service Health Check",
-                "responses": {
-                    "200": {
-                        "description": "Service is healthy.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "healthy"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
+              }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
         }
+      }
+    },
+    "/diagnostics": {
+      "get": {
+        "tags": [
+          "diagnostics"
+        ],
+        "summary": "Get Diagnostics",
+        "description": "Get comprehensive system diagnostics.\n\nReturns detailed information about:\n- Application version and build info\n- Dependency versions\n- Runtime configuration\n- Environment details\n- Memory usage\n- Enabled features\n\nUsed for support and troubleshooting.",
+        "operationId": "get_diagnostics_diagnostics_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiagnosticsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Root",
+        "description": "Landing Page for Factur-X Engine.",
+        "operationId": "root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Health Check",
+        "description": "Detailed health check.",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
     }
+  },
+  "components": {
+    "schemas": {
+      "Body_convert_to_facturx_v1_convert_post": {
+        "properties": {
+          "pdf": {
+            "type": "string",
+            "format": "binary",
+            "title": "Pdf",
+            "description": "Original PDF invoice"
+          },
+          "metadata": {
+            "type": "string",
+            "title": "Metadata",
+            "description": "Invoice metadata as JSON"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pdf",
+          "metadata"
+        ],
+        "title": "Body_convert_to_facturx_v1_convert_post"
+      },
+      "Body_extract_facturx_v1_extract_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "title": "File",
+            "description": "Factur-X PDF file to extract data from"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_extract_facturx_v1_extract_post"
+      },
+      "Body_validate_facturx_v1_validate_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "title": "File",
+            "description": "Factur-X PDF or XML file to validate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_validate_facturx_v1_validate_post"
+      },
+      "Buyer": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "title": "Buyer"
+      },
+      "DependencyVersion": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "version"
+        ],
+        "title": "DependencyVersion",
+        "description": "Dependency version info."
+      },
+      "DiagnosticsResponse": {
+        "properties": {
+          "version": {
+            "type": "string",
+            "title": "Version",
+            "description": "Application version (SemVer)"
+          },
+          "git_hash": {
+            "type": "string",
+            "title": "Git Hash",
+            "description": "Git commit hash"
+          },
+          "build_date": {
+            "type": "string",
+            "title": "Build Date",
+            "description": "Build date"
+          },
+          "python_version": {
+            "type": "string",
+            "title": "Python Version",
+            "description": "Python version"
+          },
+          "dependencies": {
+            "items": {
+              "$ref": "#/components/schemas/DependencyVersion"
+            },
+            "type": "array",
+            "title": "Dependencies",
+            "description": "Key dependency versions"
+          },
+          "runtime_config": {
+            "$ref": "#/components/schemas/RuntimeConfig",
+            "description": "Runtime configuration"
+          },
+          "environment": {
+            "$ref": "#/components/schemas/EnvironmentInfo",
+            "description": "Environment information"
+          },
+          "memory_status": {
+            "$ref": "#/components/schemas/MemoryStatus",
+            "description": "Memory usage"
+          },
+          "features_enabled": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Features Enabled",
+            "description": "Enabled features"
+          },
+          "uptime_seconds": {
+            "type": "number",
+            "title": "Uptime Seconds",
+            "description": "Application uptime in seconds"
+          }
+        },
+        "type": "object",
+        "required": [
+          "version",
+          "git_hash",
+          "build_date",
+          "python_version",
+          "dependencies",
+          "runtime_config",
+          "environment",
+          "memory_status",
+          "features_enabled",
+          "uptime_seconds"
+        ],
+        "title": "DiagnosticsResponse",
+        "description": "Complete diagnostics response."
+      },
+      "EnvironmentInfo": {
+        "properties": {
+          "os": {
+            "type": "string",
+            "title": "Os",
+            "description": "Operating system"
+          },
+          "architecture": {
+            "type": "string",
+            "title": "Architecture",
+            "description": "CPU architecture"
+          },
+          "python_version": {
+            "type": "string",
+            "title": "Python Version",
+            "description": "Python version"
+          },
+          "hostname": {
+            "type": "string",
+            "title": "Hostname",
+            "description": "Host machine name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "os",
+          "architecture",
+          "python_version",
+          "hostname"
+        ],
+        "title": "EnvironmentInfo",
+        "description": "Environment fingerprint."
+      },
+      "ErrorDetail": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "ErrorDetail"
+      },
+      "ErrorResponse": {
+        "properties": {
+          "error": {
+            "type": "string",
+            "title": "Error",
+            "description": "Error type/code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Human-readable error message"
+          },
+          "details": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Details",
+            "description": "Additional error details"
+          }
+        },
+        "type": "object",
+        "required": [
+          "error",
+          "message"
+        ],
+        "title": "ErrorResponse",
+        "description": "Standard error response."
+      },
+      "ExtractionResult": {
+        "properties": {
+          "format_detected": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Format Detected"
+          },
+          "profile_detected": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Detected"
+          },
+          "xml_extracted": {
+            "type": "boolean",
+            "title": "Xml Extracted"
+          },
+          "invoice_json": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/InvoiceJson"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/ErrorDetail"
+            },
+            "type": "array",
+            "title": "Errors",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "xml_extracted"
+        ],
+        "title": "ExtractionResult"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "InvoiceJson": {
+        "properties": {
+          "invoice_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invoice Number"
+          },
+          "invoice_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invoice Date"
+          },
+          "document_type_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Type Code"
+          },
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency"
+          },
+          "seller": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Seller"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "buyer": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Buyer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "totals": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Totals"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "line_items": {
+            "items": {
+              "$ref": "#/components/schemas/LineItem"
+            },
+            "type": "array",
+            "title": "Line Items",
+            "default": []
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "title": "InvoiceJson"
+      },
+      "LineItem": {
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity"
+          },
+          "unit_price": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Price"
+          },
+          "line_total": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Line Total"
+          }
+        },
+        "type": "object",
+        "title": "LineItem"
+      },
+      "MemoryStatus": {
+        "properties": {
+          "total_mb": {
+            "type": "number",
+            "title": "Total Mb",
+            "description": "Total system memory in MB"
+          },
+          "available_mb": {
+            "type": "number",
+            "title": "Available Mb",
+            "description": "Available memory in MB"
+          },
+          "process_mb": {
+            "type": "number",
+            "title": "Process Mb",
+            "description": "Current process memory in MB"
+          },
+          "percent_used": {
+            "type": "number",
+            "title": "Percent Used",
+            "description": "System memory usage percentage"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_mb",
+          "available_mb",
+          "process_mb",
+          "percent_used"
+        ],
+        "title": "MemoryStatus",
+        "description": "Memory usage approximation."
+      },
+      "RuntimeConfig": {
+        "properties": {
+          "mode": {
+            "type": "string",
+            "title": "Mode",
+            "description": "Runtime mode (development/production)"
+          },
+          "workers": {
+            "type": "integer",
+            "title": "Workers",
+            "description": "Number of worker processes",
+            "default": 1
+          },
+          "max_upload_size_mb": {
+            "type": "integer",
+            "title": "Max Upload Size Mb",
+            "description": "Maximum upload size in MB",
+            "default": 10
+          }
+        },
+        "type": "object",
+        "required": [
+          "mode"
+        ],
+        "title": "RuntimeConfig",
+        "description": "Runtime configuration."
+      },
+      "Seller": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
+          },
+          "vat_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vat Number"
+          }
+        },
+        "type": "object",
+        "title": "Seller"
+      },
+      "Totals": {
+        "properties": {
+          "net_amount": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Net Amount"
+          },
+          "tax_amount": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tax Amount"
+          },
+          "gross_amount": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gross Amount"
+          },
+          "payable_amount": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payable Amount"
+          }
+        },
+        "type": "object",
+        "title": "Totals"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "ValidationResult": {
+        "properties": {
+          "valid": {
+            "type": "boolean",
+            "title": "Valid",
+            "description": "Whether the file is valid"
+          },
+          "format": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Format",
+            "description": "Detected format (factur-x, zugferd, order-x)"
+          },
+          "flavor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Flavor",
+            "description": "Detected flavor/level"
+          },
+          "errors": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Errors",
+            "description": "List of validation errors"
+          }
+        },
+        "type": "object",
+        "required": [
+          "valid"
+        ],
+        "title": "ValidationResult",
+        "description": "Validation result response."
+      }
+    }
+  }
 }

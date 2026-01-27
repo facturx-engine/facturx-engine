@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.1] - 2026-01-26
+
+### Added - Security & Compliance Edition
+
+#### Core Features
+
+- **Audit Alignment**: Harmonized ZUGFeRD 2.4 claims across `main.py`, README, and Docker Hub for strict compliance.
+- **GEO (Generative Engine Optimization)**: Enhanced documentation with "Standards Compatibility Matrix" and structured metadata for AI indexing.
+- **Security Governance**: Added explicit vulnerability policy (`SECURITY.md`) and manual "Air-Gap" verification steps.
+- **Resilient Profile Detection**: Added fallback logic for newer XRechnung/Factur-X URNs to improve parsing robustness.
+
+#### Documentation
+
+- **Pillar Content**: Added dedicated tutorials for Node.js integration and Schematron validation (`docs/tutorials/`).
+- **Social Proof**: Added explicit platform badges (amd64/arm64) and compliance signals.
+
 ## [1.0.0] - 2026-01-13
 
 ### Added - Initial Production Release

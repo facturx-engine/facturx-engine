@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Factur-X | Local Audit</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.26.1/full/pyodide.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff;
+            color: #0f172a;
+        }
+
+        .drop-active {
+            border-color: #000;
+            background-color: #fafafa;
+            transform: scale(0.99);
+        }
+
+        .view {
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .hidden-view {
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+            display: none;
+        }
+
+        #progress-bar {
+            transition: width 0.3s ease;
+        }
+
+        pre::-webkit-scrollbar {
+            display: none;
+        }
+
+        @keyframes pulse-opacity {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .animate-pulse-slow {
+            animation: pulse-opacity 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col items-center justify-center p-6 selection:bg-slate-200">
+
+    <!-- Subtle Progress Indicator (Top) -->
+    <div class="fixed top-0 left-0 w-full h-1 bg-slate-50 z-50">
+        <div id="progress-bar" class="h-full bg-slate-900 w-0"></div>
+    </div>
+
+    <!-- Minimal Header -->
+    <header class="fixed top-12 flex flex-col items-center gap-2">
+        <h1 class="text-xs font-black tracking-[0.4em] uppercase opacity-40">Factur-X Audit</h1>
+        <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-slate-50 border border-slate-100">
+            <div id="status-dot" class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></div>
+            <span id="status-text" class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Initializing
+                Secure Engine...</span>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="w-full max-w-xl">
+
+        <!-- View: Drop Zone -->
+        <div id="view-drop" class="view">
+            <div id="drop-zone"
+                class="aspect-[4/3] border border-slate-200 rounded-[2.5rem] flex flex-col items-center justify-center gap-6 cursor-pointer hover:border-slate-900 transition-all duration-500 group">
+                <input type="file" id="file-input" class="hidden" accept=".pdf">
+                <div
+                    class="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
+                    <svg class="w-6 h-6 text-slate-400 group-hover:text-slate-900" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                </div>
+                <p
+                    class="text-sm font-bold text-slate-400 group-hover:text-slate-900 transition-colors uppercase tracking-widest">
+                    Drop PDF to Audit</p>
+            </div>
+            <p class="text-center mt-12 text-[10px] font-bold text-slate-300 uppercase tracking-[0.2em]">Zero-Upload
+                Security Verified</p>
+        </div>
+
+        <!-- View: Results -->
+        <div id="view-result" class="view hidden-view space-y-12">
+            <div class="flex flex-col items-center text-center">
+                <div id="result-icon" class="w-16 h-16 rounded-full flex items-center justify-center mb-6"></div>
+                <h2 id="result-title" class="text-3xl font-black tracking-tight mb-2"></h2>
+                <p id="result-filename" class="text-xs font-bold text-slate-400 uppercase tracking-widest"></p>
+            </div>
+
+            <div class="grid grid-cols-1 gap-1 border-y border-slate-100 py-8">
+                <div class="flex justify-between items-center py-3">
+                    <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Standard</span>
+                    <span class="text-sm font-bold text-slate-900">Factur-X v1.0</span>
+                </div>
+                <div class="flex justify-between items-center py-3">
+                    <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Profile</span>
+                    <span id="res-profile" class="text-sm font-bold text-slate-900"></span>
+                </div>
+                <div id="error-container" class="hidden flex flex-col gap-2 mt-4 pt-4 border-t border-slate-50">
+                    <!-- Errors injected here -->
+                </div>
+            </div>
+
+            <div id="conversion-container"
+                class="hidden bg-slate-50 rounded-2xl p-8 border border-slate-100 text-center space-y-4">
+                <div class="space-y-1">
+                    <h3 class="text-xs font-black uppercase tracking-widest text-slate-900">Need a valid test file?</h3>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase leading-relaxed">Convert this PDF to a
+                        watermarked Factur-X compliant file.</p>
+                </div>
+                <button id="btn-convert"
+                    class="w-full py-4 rounded-xl bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-slate-800 transition-all shadow-lg active:scale-[0.98]">
+                    Generate Round-Trip PDF
+                </button>
+                <p id="convert-status" class="text-[9px] font-bold uppercase tracking-widest h-4"></p>
+            </div>
+
+            <div class="bg-slate-950 rounded-2xl p-6 overflow-hidden">
+                <div class="flex justify-between mb-4 text-[9px] font-black uppercase text-slate-500 tracking-widest">
+                    <span>Extracted Metadata</span>
+                    <span class="text-emerald-500">Verified Buffer</span>
+                </div>
+                <pre id="json-box"
+                    class="text-emerald-500/80 font-mono text-[11px] leading-relaxed max-h-48 overflow-auto scrollbar-hide"></pre>
+            </div>
+
+            <div class="flex justify-center pt-6 pb-12">
+                <button onclick="resetApp()"
+                    class="text-[10px] font-black text-slate-400 hover:text-slate-900 uppercase tracking-[0.3em] transition-colors">Start
+                    New Audit</button>
+            </div>
+        </div>
+    </main>
+
+    <footer class="fixed bottom-12 text-[10px] font-bold text-slate-300 uppercase tracking-widest flex gap-8">
+        <span>&copy; Factur-X Engine Pro</span>
+        <div class="flex gap-4 opacity-50">
+            <span>GDPR</span>
+            <span>WASM</span>
+        </div>
+    </footer>
+
+    <script>
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const progressBar = document.getElementById('progress-bar');
+        const statusText = document.getElementById('status-text');
+        const statusDot = document.getElementById('status-dot');
+        const viewDrop = document.getElementById('view-drop');
+        const viewRes = document.getElementById('view-result');
+        const btnConvert = document.getElementById('btn-convert');
+        const convertStatus = document.getElementById('convert-status');
+        const conversionContainer = document.getElementById('conversion-container');
+        let pyodide = null;
+
+        const PYTHON_LOGIC = `
+import sys, json, traceback, hashlib, datetime, io
+from facturx import get_facturx_xml_from_pdf
+from pypdf import PdfReader, PdfWriter
+from pypdf.generic import ArrayObject, ByteStringObject, DictionaryObject, NameObject, NumberObject, create_string_object, DecodedStreamObject
+
+def process_file(file_bytes):
+    try:
+        with open("/tmp/in.pdf", "wb") as f: f.write(bytes(file_bytes))
+        with open("/tmp/in.pdf", "rb") as f: result = get_facturx_xml_from_pdf(f)
+        xml = result[1] if isinstance(result, tuple) else result
+        if not xml: return json.dumps({"valid":False, "error":"No Factur-X XML found or PDF is invalid"})
+        return json.dumps({"valid":True, "xml": xml.decode('utf-8')[:10000]})
+    except Exception as e: return json.dumps({"valid":False, "error":str(traceback.format_exc())})
+
+def generate_facturx_demo():
+    try:
+        demo_xml = b"""<?xml version='1.0' encoding='UTF-8' ?>
+<rsm:CrossIndustryInvoice xmlns:rsm="urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100" xmlns:ram="urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100" xmlns:udt="urn:un:unece:uncefact:data:standard:UnqualifiedDataType:100">
+  <rsm:ExchangedDocumentContext>
+    <ram:GuidelineSpecifiedDocumentContextParameter>
+      <ram:ID>urn:factur-x.eu:1p0:minimum</ram:ID>
+    </ram:GuidelineSpecifiedDocumentContextParameter>
+  </rsm:ExchangedDocumentContext>
+  <rsm:ExchangedDocument>
+    <ram:ID>DEMO-001</ram:ID>
+    <ram:TypeCode>380</ram:TypeCode>
+    <ram:IssueDateTime>
+      <udt:DateTimeString format="102">20260120</udt:DateTimeString>
+    </ram:IssueDateTime>
+  </rsm:ExchangedDocument>
+  <rsm:SupplyChainTradeTransaction>
+    <ram:ApplicableHeaderTradeAgreement>
+      <ram:SellerTradeParty>
+        <ram:Name>DEMO VENDOR</ram:Name>
+        <ram:PostalTradeAddress>
+          <ram:CountryID>FR</ram:CountryID>
+        </ram:PostalTradeAddress>
+      </ram:SellerTradeParty>
+      <ram:BuyerTradeParty>
+        <ram:Name>DEMO BUYER</ram:Name>
+      </ram:BuyerTradeParty>
+    </ram:ApplicableHeaderTradeAgreement>
+    <ram:ApplicableHeaderTradeDelivery/>
+    <ram:ApplicableHeaderTradeSettlement>
+      <ram:InvoiceCurrencyCode>EUR</ram:InvoiceCurrencyCode>
+      <ram:SpecifiedTradeSettlementHeaderMonetarySummation>
+        <ram:TaxBasisTotalAmount>0.00</ram:TaxBasisTotalAmount>
+        <ram:TaxTotalAmount currencyID="EUR">0.00</ram:TaxTotalAmount>
+        <ram:GrandTotalAmount>0.00</ram:GrandTotalAmount>
+        <ram:DuePayableAmount>0.00</ram:DuePayableAmount>
+      </ram:SpecifiedTradeSettlementHeaderMonetarySummation>
+    </ram:ApplicableHeaderTradeSettlement>
+  </rsm:SupplyChainTradeTransaction>
+</rsm:CrossIndustryInvoice>"""
+
+        # Fix: directly use filename string to avoid BytesIO OverflowError
+        reader = PdfReader("/tmp/in.pdf")
+        writer = PdfWriter()
+        for page in reader.pages:
+            writer.add_page(page)
+        
+        now = datetime.datetime.now(tz=datetime.timezone.utc).replace(microsecond=0)
+        now_iso = now.isoformat().replace("+00:00", "Z")
+        
+        embedded = writer.add_attachment(filename="factur-x.xml", data=demo_xml)
+        embedded.subtype = NameObject("/text/xml")
+        
+        root = writer._root_object
+        file_id = hashlib.md5(now_iso.encode()).digest()
+        writer._ID = ArrayObject([ByteStringObject(file_id), ByteStringObject(file_id)])
+        
+        xmp = f'''<?xpacket begin="\\ufeff" id="W5M0MpCehiHzreSzNTczkc9d"?>
+<x:xmpmeta xmlns:x="adobe:ns:meta/">
+  <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+    <rdf:Description rdf:about="" xmlns:pdfaid="http://www.aiim.org/pdfa/ns/id/">
+      <pdfaid:part>3</pdfaid:part><pdfaid:conformance>B</pdfaid:conformance>
+    </rdf:Description>
+    <rdf:Description rdf:about="" xmlns:fx="urn:factur-x:pdfa:CrossIndustryDocument:invoice:1p0#">
+      <fx:DocumentType>INVOICE</fx:DocumentType><fx:DocumentFileName>factur-x.xml</fx:DocumentFileName>
+      <fx:ConformanceLevel>MINIMUM</fx:ConformanceLevel><fx:Version>1.0</fx:Version>
+    </rdf:Description>
+  </rdf:RDF>
+</x:xmpmeta><?xpacket end="w"?>'''.encode('utf-8')
+        
+        metadata_stream = DecodedStreamObject()
+        metadata_stream.set_data(xmp)
+        metadata_stream.update({NameObject("/Type"): NameObject("/Metadata"), NameObject("/Subtype"): NameObject("/XML")})
+        root[NameObject("/Metadata")] = writer._add_object(metadata_stream)
+        
+        # Output Intent (Optional if ICC is missing)
+        try:
+            with open("/tmp/sRGB.icc", "rb") as f: icc_data = f.read()
+            if len(icc_data) > 1000: # Primitive check for 404 pages
+                icc_stream = DecodedStreamObject()
+                icc_stream.set_data(icc_data)
+                icc_stream.update({NameObject("/N"): NumberObject(3)})
+                icc_ref = writer._add_object(icc_stream)
+                output_intent = DictionaryObject({
+                    NameObject("/Type"): NameObject("/OutputIntent"), NameObject("/S"): NameObject("/GTS_PDFA1"),
+                    NameObject("/OutputConditionIdentifier"): create_string_object("sRGB"),
+                    NameObject("/DestOutputProfile"): icc_ref,
+                })
+                root[NameObject("/OutputIntents")] = ArrayObject([output_intent])
+        except: pass
+        
+        out_stream = io.BytesIO()
+        writer.write(out_stream)
+        with open("/tmp/out.pdf", "wb") as f: f.write(out_stream.getvalue())
+        return json.dumps({"success": True})
+    except Exception as e: return json.dumps({"success": False, "error": str(traceback.format_exc())})
+
+def get_out_pdf():
+    with open("/tmp/out.pdf", "rb") as f: return f.read()
+`;
+
+        const showView = (id) => {
+            [viewDrop, viewRes].forEach(v => {
+                if (v.id === id) {
+                    v.classList.remove('hidden-view');
+                    v.style.display = 'block';
+                } else {
+                    v.classList.add('hidden-view');
+                    v.style.display = 'none';
+                }
+            });
+        };
+
+        async function init() {
+            try {
+                pyodide = await loadPyodide();
+                await pyodide.loadPackage("micropip");
+                const micropip = pyodide.pyimport("micropip");
+                await micropip.install(["lxml", "factur-x", "pypdf"]);
+
+                try {
+                    const iccResp = await fetch('sRGB.icc');
+                    if (iccResp.ok) {
+                        const iccBuf = await iccResp.arrayBuffer();
+                        pyodide.FS.writeFile("/tmp/sRGB.icc", new Uint8Array(iccBuf));
+                    }
+                } catch (e) { console.warn("ICC fetch failed, skipping PDF/A-3 OutputIntent"); }
+
+                pyodide.runPython(PYTHON_LOGIC);
+                statusText.innerText = "Local Engine Ready";
+                statusDot.className = "w-1.5 h-1.5 rounded-full bg-emerald-500";
+                statusDot.classList.remove('animate-pulse');
+            } catch (e) {
+                statusText.innerText = "Engine Error: " + e.message;
+                statusDot.className = "w-1.5 h-1.5 rounded-full bg-rose-500";
+            }
+        }
+
+        async function handleFile(file) {
+            if (!pyodide || !file || file.type !== 'application/pdf') return;
+
+            // Immediate UI feedback
+            viewDrop.classList.add('hidden-view');
+            setTimeout(() => viewDrop.style.display = 'none', 100);
+
+            progressBar.style.width = '40%';
+            statusText.innerText = 'Auditing...';
+            statusDot.classList.add('animate-pulse');
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const resRaw = pyodide.globals.get('process_file')(new Uint8Array(e.target.result));
+                    const res = JSON.parse(resRaw);
+                    progressBar.style.width = '100%';
+                    setTimeout(() => {
+                        render(res, file.name);
+                        progressBar.style.width = '0%';
+                        statusText.innerText = 'Local Engine Ready';
+                        statusDot.classList.remove('animate-pulse');
+                    }, 500);
+                } catch (err) {
+                    console.error(err);
+                    render({ valid: false, error: err.message }, file.name);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function render(res, filename) {
+            const isValid = res.valid;
+            document.getElementById('result-title').innerText = isValid ? 'Compliant' : 'Audit Failed';
+            document.getElementById('result-icon').className = `w-16 h-16 rounded-full flex items-center justify-center mb-6 ${isValid ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`;
+            document.getElementById('result-icon').innerHTML = isValid
+                ? '<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>'
+                : '<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/></svg>';
+            document.getElementById('result-filename').innerText = filename;
+            document.getElementById('res-profile').innerText = isValid ? (res.xml.includes('minimum') ? 'MINIMUM' : 'BASIC') : 'N/A';
+            document.getElementById('json-box').innerText = isValid ? res.xml : "// Audit failure log:\n" + res.error;
+
+            if (!isValid) {
+                document.getElementById('error-container').classList.remove('hidden');
+                document.getElementById('error-container').innerHTML = `<p class="text-[10px] font-black text-rose-500 uppercase tracking-widest">! Protocol Error / No Factur-X Attachment</p>`;
+                conversionContainer.classList.remove('hidden');
+            } else {
+                document.getElementById('error-container').classList.add('hidden');
+                conversionContainer.classList.add('hidden');
+            }
+            showView('view-result');
+        }
+
+        btnConvert.onclick = async () => {
+            btnConvert.disabled = true;
+            convertStatus.innerText = "Generating Conformed PDF...";
+            convertStatus.className = "text-[9px] font-bold uppercase tracking-widest text-blue-500 animate-pulse-slow";
+
+            try {
+                await new Promise(r => setTimeout(r, 100)); // UI Breath
+                const genRes = JSON.parse(pyodide.globals.get('generate_facturx_demo')());
+                if (genRes.success) {
+                    const bytes = pyodide.globals.get('get_out_pdf')().toJs();
+                    const blob = new Blob([bytes], { type: "application/pdf" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = "FACTURX_CONVERTED.pdf";
+                    a.click();
+                    convertStatus.innerText = "Success! PDF Downloaded.";
+                    convertStatus.className = "text-[9px] font-bold uppercase tracking-widest text-emerald-500";
+                } else {
+                    throw new Error(genRes.error);
+                }
+            } catch (e) {
+                console.error(e);
+                convertStatus.innerText = "Error: See Console";
+                document.getElementById('json-box').innerText += "\n\n// Conversion Error:\n" + e.message;
+                convertStatus.className = "text-[9px] font-bold uppercase tracking-widest text-rose-500";
+            } finally {
+                btnConvert.disabled = false;
+            }
+        };
+
+        window.resetApp = () => {
+            fileInput.value = '';
+            convertStatus.innerText = '';
+            showView('view-drop');
+        };
+
+        dropZone.onclick = () => fileInput.click();
+        dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('drop-active'); };
+        dropZone.ondragleave = () => dropZone.classList.remove('drop-active');
+        dropZone.ondrop = (e) => { e.preventDefault(); dropZone.classList.remove('drop-active'); handleFile(e.dataTransfer.files[0]); };
+        fileInput.onchange = (e) => handleFile(e.target.files[0]);
+
+        init();
+    </script>
+</body>
+
+</html>

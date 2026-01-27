@@ -5,7 +5,9 @@
 [![Docker Pulls](https://img.shields.io/docker/pulls/facturxengine/facturx-engine)](https://hub.docker.com/r/facturxengine/facturx-engine)
 [![License](https://img.shields.io/badge/license-Community-blue.svg)](https://github.com/facturx-engine/facturx-engine)
 [![Standard](https://img.shields.io/badge/standard-EN16931-green.svg)](https://fnfe-mpe.org/factur-x/)
-[![CRA](https://img.shields.io/badge/EU_CRA-Compliant-blueviolet?style=for-the-badge)](https://github.com/facturx-engine/facturx-engine/blob/main/docs/cra.md)
+[![CRA](https://img.shields.io/badge/EU_CRA-Ready-blueviolet)](https://github.com/facturx-engine/facturx-engine/blob/main/docs/cra.md)
+[![SBOM](https://img.shields.io/badge/SBOM-CycloneDX-informational)](https://github.com/facturx-engine/facturx-engine/actions)
+[![Signed](https://img.shields.io/badge/Image-Cosign_Signed-success)](https://github.com/sigstore/cosign)
 
 ---
 
@@ -85,7 +87,7 @@ The container is configurable via environment variables:
 
 ## Community vs Pro
 
-This **Community** version is production-ready for generation/validation; extraction is demo-masked. The **Pro** edition offers guarantees and services for businesses.
+This **Community** version is production-ready for generation/validation. Extraction provides **full financial values** with **identity masking**.
 
 | Feature | Community Edition (This Repo) | Pro / Enterprise Edition |
 | :--- | :--- | :--- |
@@ -93,7 +95,9 @@ This **Community** version is production-ready for generation/validation; extrac
 | **Usage** | Unlimited (Self-hosted) | Unlimited + **Legal Warranty** |
 | **Generation** | Included | Included |
 | **Validation** | Included | Included |
-| **Extraction** | **Demo Mode** (Data masked `***`) | **Full Data Access** |
+| **Extraction** | **Full Values** (Identity Masked) | **Full Data Access** |
+| **Metrics** | Not Included | Included (Prometheus) |
+| **Trust Pack (SBOM)** | Included | Included |
 | **Support** | Community (GitHub Interactions) | Priority Email / SLA |
 
 ### Pricing & Licenses

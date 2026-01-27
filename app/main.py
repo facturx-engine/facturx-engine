@@ -159,6 +159,27 @@ async def health_check():
         "version": "1.0.0"
     }
 
+@app.get("/metrics", tags=["observability"], include_in_schema=True)
+async def metrics_endpoint():
+    """
+    Prometheus-compatible metrics endpoint for enterprise observability.
+    Exposes request counts, active processing, and latency data.
+    """
+    # LICENSE CHECK: Enterprise Observability is a PRO feature
+    from app.license import is_licensed
+    import os
+    
+    if not os.getenv("LICENSE_KEY") or not is_licensed():
+         from fastapi import HTTPException
+         raise HTTPException(status_code=403, detail="Observability is a PRO feature. Upgrade to enable metrics.")
+
+    from fastapi.responses import PlainTextResponse
+    from app.metrics import metrics
+    return PlainTextResponse(
+        content=metrics.get_prometheus_format(),
+        media_type="text/plain; version=0.0.4; charset=utf-8"
+    )
+
 @app.get("/robots.txt", include_in_schema=False)
 async def robots():
     from fastapi.responses import FileResponse

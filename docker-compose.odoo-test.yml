@@ -1,0 +1,35 @@
+version: "3.4"
+services:
+  # 1. The Factur-X Engine (Your Product)
+  facturx-engine:
+    build: .
+    image: facturxengine/facturx-engine:local-test
+    environment:
+      - WORKERS=1
+    ports:
+      - "5000:8000"
+    # No ports exposed to host needed, Odoo talks to it internally
+
+    # 2. Database for Odoo
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_PASSWORD=odoo
+      - POSTGRES_USER=odoo
+
+  # 3. Odoo 16 (The Host)
+  odoo:
+    image: odoo:16.0
+    depends_on:
+      - db
+      - facturx-engine
+    ports:
+      - "8069:8069"
+    environment:
+      - HOST=db
+      - USER=odoo
+      - PASSWORD=odoo
+    volumes:
+      # Mount your local module into Odoo addons
+      - ./integrations/odoo:/mnt/extra-addons

@@ -268,6 +268,25 @@
                     <p class="text-sm text-slate-500 leading-relaxed">Don't just generate. Validate. Every invoice is
                         checked against EN 16931 business rules before being sealed into the PDF/A-3.</p>
                 </div>
+                <!-- Row 2 -->
+                <div class="space-y-4">
+                    <div class="text-amber-500 font-mono text-xs tracking-widest uppercase">04 / Observability</div>
+                    <h3 class="text-2xl font-bold text-white">Prometheus Metrics</h3>
+                    <p class="text-sm text-slate-500 leading-relaxed">Enterprise-grade monitoring. Exposes a /metrics
+                        endpoint compatible with Prometheus/Grafana to track throughput and latency (Pro).</p>
+                </div>
+                <div class="space-y-4">
+                    <div class="text-amber-500 font-mono text-xs tracking-widest uppercase">05 / Supply Chain</div>
+                    <h3 class="text-2xl font-bold text-white">Trust Pack</h3>
+                    <p class="text-sm text-slate-500 leading-relaxed"> SBOM (CycloneDX) available for every release. All
+                        Docker images are cryptographically signed with Cosign for absolute trust.</p>
+                </div>
+                <div class="space-y-4">
+                    <div class="text-amber-500 font-mono text-xs tracking-widest uppercase">06 / Compliance</div>
+                    <h3 class="text-2xl font-bold text-white">PDP Ready</h3>
+                    <p class="text-sm text-slate-500 leading-relaxed">Aligned with French 2026 mandates. Generate files
+                        that are strictly compliant with the Public Billing Portal (Chorus Pro).</p>
+                </div>
             </div>
         </div>
     </section>
@@ -293,7 +312,8 @@
                     <p class="text-slate-400">The <strong>Community Edition</strong> is fully featured for Generation
                         and Validation (all profiles).
                         The <strong>Pro Edition</strong> unlocks <strong>unmasked data extraction</strong>,
-                        <strong>commercial OEM redistribution</strong>, and <strong>legal warranty/support</strong>.</p>
+                        <strong>commercial OEM redistribution</strong>, and <strong>legal warranty/support</strong>.
+                    </p>
                 </div>
                 <div class="space-y-2">
                     <h4 class="text-lg font-bold text-amber-500">Is it compliant (French Reform 2026 / PDP)?</h4>
@@ -311,11 +331,9 @@
                 </div>
                 <div class="space-y-2">
                     <h4 class="text-lg font-bold text-amber-500">Does it extract data to JSON?</h4>
-                    <p class="text-slate-400">Yes. The engine can extract embedded XML data from existing Factur-X files
-                        and return it as structured JSON. Note that the <strong>Community Edition</strong> masks
-                        sensitive fields
-                        (VAT, Names, Totals) for demo purposes, while the <strong>Pro Edition</strong> provides full
-                        extraction.</p>
+                    <p class="text-slate-400">Yes. The engine extracts embedded XML data. The <strong>Community
+                            Edition</strong> extracts <strong>real financial values</strong> but masks identity fields
+                        (Names, VAT) for privacy. The <strong>Pro Edition</strong> allows full unmasked extraction.</p>
                 </div>
                 <div class="space-y-2">
                     <h4 class="text-lg font-bold text-amber-500">What is the typical latency?</h4>

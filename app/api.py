@@ -33,6 +33,13 @@ def convert_to_facturx(
     
     The output PDF is PDF/A-3 compliant with embedded XML.
     """
+    import time
+    from app.metrics import metrics
+    start_time = time.time()
+    metrics.inc("requests_total")
+    metrics.inc("requests_convert")
+    metrics.inc_gauge("active_requests")
+    
     try:
         # Validate file type
         if not pdf.filename.lower().endswith('.pdf'):
@@ -83,13 +90,18 @@ def convert_to_facturx(
         )
         
     except HTTPException:
+        metrics.inc("errors_total")
         raise
     except Exception as e:
+        metrics.inc("errors_total")
         logger.exception(f"Unexpected error in convert endpoint: {e}")
         raise HTTPException(
             status_code=500,
             detail={"error": "INTERNAL_ERROR", "message": "An unexpected error occurred"}
         )
+    finally:
+        metrics.dec_gauge("active_requests")
+        metrics.observe("request_duration_seconds", time.time() - start_time)
 
 
 @router.post("/validate",
@@ -106,6 +118,13 @@ def validate_facturx(
     
     Returns a validation report with detected format, flavor, and any errors.
     """
+    import time
+    from app.metrics import metrics
+    start_time = time.time()
+    metrics.inc("requests_total")
+    metrics.inc("requests_validate")
+    metrics.inc_gauge("active_requests")
+    
     try:
         # Read file content (Sync read)
         file_content = file.file.read()
@@ -129,13 +148,18 @@ def validate_facturx(
         )
         
     except HTTPException:
+        metrics.inc("errors_total")
         raise
     except Exception as e:
+        metrics.inc("errors_total")
         logger.exception(f"Unexpected error in validate endpoint: {e}")
         raise HTTPException(
             status_code=500,
             detail={"error": "INTERNAL_ERROR", "message": "An unexpected error occurred"}
         )
+    finally:
+        metrics.dec_gauge("active_requests")
+        metrics.observe("request_duration_seconds", time.time() - start_time)
 
 
 @router.post("/extract",
@@ -160,6 +184,13 @@ def extract_facturx(
     - ERP integration
     - Invoice validation before processing
     """
+    import time
+    from app.metrics import metrics
+    start_time = time.time()
+    metrics.inc("requests_total")
+    metrics.inc("requests_extract")
+    metrics.inc_gauge("active_requests")
+    
     try:
         # Read file content (Sync read)
         file_content = file.file.read()
@@ -194,7 +225,6 @@ def extract_facturx(
                 from app.services.extractor_demo import ExtractionService
                 logger.warning("Pro Engine missing, falling back to Demo")
         else:
-            # Demo Mode: Import from community stub
             # Demo Mode: Import from community stub or local dev
             try:
                 from app.services.extractor_demo import ExtractionService
@@ -216,10 +246,16 @@ def extract_facturx(
             raise HTTPException(status_code=500, detail=f"Schema validation failed: {str(e)}")
         
     except HTTPException:
+        metrics.inc("errors_total")
         raise
     except Exception as e:
+        metrics.inc("errors_total")
         logger.exception(f"Unexpected error in extract endpoint: {e}")
         raise HTTPException(
             status_code=500,
             detail={"error": "INTERNAL_ERROR", "message": "An unexpected error occurred"}
         )
+    finally:
+        metrics.dec_gauge("active_requests")
+        metrics.observe("request_duration_seconds", time.time() - start_time)
+

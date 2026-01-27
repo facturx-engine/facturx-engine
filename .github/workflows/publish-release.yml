@@ -4,6 +4,11 @@ on:
     tags: [ "v*.*.*" ]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  packages: write
+  id-token: write # Required for Cosign keyless signing
+
 env:
   DOCKER_IMAGE: facturxengine/facturx-engine
 
@@ -85,3 +90,18 @@ jobs:
         with:
           name: sbom-cyclonedx
           path: sbom.cyclonedx.json
+
+      # ----------------------------------------------------------------
+      # SECURITY: Sign Image with Cosign (Supply Chain Trust)
+      # ----------------------------------------------------------------
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3
+
+      - name: Sign Docker Image
+        env:
+          COSIGN_EXPERIMENTAL: "1"
+        run: |
+          echo "Signing image with keyless Cosign (OIDC)..."
+          cosign sign --yes ${{ env.DOCKER_IMAGE }}:latest
+          echo "✅ Image signed successfully"
+

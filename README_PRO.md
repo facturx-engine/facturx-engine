@@ -16,14 +16,14 @@ You received the software as a Docker Archive (`.tar` file).
 1. **Load the Image** into your Docker registry or local daemon:
 
     ```bash
-    docker load -i facturx-pro-v1.0.6.tar
+    docker load -i facturx-pro-v1.3.1.tar
     ```
 
 2. **Verify** successful import:
 
     ```bash
     docker images | grep facturx-pro
-    # Should show: facturx-pro   v1.0.6
+    # Should show: facturx-pro   v1.3.1
     ```
 
 ---
@@ -39,7 +39,7 @@ docker run -d \
   -p 8000:8000 \
   -e LICENSE_KEY="YOUR_LICENSE_KEY_HERE" \
   --name facturx-pro \
-  facturx-pro:v1.0.6
+  facturx-pro:v1.3.1
 ```
 
 > **Note:** Without a valid `LICENSE_KEY`, the engine runs in **Demo Mode** (all outputs are watermarked/masked).
@@ -90,14 +90,29 @@ curl -X POST "http://localhost:8000/v1/extract" \
 }
 ```
 
+### 📊 Observability (Pro Feature)
+
+Monitor your engine's performance in real-time with the Prometheus-compatible endpoint.
+
+```bash
+curl -H "Authorization: Bearer YOUR_LICENSE_KEY" http://localhost:8000/metrics
+```
+
+**Exposed metrics:**
+
+- `facturx_requests_total`
+- `facturx_active_requests`
+- `facturx_request_duration_seconds_avg`
+- `facturx_errors_total`
+
 ---
 
 ## 🆘 Support
 
 For technical issues or updates:
 
-* **Email:** <facturx.engine@protonmail.com>
-* **Standards:** Fully compliant with **EN 16931**, **ZUGFeRD 2.2** and **Factur-X 1.0 (1.08 ready)**.
-* **Trust Pack:** Includes **CRA Compliance Statement** and **SBOM (CycloneDX)** for your security audits.
-* **Updates:** You will receive email notifications for new versions (Security Patches).
-* **Docs:** Full API documentation is available at `http://localhost:8000/docs` when running the container.
+- **Email:** <facturx.engine@protonmail.com>
+- **Standards:** Fully compliant with **EN 16931**, **ZUGFeRD 2.2** and **Factur-X 1.0 (1.08 ready)**.
+- **Trust Pack:** Includes **CRA Compliance Statement** and **SBOM (CycloneDX)** for your security audits.
+- **Updates:** You will receive email notifications for new versions (Security Patches).
+- **Docs:** Full API documentation is available at `http://localhost:8000/docs` when running the container.

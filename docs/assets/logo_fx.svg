@@ -1,0 +1,21 @@
+<svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Filter for the 'glow-amber' effect: box-shadow: 0 0 20px -5px rgba(245, 158, 11, 0.4) -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%" filterUnits="objectBoundingBox">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="4" result="blur" />
+      <feOffset dx="0" dy="0" result="offsetblur" />
+      <feFlood flood-color="#f59e0b" flood-opacity="0.4" result="glowColor" />
+      <feComposite in="glowColor" in2="offsetblur" operator="in" result="glow" />
+      <feMerge>
+        <feMergeNode in="glow" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background container (rounded-sm, border-2 slate-900) -->
+  <rect x="5" y="5" width="90" height="90" rx="4" fill="#020617" stroke="#f59e0b" stroke-width="6" filter="url(#glow)"/>
+  
+  <!-- FX Text (JetBrains Mono Bold inspired) -->
+  <text x="50" y="65" text-anchor="middle" font-family="monospace" font-size="44" font-weight="900" fill="#f59e0b" style="font-family: 'JetBrains Mono', 'Inter', monospace; letter-spacing: -2px;">FX</text>
+</svg>

@@ -1,6 +1,7 @@
 # === INTERNAL / PRIVATE (Vault) ===
 _INTERNAL/
 .agent/
+docs/internal/
 
 # === Python Standard ===
 __pycache__/
@@ -22,6 +23,8 @@ build/
 *.log
 *.tmp
 *.bak
+*_result.txt
+failure_*.txt
 
 # === Build Artifacts ===
 *.tar
@@ -34,6 +37,7 @@ build/
 *.pem
 *.key
 admin_keygen.py
+keys
 
 # === Temp Testing Files (To be moved to _INTERNAL eventually) ===
 *.pdf

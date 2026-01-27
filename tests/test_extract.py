@@ -133,18 +133,17 @@ def test_end_to_end_convert_validate_extract():
     assert "Test" in invoice_json["seller"]["name"] 
     assert "****" in invoice_json["seller"]["name"]
     # assert invoice_json["seller"]["country"] == "FR" if "country" in invoice_json["seller"] else True
-    # VAT is masked to FRDEMO_INVALID_VAT in Demo
-    assert invoice_json["seller"]["vat_number"] == "FRDEMO_INVALID_VAT"
+    # VAT is masked to DEMO_***** in v1.3.1
+    assert invoice_json["seller"]["vat_number"] == "DEMO_*****"
     
     # Verify buyer data
     assert "Test" in invoice_json["buyer"]["name"]
     
-    # Verify totals (Demo Mode forces fixed values for Minimum profile)
-    # See DEMO_MODE_MECHANISM.md
-    assert invoice_json["totals"]["net_amount"] == "1234.56"
-    assert invoice_json["totals"]["tax_amount"] == "246.91"
-    assert invoice_json["totals"]["gross_amount"] == "1481.47"
-    assert invoice_json["totals"]["payable_amount"] == "1481.47"
+    # Verify totals (Real Values extracted in v1.3.1)
+    assert invoice_json["totals"]["net_amount"] == "500.00"
+    assert invoice_json["totals"]["tax_amount"] == "100.00"
+    assert invoice_json["totals"]["gross_amount"] == "600.00"
+    assert invoice_json["totals"]["payable_amount"] == "600.00"
     
     print("\n✓ END-TO-END TEST PASSED:")
     print("  - Convert: PDF → Factur-X PDF")

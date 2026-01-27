@@ -133,7 +133,7 @@ class ExtractionService:
         has_lines = len(items) > 0
         
         for item in items[:10]: # Max 10 lines
-            # Name: Partial
+            # Name: Partial (Identity Protection)
             raw_name = xpath_first(item, './/ram:SpecifiedTradeProduct/ram:Name') or "Item"
             name = (raw_name[:15] + "...") if len(raw_name) > 15 else raw_name
             
@@ -144,36 +144,84 @@ class ExtractionService:
             except:
                 qty = 1.0
             
-            # Unit Price: Fixed Demo Value
-            unit_price = 100.00 
+            # Unit Price: REAL (Unlocked for Developer Experience)
+            raw_price = xpath_first(item, [
+                './/ram:SpecifiedLineTradeAgreement/ram:NetPriceProductTradePrice/ram:ChargeAmount',
+                './/ram:NetPriceProductTradePrice/ram:ChargeAmount',
+                './/ram:GrossPriceProductTradePrice/ram:ChargeAmount'
+            ])
+            try:
+                unit_price = float(raw_price) if raw_price else 0.0
+            except:
+                unit_price = 0.0
             
-            # Line Total: Calculated
-            line_total = qty * unit_price
+            # Line Total: REAL
+            raw_line_total = xpath_first(item, [
+                './/ram:SpecifiedLineTradeSettlement/ram:SpecifiedTradeSettlementLineMonetarySummation/ram:LineTotalAmount',
+                './/ram:SpecifiedTradeSettlementMonetarySummation/ram:LineTotalAmount'
+            ])
+            try:
+                line_total = float(raw_line_total) if raw_line_total else (qty * unit_price)
+            except:
+                line_total = qty * unit_price
             total_net += line_total
+            
+            # VAT Rate: REAL
+            raw_vat = xpath_first(item, [
+                './/ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:RateApplicablePercent',
+                './/ram:ApplicableTradeTax/ram:RateApplicablePercent'
+            ])
+            try:
+                vat_rate = float(raw_vat) if raw_vat else 0.0
+            except:
+                vat_rate = 0.0
             
             line_items.append({
                 "description": f"{name} [DEMO]",
                 "quantity": f"{qty}",
                 "unit_code": xpath_first(item, './/ram:BilledQuantity/@unitCode') or "C62",
                 "unit_price": f"{unit_price:.2f}",
-                "vat_rate": "20.00", 
+                "vat_rate": f"{vat_rate:.2f}", 
                 "line_total": f"{line_total:.2f}",
-                "_demo": True
+                "_demo": True  # Name is still masked
             })
 
-        # 3. Totals
-        # If we have lines, we sum them up (Coherent)
-        # If no lines (Minimum), we use a Fixed Watermark on the extracted total or just 99.99
+        # 3. Totals: REAL (Unlocked for Developer Experience)
+        # Extract real totals from XML
+        raw_net = xpath_first(xml_root, [
+            '//ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeSettlementHeaderMonetarySummation/ram:TaxBasisTotalAmount',
+            '//ram:SpecifiedTradeSettlementMonetarySummation/ram:TaxBasisTotalAmount',
+            '//ram:SpecifiedTradeSettlementMonetarySummation/ram:LineTotalAmount'
+        ])
+        raw_tax = xpath_first(xml_root, [
+            '//ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeSettlementHeaderMonetarySummation/ram:TaxTotalAmount',
+            '//ram:SpecifiedTradeSettlementMonetarySummation/ram:TaxTotalAmount'
+        ])
+        raw_gross = xpath_first(xml_root, [
+            '//ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeSettlementHeaderMonetarySummation/ram:GrandTotalAmount',
+            '//ram:SpecifiedTradeSettlementMonetarySummation/ram:GrandTotalAmount'
+        ])
+        raw_payable = xpath_first(xml_root, [
+            '//ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeSettlementHeaderMonetarySummation/ram:DuePayableAmount',
+            '//ram:SpecifiedTradeSettlementMonetarySummation/ram:DuePayableAmount'
+        ])
         
-        if has_lines:
-            tax_total = total_net * 0.20
-            gross_total = total_net + tax_total
-        else:
-            # Minimum parsing: Extract real total if possible, but watermark it
-            # For demo consistency, we force a recognizable pattern
-            total_net = 1234.56
-            tax_total = 246.91
-            gross_total = 1481.47
+        try:
+            total_net_real = float(raw_net) if raw_net else total_net
+        except:
+            total_net_real = total_net
+        try:
+            tax_total = float(raw_tax) if raw_tax else 0.0
+        except:
+            tax_total = 0.0
+        try:
+            gross_total = float(raw_gross) if raw_gross else (total_net_real + tax_total)
+        except:
+            gross_total = total_net_real + tax_total
+        try:
+            payable_amount = float(raw_payable) if raw_payable else gross_total
+        except:
+            payable_amount = gross_total
 
         data = {
             "invoice_number": invoice_id,
@@ -182,27 +230,27 @@ class ExtractionService:
             
             "seller": {
                 "name": (xpath_first(xml_root, '//ram:SellerTradeParty/ram:Name') or "")[:5] + "****",
-                "vat_number": "FRDEMO_INVALID_VAT",
-                "address": "DEMO ADDRESS, 75000 PARIS"
+                "vat_number": "DEMO_*****",  # Still masked for commercial protection
+                "address": "DEMO ADDRESS"
             },
             "buyer": {
                 "name": (xpath_first(xml_root, '//ram:BuyerTradeParty/ram:Name') or "")[:5] + "****"
             },
             
             "totals": {
-                "net_amount": f"{total_net:.2f}",
+                "net_amount": f"{total_net_real:.2f}",
                 "tax_amount": f"{tax_total:.2f}",
                 "gross_amount": f"{gross_total:.2f}",
-                "payable_amount": f"{gross_total:.2f}",
+                "payable_amount": f"{payable_amount:.2f}",
                 "_demo": True,
-                "_watermark": "VALUES_ARE_DEMO_NOT_FOR_ACCOUNTING"
+                "_watermark": "IDENTITY_MASKED_FOR_DEMO"
             },
             
             "tax_breakdown": [
                 {
-                    "vat_rate": "20.00",
+                    "vat_rate": "REAL",  # TODO: Extract real breakdown
                     "tax_amount": f"{tax_total:.2f}",
-                    "taxable_amount": f"{total_net:.2f}",
+                    "taxable_amount": f"{total_net_real:.2f}",
                     "_demo": True
                 }
             ],
@@ -212,12 +260,12 @@ class ExtractionService:
             "_meta": {
                 "filename": filename,
                 "demo_mode": True,
-                "license_notice": "UNLICENSED_DEMO_OUTPUT_NOT_FOR_ACCOUNTING. Upgrade to Factur-X Engine Pro for full data.",
+                "license_notice": "DEMO: Seller/Buyer names masked. Upgrade to Pro for full identity data.",
                 "warnings": warnings if warnings else []
             },
             "_demo": {
-               "policy": "2026-01-Smart-Obfuscation",
-               "watermarked_fields": ["totals", "line_items.prices", "seller.vat"]
+               "policy": "2026-01-Open-Values-Masked-Identity",
+               "watermarked_fields": ["seller.name", "buyer.name", "seller.vat_number"]
             }
         }
         
