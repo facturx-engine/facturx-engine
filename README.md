@@ -2,13 +2,7 @@
 
 > **Factur-X Engine** is a stateless, air-gapped Docker container providing a REST API to **Generate**, **Validate**, and **Extract** electronic invoices. It ensures 100% compliance with **EN 16931**, **ZUGFeRD 2.4**, and **XRechnung 3.0** standards without requiring external dependencies or internet access.
 
-![Docker Pulls](https://img.shields.io/docker/pulls/facturxengine/facturx-engine)
-![License](https://img.shields.io/badge/license-Community-blue.svg)
-![Standard](https://img.shields.io/badge/standard-EN16931-green.svg)
-[![CRA](https://img.shields.io/badge/EU_CRA-Ready-blueviolet)](docs/cra.md)
-[![SBOM](https://img.shields.io/badge/SBOM-CycloneDX-informational)](https://github.com/facturx-engine/facturx-engine/actions)
-[![Signed](https://img.shields.io/badge/Image-Cosign_Signed-success)](https://github.com/sigstore/cosign)
-[![GitHub](https://img.shields.io/badge/github-repo-181717?logo=github)](https://github.com/facturx-engine/facturx-engine)
+![Docker Pulls](https://img.shields.io/docker/pulls/facturxengine/facturx-engine) [![GitHub](https://img.shields.io/badge/github-repo-181717?logo=github)](https://github.com/facturx-engine/facturx-engine) ![License](https://img.shields.io/badge/license-Community-blue.svg) ![Standard](https://img.shields.io/badge/standard-EN16931-green.svg) [![CRA](https://img.shields.io/badge/EU_CRA-Ready-blueviolet)](docs/cra.md) [![SBOM](https://img.shields.io/badge/SBOM-CycloneDX-informational)](https://github.com/facturx-engine/facturx-engine/actions) [![Signed](https://img.shields.io/badge/Image-Cosign_Signed-success)](https://github.com/sigstore/cosign)
 
 ---
 
