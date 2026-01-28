@@ -14,15 +14,19 @@ Runs immediately on any Docker host. No Python/Java dependencies.
 # 1. Start the Engine (API)
 docker run -d -p 8000:8000 --name facturx-engine facturxengine/facturx-engine:latest
 
-# 2. Download example files (from GitHub)
-curl -O https://raw.githubusercontent.com/facturx-engine/facturx-engine/main/examples/invoice_raw.pdf
-curl -O https://raw.githubusercontent.com/facturx-engine/facturx-engine/main/examples/simple_invoice.json
+# 2. Create a sample PDF and JSON metadata (or use your own)
+# Sample files are available in the repository: examples/invoice_raw.pdf, examples/simple_invoice.json
 
 # 3. Generate compliant invoice (Merge PDF + Data)
+# Linux/macOS:
 curl -X POST "http://localhost:8000/v1/convert" \
   -F "pdf=@invoice_raw.pdf" \
   -F "metadata=$(cat simple_invoice.json)" \
   --output invoice_compliant.pdf
+
+# Windows PowerShell:
+# $json = Get-Content simple_invoice.json -Raw
+# Invoke-WebRequest -Uri "http://localhost:8000/v1/convert" -Method Post -Form @{ pdf = Get-Item invoice_raw.pdf; metadata = $json } -OutFile invoice_compliant.pdf
 ```
 
 ### Extract to JSON (Open Core)
@@ -31,7 +35,7 @@ The Community Edition extracts **full financial and identity data**. No masking,
 
 ```bash
 curl -X POST "http://localhost:8000/v1/extract" \
-  -F "pdf=@invoice_compliant.pdf"
+  -F "file=@invoice_compliant.pdf"
 ```
 
 **Response Preview:**
@@ -53,7 +57,7 @@ The engine validates files against the official **EN 16931 Schematron** rules us
 * **Pro Mode (License Key)**: Returns the **full** list of all validation errors/warnings suitable for compliance reporting.
 
 ```bash
-curl -X POST "http://localhost:8000/v1/validate" -F "pdf=@invoice_compliant.pdf"
+curl -X POST "http://localhost:8000/v1/validate" -F "file=@invoice_compliant.pdf"
 ```
 
 ---

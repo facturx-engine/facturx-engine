@@ -50,6 +50,8 @@ class GeneratorService:
                 "currency_code": metadata.currency_code,
                 "profile": metadata.profile,
                 "document_type_code": metadata.document_type_code,
+                "due_date": metadata.due_date,
+                "payment_terms": metadata.payment_terms,
             }
             
             xml_content = template.render(**context)
@@ -98,13 +100,15 @@ class GeneratorService:
             
             # AUTOMATIC VALIDATION (Quality Gate)
             # Ensure we never deliver a broken or non-compliant file
-            from app.services.validator import ValidationService
-            is_valid, _, _, errors = ValidationService.validate_file(result_bytes, "generated_check.pdf")
+            from app.services.hybrid_validation_service import HybridValidationService
+            validation_res = HybridValidationService.validate(result_bytes, "generated_check.pdf")
             
-            if not is_valid:
-                logger.error(f"Generated PDF failed validation: {errors}")
+            if not validation_res["is_valid"]:
+                errors = validation_res.get("errors", [])
+                error_msg = errors[0].get("message") if errors else "Unknown validation error"
+                logger.error(f"Generated PDF failed compliance check: {errors}")
                 # We fail strict. A generated invoice MUST be valid.
-                raise ValueError(f"Generated Factur-X PDF failed compliance check: {errors[0]}")
+                raise ValueError(f"Generated Factur-X PDF failed compliance check: {error_msg}")
                 
             return result_bytes
             

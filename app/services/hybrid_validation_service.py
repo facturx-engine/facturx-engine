@@ -60,13 +60,7 @@ def _run_hybrid_validation(xml_content: bytes, xsd_path: str, xslt_path: str) ->
     import sys
     import os
     
-    # Add prototype path for imports
-    proto_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 
-                               "prototypes", "saxonc_validation")
-    if proto_path not in sys.path:
-        sys.path.insert(0, proto_path)
-    
-    from hybrid_validator import HybridValidator, ValidationResult
+    from app.services.hybrid_validator import HybridValidator, ValidationResult
     
     try:
         validator = HybridValidator(

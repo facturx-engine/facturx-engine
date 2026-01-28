@@ -44,20 +44,22 @@
     <ram:ApplicableHeaderTradeAgreement>
       <ram:SellerTradeParty>
         <ram:Name>{{ seller.name }}</ram:Name>
+        {% if seller.siret %}
         <ram:SpecifiedLegalOrganization>
-             <ram:ID schemeID="0002">{{ seller.siret | default('00000000000000') }}</ram:ID>
+             <ram:ID schemeID="0002">{{ seller.siret }}</ram:ID>
         </ram:SpecifiedLegalOrganization>
-        {% if seller.address %}
-        <ram:PostalTradeAddress>
-            <ram:PostcodeCode>{{ seller.address.postcode }}</ram:PostcodeCode>
-            <ram:LineOne>{{ seller.address.line1 }}</ram:LineOne>
-            {% if seller.address.line2 %}<ram:LineTwo>{{ seller.address.line2 }}</ram:LineTwo>{% endif %}
-            <ram:CityName>{{ seller.address.city }}</ram:CityName>
-            <ram:CountryID>{{ seller.address.country_code }}</ram:CountryID>
-        </ram:PostalTradeAddress>
-        {% else %}
-        <ram:PostalTradeAddress><ram:CountryID>{{ seller.country_code }}</ram:CountryID></ram:PostalTradeAddress>
         {% endif %}
+        <ram:PostalTradeAddress>
+            {% if seller.address %}
+            {% if seller.address.postcode %}<ram:PostcodeCode>{{ seller.address.postcode }}</ram:PostcodeCode>{% endif %}
+            <ram:LineOne>{{ seller.address.line1 or 'Street' }}</ram:LineOne>
+            {% if seller.address.line2 %}<ram:LineTwo>{{ seller.address.line2 }}</ram:LineTwo>{% endif %}
+            <ram:CityName>{{ seller.address.city or 'City' }}</ram:CityName>
+            <ram:CountryID>{{ seller.address.country_code or seller.country_code or 'FR' }}</ram:CountryID>
+            {% else %}
+            <ram:CountryID>{{ seller.country_code or 'FR' }}</ram:CountryID>
+            {% endif %}
+        </ram:PostalTradeAddress>
         {% if seller.vat_number %}
         <ram:SpecifiedTaxRegistration>
           <ram:ID schemeID="VA">{{ seller.vat_number }}</ram:ID>
@@ -71,12 +73,12 @@
       </ram:SellerTradeParty>
       <ram:BuyerTradeParty>
         <ram:Name>{{ buyer.name }}</ram:Name>
-         {% if buyer.address %}
+        {% if buyer.address %}
         <ram:PostalTradeAddress>
-            <ram:PostcodeCode>{{ buyer.address.postcode }}</ram:PostcodeCode>
-            <ram:LineOne>{{ buyer.address.line1 }}</ram:LineOne>
-            <ram:CityName>{{ buyer.address.city }}</ram:CityName>
-            <ram:CountryID>{{ buyer.address.country_code }}</ram:CountryID>
+            {% if buyer.address.postcode %}<ram:PostcodeCode>{{ buyer.address.postcode }}</ram:PostcodeCode>{% endif %}
+            <ram:LineOne>{{ buyer.address.line1 or 'Street' }}</ram:LineOne>
+            <ram:CityName>{{ buyer.address.city or 'City' }}</ram:CityName>
+            <ram:CountryID>{{ buyer.address.country_code or 'FR' }}</ram:CountryID>
         </ram:PostalTradeAddress>
         {% endif %}
       </ram:BuyerTradeParty>
@@ -93,6 +95,16 @@
             <ram:RateApplicablePercent>{{ tax.rate }}</ram:RateApplicablePercent>
       </ram:ApplicableTradeTax>
       {% endfor %}
+      {% if due_date or payment_terms %}
+      <ram:SpecifiedTradePaymentTerms>
+        {% if payment_terms %}<ram:Description>{{ payment_terms }}</ram:Description>{% endif %}
+        {% if due_date %}
+        <ram:DueDateDateTime>
+            <udt:DateTimeString format="102">{{ due_date }}</udt:DateTimeString>
+        </ram:DueDateDateTime>
+        {% endif %}
+      </ram:SpecifiedTradePaymentTerms>
+      {% endif %}
       <ram:SpecifiedTradeSettlementHeaderMonetarySummation>
         {% if profile != 'minimum' %}<ram:LineTotalAmount>{{ amounts.tax_basis_total }}</ram:LineTotalAmount>{% endif %}
         <ram:TaxBasisTotalAmount>{{ amounts.tax_basis_total }}</ram:TaxBasisTotalAmount>

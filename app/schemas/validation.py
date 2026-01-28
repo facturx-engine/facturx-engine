@@ -72,6 +72,8 @@ class InvoiceMetadata(BaseModel):
         default="en16931",
         description="Factur-X profile level"
     )
+    due_date: Optional[str] = Field(None, description="Payment due date (YYYYMMDD format)")
+    payment_terms: Optional[str] = Field(None, description="Payment terms description")
     document_type_code: str = Field(default="380", description="Document type code (380=Commercial Invoice)")
 
 
