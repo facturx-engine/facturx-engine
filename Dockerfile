@@ -22,8 +22,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Copy application code
 COPY app/ app/
 
-# Copy Hybrid Validator from prototype
-COPY prototypes/saxonc_validation/hybrid_validator.py prototypes/saxonc_validation/hybrid_validator.py
+# Application code includes hybrid_validation_service.py
 
 # Copy EN16931 Schematron XSLT rules (official EU validation)
 COPY docs/2025_12_04_FNFE_SCHEMATRONS_FR_CTC_V1.2.0/_EN16931_Schematrons_V1.3.15_CII_ET_UBL/_XSLT/ docs/2025_12_04_FNFE_SCHEMATRONS_FR_CTC_V1.2.0/_EN16931_Schematrons_V1.3.15_CII_ET_UBL/_XSLT/
