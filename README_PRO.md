@@ -1,6 +1,6 @@
 # Factur-X Engine Pro
 
-Thank you for purchasing the **Factur-X Engine Pro**!
+Thank you for upgrading to **Factur-X Engine Pro**!
 This guide will help you install, license, and use the engine in your production environment.
 
 > [!IMPORTANT]
@@ -9,7 +9,7 @@ This guide will help you install, license, and use the engine in your production
 
 ---
 
-## 📦 1. Installation
+## 1. Installation
 
 You received the software as a Docker Archive (`.tar` file).
 
@@ -28,9 +28,9 @@ You received the software as a Docker Archive (`.tar` file).
 
 ---
 
-## 🔑 2. Activation & Running
+## 2. Activation & Running
 
-You need your **LICENSE_KEY** (received by email after purchase).
+You need your **LICENSE_KEY**.
 
 Run the engine with the key as an environment variable:
 
@@ -42,20 +42,20 @@ docker run -d \
   facturx-pro:v1.3.1
 ```
 
-> **Note:** Without a valid `LICENSE_KEY`, the engine runs in **Demo Mode** (all outputs are watermarked/masked).
+> **Note:** With a valid `LICENSE_KEY`, the engine unlocks Pro features (Full Validation Report, Business Metrics) and removes all usage limits.
 
 ---
 
-## ⚡ 3. API Usage
+## 3. API Usage
 
 ### Health Check
 
 ```bash
 curl http://localhost:8000/health
-# {"status": "healthy", "service": "factur-x-api", "version": "1.0.0"}
+# {"status": "healthy", "service": "factur-x-api", "version": "1.3.1"}
 ```
 
-### ✅ Convert PDF to Factur-X
+### Convert PDF to Factur-X
 
 Turn a standard PDF into an electronic invoice (Factur-X/ZUGFeRD).
 
@@ -66,7 +66,7 @@ curl -X POST "http://localhost:8000/v1/convert" \
   -o factur-x.pdf
 ```
 
-### 🔍 Extract Data (Pro Feature)
+### Extract Data (Open Core)
 
 Extract structured JSON data from **any** Factur-X/ZUGFeRD invoice (imported from suppliers).
 
@@ -75,44 +75,38 @@ curl -X POST "http://localhost:8000/v1/extract" \
   -F "file=@supplier_invoice.pdf"
 ```
 
-**Response Example:**
+### Validation (Pro Mode)
 
-```json
-{
-  "invoice_number": "F2024-001",
-  "formatted_issue_date": "2024-03-21",
-  "totals": {
-    "net_amount": "100.00",
-    "tax_amount": "20.00",
-    "payable_amount": "120.00"
-  },
-  "seller": { "name": "ACME Corp", "vat_number": "FR123456789" }
-}
-```
-
-### 📊 Observability (Pro Feature)
-
-Monitor your engine's performance in real-time with the Prometheus-compatible endpoint.
+With your license key, the validation endpoint returns the **full compliance report** (instead of the Teaser).
 
 ```bash
-curl -H "Authorization: Bearer YOUR_LICENSE_KEY" http://localhost:8000/metrics
+curl -X POST "http://localhost:8000/v1/validate" -F "file=@invoice.pdf"
 ```
 
-**Exposed metrics:**
+### Observability (Business Metrics)
 
-- `facturx_requests_total`
-- `facturx_active_requests`
-- `facturx_request_duration_seconds_avg`
-- `facturx_errors_total`
+Monitor your engine's performance in real-time. Because you have a valid license, you see **Business Metrics** in addition to Operational Metrics.
+
+```bash
+curl http://localhost:8000/metrics
+```
+
+**Metrics available:**
+
+- `facturx_validation_outcome{mode="pro", result="invalid"}`
+- `facturx_validation_profile{profile="en16931"}`
+- `facturx_validation_error_type{rule_id="BR-CO-17"}`
 
 ---
 
-## 🆘 Support
+## Support
 
 For technical issues or updates:
 
 - **Email:** <facturx.engine@protonmail.com>
-- **Standards:** Fully compliant with **EN 16931**, **ZUGFeRD 2.2** and **Factur-X 1.0 (1.08 ready)**.
+- **Standards:** Fully compliant with **EN 16931**, **ZUGFeRD 2.2** and **Factur-X 1.0**.
 - **Trust Pack:** Includes **CRA Compliance Statement** and **SBOM (CycloneDX)** for your security audits.
 - **Updates:** You will receive email notifications for new versions (Security Patches).
 - **Docs:** Full API documentation is available at `http://localhost:8000/docs` when running the container.
+
+*Maintained by the Factur-X Engine Team.*

@@ -117,9 +117,15 @@ def validate_facturx(
     Validate a Factur-X PDF or XML file against EN 16931 standards.
     
     Returns a validation report with detected format, flavor, and any errors.
+    
+    **Pro Edition**: Full compliance report with all errors detailed.
+    **Community Edition (Teaser)**: Shows first error + count of hidden errors.
     """
     import time
+    import os
     from app.metrics import metrics
+    from app.license import is_licensed
+    
     start_time = time.time()
     metrics.inc("requests_total")
     metrics.inc("requests_validate")
@@ -134,18 +140,109 @@ def validate_facturx(
                 detail={"error": "EMPTY_FILE", "message": "File is empty"}
             )
         
-        # Validate file
-        is_valid, format_type, flavor, errors = ValidationService.validate_file(
-            file_content,
-            file.filename
-        )
+        # LICENSE CHECK
+        license_key = os.getenv("LICENSE_KEY", "").strip()
+        is_pro = False
         
-        return ValidationResult(
-            valid=is_valid,
-            format=format_type,
-            flavor=flavor,
-            errors=errors
-        )
+        if license_key:
+            try:
+                if is_licensed():
+                    is_pro = True
+                    logger.info("PRO License validated - Full compliance report enabled")
+            except Exception as e:
+                logger.warning(f"License check failed: {e}")
+        
+        # ALWAYS run Hybrid Validation (Teaser Mode for Community)
+        try:
+            from app.services.hybrid_validation_service import HybridValidationService
+            result = HybridValidationService.validate(file_content, file.filename)
+        except ImportError:
+            # Fallback to basic validation if hybrid not available
+            logger.warning("HybridValidationService not available, falling back to lite")
+            is_valid, format_type, flavor, errors = ValidationService.validate_file(
+                file_content,
+                file.filename
+            )
+            return ValidationResult(
+                valid=is_valid,
+                format=format_type,
+                flavor=flavor,
+                errors=errors,
+                validation_mode="lite"
+            )
+        
+        # Extract all errors from hybrid result
+        all_errors = result.get("errors", [])
+        total_error_count = len(all_errors)
+        
+        if is_pro:
+            # PRO MODE: Full compliance report
+            error_messages = [e.get("message", str(e)) for e in all_errors]
+            error_rules = [e.get("rule_id") for e in all_errors if e.get("rule_id")]
+            
+            # PRO-TIER METRICS
+            metrics.record_validation(
+                mode="pro",
+                is_valid=result["is_valid"],
+                profile=result.get("profile_detected"),
+                error_rules=error_rules
+            )
+            
+            return ValidationResult(
+                valid=result["is_valid"],
+                format=result.get("format_detected"),
+                flavor=result.get("profile_detected"),
+                errors=error_messages,
+                validation_mode="pro"
+            )
+        else:
+            # TEASER MODE: Show first error + hidden count
+            if total_error_count == 0:
+                # No errors - valid file
+                metrics.record_validation(
+                    mode="teaser",
+                    is_valid=True,
+                    profile=result.get("profile_detected")
+                )
+                return ValidationResult(
+                    valid=True,
+                    format=result.get("format_detected"),
+                    flavor=result.get("profile_detected"),
+                    errors=[],
+                    validation_mode="teaser"
+                )
+            else:
+                # Show ONLY first error + teaser message
+                first_error = all_errors[0]
+                hidden_count = total_error_count - 1
+                
+                teaser_errors = [
+                    f"[{first_error.get('rule_id', 'RULE')}] {first_error.get('message', 'Erreur de conformité détectée')}"
+                ]
+                
+                if hidden_count > 0:
+                    teaser_errors.append(
+                        f"⚠️ {hidden_count} autres erreurs de conformité critique détectées. "
+                        f"Activez la version Pro pour le rapport complet et garantir l'acceptation par Chorus Pro/PPF."
+                    )
+                
+                # TEASER CONVERSION METRICS
+                error_rules = [e.get("rule_id") for e in all_errors if e.get("rule_id")]
+                metrics.record_validation(
+                    mode="teaser",
+                    is_valid=False,
+                    profile=result.get("profile_detected"),
+                    error_rules=error_rules,
+                    hidden_count=hidden_count
+                )
+                
+                return ValidationResult(
+                    valid=False,
+                    format=result.get("format_detected"),
+                    flavor=result.get("profile_detected"),
+                    errors=teaser_errors,
+                    validation_mode="teaser"
+                )
         
     except HTTPException:
         metrics.inc("errors_total")

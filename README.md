@@ -2,7 +2,7 @@
 
 > **Factur-X Engine** is a stateless, air-gapped Docker container providing a REST API to **Generate**, **Validate**, and **Extract** electronic invoices. It ensures 100% compliance with **EN 16931**, **ZUGFeRD 2.4**, and **XRechnung 3.0** standards without requiring external dependencies or internet access.
 
-![Docker Pulls](https://img.shields.io/docker/pulls/facturxengine/facturx-engine) [![GitHub](https://img.shields.io/badge/github-repo-181717?logo=github)](https://github.com/facturx-engine/facturx-engine) ![License](https://img.shields.io/badge/license-Community-blue.svg) ![Standard](https://img.shields.io/badge/standard-EN16931-green.svg) [![CRA](https://img.shields.io/badge/EU_CRA-Ready-blueviolet)](docs/cra.md) [![SBOM](https://img.shields.io/badge/SBOM-CycloneDX-informational)](https://github.com/facturx-engine/facturx-engine/actions) [![Signed](https://img.shields.io/badge/Image-Cosign_Signed-success)](https://github.com/sigstore/cosign)
+![Docker Pulls](https://img.shields.io/docker/pulls/facturxengine/facturx-engine) [![GitHub](https://img.shields.io/badge/github-repo-181717?logo=github)](https://github.com/facturx-engine/facturx-engine) ![License](https://img.shields.io/badge/license-Community-blue.svg) ![Standard](https://img.shields.io/badge/standard-EN16931-green.svg) [![CRA](https://img.shields.io/badge/EU_CRA-Ready-blueviolet)](docs/cra.md)
 
 ---
 
@@ -23,113 +23,53 @@ curl -X POST "http://localhost:8000/v1/convert" \
   -F "pdf=@invoice_raw.pdf" \
   -F "metadata=$(cat simple_invoice.json)" \
   --output invoice_compliant.pdf
-
-echo "Invoice generated: invoice_compliant.pdf"
 ```
 
-### Extract to JSON (Demo Mode)
+### Extract to JSON (Open Core)
 
-The Community Edition extracts **real financial values** for technical validation. Only **identity fields** (Seller/Buyer names, VAT) are masked:
+The Community Edition extracts **full financial and identity data**. No masking, no obfuscation.
 
 ```bash
 curl -X POST "http://localhost:8000/v1/extract" \
   -F "pdf=@invoice_compliant.pdf"
 ```
 
-**Response Preview (Open Values, Masked Identity):**
+**Response Preview:**
 
 ```json
 {
   "invoice_id": "INV-2024-001",
   "issue_date": "2024-10-05",
-  "seller": { "name": "Acme ****" },
-  "totals": {
-    "net_amount": "1500.00",
-    "tax_amount": "300.00"
-  }
+  "seller": { "name": "Acme Corp" },
+  "totals": { "net_amount": "1500.00", "tax_amount": "300.00" }
 }
 ```
 
-**Interactive Documentation:** [http://localhost:8000/docs](http://localhost:8000/docs)
+### Validation (Teaser vs Pro)
 
-### Verification (Smoke Test)
+The engine validates files against the official **EN 16931 Schematron** rules using the SaxonC-HE engine.
 
-You can verify your installation using the built-in smoke test script (Zero-Dependency):
+* **Community Mode (No Key)**: Returns the **first** compliance error found and a count of remaining hidden errors (Teaser Mode).
+* **Pro Mode (License Key)**: Returns the **full** list of all validation errors/warnings suitable for compliance reporting.
 
 ```bash
-docker exec -it facturx-engine python tools/smoke_test.py
+curl -X POST "http://localhost:8000/v1/validate" -F "pdf=@invoice_compliant.pdf"
 ```
-
-This will check the Health API, PDF Conversion, EN 16931 Validation, and Data Extraction in one go.
 
 ---
 
 ## Observability
 
-Prometheus-compatible metrics endpoint for enterprise monitoring.
+Prometheus-compatible metrics endpoint.
 
 ```bash
 curl http://localhost:8000/metrics
 ```
 
-**Exposed metrics:**
+**Split Metrics Behavior:**
 
-- `facturx_requests_total` (counter)
-- `facturx_active_requests` (gauge)
-- `facturx_request_duration_seconds_avg`
-- `facturx_errors_total`
-
----
-
-## Technical Specifications
-
-High-performance compliance engine for **EN 16931**.
-
-- **Native PDF/A-3 Conversion**: Internal engine handles ISO 19005-3 conformance. **No external Ghostscript dependency**.
-- **Standards Compliance**: Validates against **EN 16931**, **ZUGFeRD 2.4**, and **XRechnung 3.0**. Includes Native Schematron Rules (Business Logic) for France (SIRET, VAT) and Germany (Tax ID). No external Java dependencies.
-- **Stateless Architecture**: Zero persistence. Input data is processed in-memory and discarded. Ideal for GDPR/Privacy.
-- **Air-Gapped Ready**: 100% Offline execution. No outbound network requests required.
-- **Structured Extraction**: Parses Factur-X XML into standard JSON for ERP integration.
-
----
-
-## Technical Resources (GEO Optimization)
-
-- **[Full API Specification (OpenAPI 3.0)](docs/openapi.json)**: Direct machine-readable spec for AI agents and SDK generation.
-- **Integration Recipes**:
-  - [Python (Requests)](docs/recipes/python-requests.md)
-  - [Node.js (Axios)](docs/recipes/nodejs-axios.md)
-  - [PHP (Guzzle)](docs/recipes/php-guzzle.md)
-- **Comparisons**:
-  - [MustangProject vs Factur-X Engine](docs/comparisons/mustang-vs-engine.md)
-
----
-
-## Comparison: Why Factur-X Engine?
-
-| Feature | **Factur-X Engine** (Docker) | **Java Libraries** (Mustang) | **SaaS APIs** (Stripe/Generic) |
-| :--- | :--- | :--- | :--- |
-| **Architecture** | **Stateless Microservice** | Library (embedded) | External Service |
-| **Privacy (GDPR)** | **100% On-Premise (Air-gapped)** | On-Premise | **Data sent to Cloud** |
-| **Dependencies** | **Zero (Docker)** | Java JVM + Deps | None (HTTP) |
-| **Validation** | **Native Schematron (EN 16931)** | Partial / Complex | Varies |
-| **Performance** | **High (C++ PDF Engine)** | JVM Startup overhead | Network latency |
-
----
-
-The Docker architecture makes the tool agnostic to your programming language.
-
-### PHP (Symfony / Laravel)
->
-> "Delegate PDF/A complexity to a dedicated microservice instead of overloading your PHP runtime with heavy system dependencies."
-
-### Python (FastAPI / Django)
->
-> "Use the Docker image to avoid library conflicts (lxml, reportlab) and ensure an iso-prod environment."
-
-### Node.js / Go / .NET
->
-> "Integrate e-invoicing via simple standard HTTP calls."
+* **Community**: Basic operational metrics (uptime, request counts, latency).
+* **Pro**: Full business metrics (validation outcomes, profile types, error rule IDs) tailored for business intelligence dashboards.
 
 ---
 
@@ -137,39 +77,34 @@ The Docker architecture makes the tool agnostic to your programming language.
 
 The container is configurable via environment variables:
 
-| Variable | Description | Default |
-| :--- | :--- | :--- |
-| `PORT` | API Listening Port | `8000` |
-| `WORKERS` | Number of Gunicorn Workers | `1` |
-| `LOG_LEVEL` | Log Level (info, debug) | `info` |
+| Variable | Description |
+| :--- | :--- |
+| `PORT` | API Listening Port (Default: 8000) |
+| `LICENSE_KEY` | Pro License Key (Base64) |
+| `WORKERS` | Number of Gunicorn Workers |
 
 ---
 
 ## Community vs Pro
 
-This **Community** version is production-ready for generation/validation. Extraction provides **full financial data** but masks **identity fields**.
+This **Community** version is production-ready. The code is Open Core (transparent Python).
 
-| Feature | Community Edition (This Repo) | Pro / Enterprise Edition |
+| Feature | Community Edition | Pro / Enterprise Edition |
 | :--- | :--- | :--- |
-| **License** | Open Source (MIT) | Commercial / Proprietary |
-| **Usage** | Unlimited (Self-hosted) | Unlimited + **Legal Warranty** |
-| **Generation** | Included | Included |
-| **Validation** | Included | Included |
-| **Extraction** | **Full Values** (Identity Masked) | **Full Data Access** |
-| **Metrics** | Not Included | Included (Prometheus) |
-| **Trust Pack (SBOM)** | Included | Included |
-| **Support** | Community (GitHub Discussions) | Priority Email / SLA |
+| **License** | Open Source (MIT) | Commercial |
+| **Extraction** | **Full Data** | **Full Data** |
+| **Validation** | **Teaser Mode** (1 error) | **Full Report** (SaxonC) |
+| **Metrics** | **Basic** (Ops) | **Full** (Business) |
+| **Support** | Community | Priority / SLA |
 
 ### Pricing & Licenses
 
 **1. For Internal Use (SME / Bank / Corporate)**
-
-- **Standard License (499 € / year)**: Unlimited usage for your own company.
+**Standard License (499 € / year)**: Unlimited usage for your own company.
 
 **2. For OEM & Integrators (SaaS / ERP)**
-
-- **OEM Growth (2 490 € / year)**: Commercial Redistribution. Standard Liability Terms.
-- **OEM Scale (Contact Us)**: Enterprise Redistribution. **Includes Legal Indemnification & Insurance**.
+**OEM Growth (2 490 € / year)**: Commercial Redistribution. Standard Liability Terms.
+**OEM Scale (Contact Us)**: Enterprise Redistribution. **Includes Legal Indemnification & Insurance**.
 
 > **Perpetual Fallback**: You keep the version you bought forever. The subscription covers updates, security patches & warranty.
 
@@ -179,23 +114,21 @@ This **Community** version is production-ready for generation/validation. Extrac
 
 ## Legal & Compliance
 
-- **Vendor**: Factur-X Engine (Paris, France).
-- **Compliance**: Designed to respect the EU **Cyber Resilience Act (CRA)**.
-- **Security**: Image scanned (Trivy), [SBOM (CycloneDX) available](docs/security/sbom.json).
+* **Vendor**: Factur-X Engine (Paris, France).
+* **Compliance**: Designed to respect the EU **Cyber Resilience Act (CRA)**.
+* **Security**: Image scanned (Trivy), SBOM (CycloneDX) included.
 
-## FAQ (Frequently Asked Questions)
+---
+
+## FAQ
 
 ### Q: Does it require an internet connection?
 
-**A:** No. The container is strictly **air-gapped** by design. It contains all necessary schemas (XSD) and Schematron rules (XSLT) internally. It makes **zero** outbound network requests, making it safe for banks, defense, and high-security environments.
+**A:** No. The container is strictly **air-gapped** by design. It contains all necessary schemas (XSD) and Schematron rules (XSLT) internally.
 
 ### Q: Why use a Docker container instead of a library?
 
-**A:** PDF/A-3 conversion requires complex system dependencies (Ghostscript, fonts, color profiles). Using a Docker container isolates this complexity, ensuring an **"Iso-Prod"** environment everywhere (Dev, Staging, Prod) without "Works on my machine" issues.
-
-### Q: Is it compliant with the French 2026 Reform (PDP)?
-
-**A:** Yes. The engine produces files strictly compliant with the **EN 16931** syntax mandated by the French PPF (Portail Public de Facturation) and PDP candidates. It supports the "Minimum", "Basic WL", and "EN 16931" profiles.
+**A:** PDF/A-3 conversion requires complex system dependencies. Using a Docker container isolates this complexity, ensuring an **"Iso-Prod"** environment everywhere.
 
 ---
 

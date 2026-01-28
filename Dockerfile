@@ -1,58 +1,48 @@
-# Stage 1: Base (Dependencies)
 # ==========================================
-FROM python:3.11-slim-bookworm AS base
+# Factur-X Engine - Simplified Dockerfile
+# Single-stage, no Cython, pure Python
+# ==========================================
+FROM python:3.11-slim-bookworm
+
+LABEL maintainer="Factur-X Engine"
+LABEL description="Self-hosted Factur-X API with EN16931 validation"
+
 WORKDIR /app
-RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
-    libxml2 libxslt1.1 && rm -rf /var/lib/apt/lists/*
-COPY requirements.txt .
-# Install runtime deps in base to be shared
-# We install build-essential temporarily to compile wheels (like lxml/psutil) if pre-built ones miss
-RUN apt-get update && apt-get install -y --no-install-recommends build-essential python3-dev libxml2-dev libxslt1-dev zlib1g-dev libfreetype6-dev libjpeg-dev && \
-    pip install --no-cache-dir --upgrade pip setuptools wheel && \
-    pip install --no-cache-dir -r requirements.txt && \
-    apt-get purge -y --auto-remove build-essential python3-dev libxml2-dev libxslt1-dev zlib1g-dev libfreetype6-dev libjpeg-dev && \
+
+# Install system dependencies for lxml/saxonc
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libxml2 libxslt1.1 && \
     rm -rf /var/lib/apt/lists/*
 
-# ==========================================
-# Stage 2: Builder (Compile Pro / Cython)
-# 🛑 DEV WARNING: THIS STAGE REQUIRES LOCAL-ONLY FILES.
-# DO NOT ATTEMPT TO RUN THIS ON GITHUB ACTIONS.
-# ==========================================
-FROM python:3.11-slim-bookworm AS builder-pro
-WORKDIR /app
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential python3-dev gcc libxml2-dev libxslt1-dev zlib1g-dev libfreetype6-dev libjpeg-dev && rm -rf /var/lib/apt/lists/*
+# Install Python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir cython wheel setuptools && pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
 COPY app/ app/
-COPY setup.py .
-# Build Date Injection (Fail Fast)
-ARG BUILD_DATE=2024-01-01
-RUN echo "$BUILD_DATE" | grep -E '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' || (echo "Invalid BUILD_DATE format" && exit 1) && \
-    sed -i "s/BUILD_DATE_PLACEHOLDER/$BUILD_DATE/g" /app/app/license.py && \
-    rm -rf build && \
-    python setup.py build_ext --inplace --verbose && \
-    python -c "import app.license as m; print(f'VERIFICATION: BUILD_DATE={m.BUILD_DATE}'); assert m.BUILD_DATE == '$BUILD_DATE', f'FAILED: {m.BUILD_DATE}'" && \
-    rm /app/app/license.py
-RUN rm -f app/license.py app/services/extractor.py app/services/generator.py app/services/validator.py
-RUN rm -f app/services/*.c app/*.c
-# Verify
-RUN find app -name "*.so" -type f | grep -q . || exit 1
 
-# ==========================================
-# Stage 3: Runtime Unified (Pro + Community)
-# ==========================================
-FROM base AS final
-RUN groupadd -r appuser && useradd -r -g appuser appuser
-COPY --from=builder-pro /app/app /app/app
+# Copy Hybrid Validator from prototype
+COPY prototypes/saxonc_validation/hybrid_validator.py prototypes/saxonc_validation/hybrid_validator.py
 
-# Inject Demo Extractor as fallback
-COPY community_stubs/app/services/extractor.py /app/app/services/extractor_demo.py
+# Copy EN16931 Schematron XSLT rules (official EU validation)
+COPY docs/2025_12_04_FNFE_SCHEMATRONS_FR_CTC_V1.2.0/_EN16931_Schematrons_V1.3.15_CII_ET_UBL/_XSLT/ docs/2025_12_04_FNFE_SCHEMATRONS_FR_CTC_V1.2.0/_EN16931_Schematrons_V1.3.15_CII_ET_UBL/_XSLT/
 
-# Copy installed packages from builder (Cython modules dependencies)
-COPY --from=builder-pro /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
-WORKDIR /app
-RUN chown -R appuser:appuser /app
+# Copy XSD schemas
+COPY docs/2025_12_04_FNFE_SCHEMATRONS_FR_CTC_V1.2.0/_CII_D22B_XSD/ docs/2025_12_04_FNFE_SCHEMATRONS_FR_CTC_V1.2.0/_CII_D22B_XSD/
+
+# License attribution
+COPY LICENSE_SAXON .
+
+# Create non-root user for security
+RUN groupadd -r appuser && useradd -r -g appuser appuser && \
+    chown -R appuser:appuser /app
 USER appuser
+
 EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
+
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

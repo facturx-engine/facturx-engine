@@ -161,7 +161,7 @@
                 </h1>
                 <p class="text-lg text-slate-400 max-w-xl mb-12 leading-relaxed">
                     The most robust invoicing engine for critical infrastructure. Factur-X & XRechnung generated
-                    locally, zero dependencies, with native Schematron validation.
+                    locally, zero dependencies, with process-isolated SaxonC validation.
                 </p>
                 <div class="flex flex-wrap gap-4">
                     <a href="https://github.com/facturx-engine/facturx-engine#quickstart"
@@ -264,16 +264,17 @@
                 </div>
                 <div class="space-y-4">
                     <div class="text-amber-500 font-mono text-xs tracking-widest uppercase">03 / Integrity</div>
-                    <h3 class="text-2xl font-bold text-white">Schematron Validation</h3>
+                    <h3 class="text-2xl font-bold text-white">SaxonC Process Isolation</h3>
                     <p class="text-sm text-slate-500 leading-relaxed">Don't just generate. Validate. Every invoice is
-                        checked against EN 16931 business rules before being sealed into the PDF/A-3.</p>
+                        checked against EN 16931 rules in isolated processes for maximum stability.</p>
                 </div>
                 <!-- Row 2 -->
                 <div class="space-y-4">
                     <div class="text-amber-500 font-mono text-xs tracking-widest uppercase">04 / Observability</div>
-                    <h3 class="text-2xl font-bold text-white">Prometheus Metrics</h3>
-                    <p class="text-sm text-slate-500 leading-relaxed">Enterprise-grade monitoring. Exposes a /metrics
-                        endpoint compatible with Prometheus/Grafana to track throughput and latency (Pro).</p>
+                    <h3 class="text-2xl font-bold text-white">Split Metrics</h3>
+                    <p class="text-sm text-slate-500 leading-relaxed">Enterprise-grade monitoring. Basic ops metrics for
+                        all, plus
+                        detailed Business Intelligence metrics for Pro users (Profiles, Error Types).</p>
                 </div>
                 <div class="space-y-4">
                     <div class="text-amber-500 font-mono text-xs tracking-widest uppercase">05 / Supply Chain</div>

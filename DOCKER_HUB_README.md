@@ -24,10 +24,10 @@ curl -X POST "http://localhost:8000/v1/convert" \
   -F "metadata=$(cat simple_invoice.json)" \
   --output invoice_compliant.pdf
 
-echo "✅ Invoice generated: invoice_compliant.pdf"
+echo "Invoice generated: invoice_compliant.pdf"
 ```
 
-### 📄 Extract to JSON (Demo Mode)
+### Extract to JSON (Open Core)
 
 ```bash
 curl -X POST "http://localhost:8000/v1/extract" \
@@ -43,7 +43,7 @@ curl -X POST "http://localhost:8000/v1/extract" \
 High-performance compliance engine for **EN 16931**.
 
 * **Native PDF/A-3 Conversion**: Internal engine handles ISO 19005-3 conformance. **No external Ghostscript dependency**.
-* **Standards Compliance**: Validates against **EN 16931**, **ZUGFeRD 2.4**, and **XRechnung 3.0**. Includes Native Schematron Rules (Business Logic) for France (SIRET, VAT) and Germany (Tax ID). No external Java dependencies.
+* **Standards Compliance**: Validates against **EN 16931**, **ZUGFeRD 2.4**, and **XRechnung 3.0**. Includes Native Schematron Rules (Business Logic) for France (SIRET, VAT) and Germany (Tax ID).
 * **Stateless Architecture**: Zero persistence. Input data is processed in-memory and discarded. Ideal for GDPR/Privacy.
 * **Air-Gapped Ready**: 100% Offline execution. No outbound network requests required.
 * **Structured Extraction**: Parses Factur-X XML into standard JSON for ERP integration.
@@ -75,6 +75,7 @@ The container is configurable via environment variables:
 | Variable | Description | Default |
 | :--- | :--- | :--- |
 | `PORT` | API Listening Port | `8000` |
+| `LICENSE_KEY` | Pro License Key | |
 | `WORKERS` | Number of Gunicorn Workers | `1` |
 | `LOG_LEVEL` | Log Level (info, debug) | `info` |
 
@@ -82,18 +83,15 @@ The container is configurable via environment variables:
 
 ## Community vs Pro
 
-This **Community** version is production-ready for generation/validation. Extraction provides **full financial values** with **identity masking**.
+This **Community** version is production-ready.
 
-| Feature | Community Edition (This Repo) | Pro / Enterprise Edition |
+| Feature | Community Edition | Pro / Enterprise Edition |
 | :--- | :--- | :--- |
-| **License** | Open Source (MIT) | Commercial / Proprietary |
-| **Usage** | Unlimited (Self-hosted) | Unlimited + **Legal Warranty** |
-| **Generation** | Included | Included |
-| **Validation** | Included | Included |
-| **Extraction** | **Full Values** (Identity Masked) | **Full Data Access** |
-| **Metrics** | Not Included | Included (Prometheus) |
-| **Trust Pack (SBOM)** | Included | Included |
-| **Support** | Community (GitHub Interactions) | Priority Email / SLA |
+| **License** | Open Source (MIT) | Commercial |
+| **Extraction** | **Full Data** | **Full Data** |
+| **Validation** | **Teaser Mode** (1 error) | **Full Report** |
+| **Metrics** | **Basic** (Ops) | **Full** (Business) |
+| **Support** | Community | Priority / SLA |
 
 ### Pricing & Licenses
 

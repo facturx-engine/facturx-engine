@@ -1,6 +1,7 @@
 """
-Extraction service for Community Edition (Demo Mode).
-Parses real XML but replaces sensitive financial values with coherent DEMO data.
+Extraction service for Community Edition (Open Core).
+Parses Factur-X/ZUGFeRD XML and returns FULL invoice data (no obfuscation).
+Pro edition adds advanced validation and compliance features.
 """
 import logging
 from io import BytesIO
@@ -177,13 +178,12 @@ class ExtractionService:
                 vat_rate = 0.0
             
             line_items.append({
-                "description": f"{name} [DEMO]",
+                "description": raw_name,  # Full name (no truncation in Open Core)
                 "quantity": f"{qty}",
                 "unit_code": xpath_first(item, './/ram:BilledQuantity/@unitCode') or "C62",
                 "unit_price": f"{unit_price:.2f}",
                 "vat_rate": f"{vat_rate:.2f}", 
-                "line_total": f"{line_total:.2f}",
-                "_demo": True  # Name is still masked
+                "line_total": f"{line_total:.2f}"
             })
 
         # 3. Totals: REAL (Unlocked for Developer Experience)
@@ -223,35 +223,60 @@ class ExtractionService:
         except:
             payable_amount = gross_total
 
+        # 3. Extract REAL seller/buyer (Open Core Reset - no masking in Community)
+        seller_name = xpath_first(xml_root, '//ram:SellerTradeParty/ram:Name') or ""
+        seller_vat = xpath_first(xml_root, '//ram:SellerTradeParty//ram:SpecifiedTaxRegistration/ram:ID') or ""
+        seller_address_line = xpath_first(xml_root, '//ram:SellerTradeParty/ram:PostalTradeAddress/ram:LineOne') or ""
+        seller_city = xpath_first(xml_root, '//ram:SellerTradeParty/ram:PostalTradeAddress/ram:CityName') or ""
+        seller_postcode = xpath_first(xml_root, '//ram:SellerTradeParty/ram:PostalTradeAddress/ram:PostcodeCode') or ""
+        seller_country = xpath_first(xml_root, '//ram:SellerTradeParty/ram:PostalTradeAddress/ram:CountryID') or ""
+        
+        buyer_name = xpath_first(xml_root, '//ram:BuyerTradeParty/ram:Name') or ""
+        buyer_vat = xpath_first(xml_root, '//ram:BuyerTradeParty//ram:SpecifiedTaxRegistration/ram:ID') or ""
+        buyer_address_line = xpath_first(xml_root, '//ram:BuyerTradeParty/ram:PostalTradeAddress/ram:LineOne') or ""
+        buyer_city = xpath_first(xml_root, '//ram:BuyerTradeParty/ram:PostalTradeAddress/ram:CityName') or ""
+        buyer_postcode = xpath_first(xml_root, '//ram:BuyerTradeParty/ram:PostalTradeAddress/ram:PostcodeCode') or ""
+        buyer_country = xpath_first(xml_root, '//ram:BuyerTradeParty/ram:PostalTradeAddress/ram:CountryID') or ""
+
         data = {
             "invoice_number": invoice_id,
             "invoice_date": date_str,
             "currency": currency,
             
+            # Open Core: FULL identity exposed (no masking)
             "seller": {
-                "name": (xpath_first(xml_root, '//ram:SellerTradeParty/ram:Name') or "")[:5] + "****",
-                "vat_number": "DEMO_*****",  # Still masked for commercial protection
-                "address": "DEMO ADDRESS"
+                "name": seller_name,
+                "vat_number": seller_vat,
+                "address": {
+                    "line": seller_address_line,
+                    "city": seller_city,
+                    "postal_code": seller_postcode,
+                    "country": seller_country
+                }
             },
             "buyer": {
-                "name": (xpath_first(xml_root, '//ram:BuyerTradeParty/ram:Name') or "")[:5] + "****"
+                "name": buyer_name,
+                "vat_number": buyer_vat,
+                "address": {
+                    "line": buyer_address_line,
+                    "city": buyer_city,
+                    "postal_code": buyer_postcode,
+                    "country": buyer_country
+                }
             },
             
             "totals": {
                 "net_amount": f"{total_net_real:.2f}",
                 "tax_amount": f"{tax_total:.2f}",
                 "gross_amount": f"{gross_total:.2f}",
-                "payable_amount": f"{payable_amount:.2f}",
-                "_demo": True,
-                "_watermark": "IDENTITY_MASKED_FOR_DEMO"
+                "payable_amount": f"{payable_amount:.2f}"
             },
             
             "tax_breakdown": [
                 {
                     "vat_rate": "REAL",  # TODO: Extract real breakdown
                     "tax_amount": f"{tax_total:.2f}",
-                    "taxable_amount": f"{total_net_real:.2f}",
-                    "_demo": True
+                    "taxable_amount": f"{total_net_real:.2f}"
                 }
             ],
             
@@ -259,13 +284,8 @@ class ExtractionService:
             
             "_meta": {
                 "filename": filename,
-                "demo_mode": True,
-                "license_notice": "DEMO: Seller/Buyer names masked. Upgrade to Pro for full identity data.",
+                "edition": "community",  # Pro will add more fields
                 "warnings": warnings if warnings else []
-            },
-            "_demo": {
-               "policy": "2026-01-Open-Values-Masked-Identity",
-               "watermarked_fields": ["seller.name", "buyer.name", "seller.vat_number"]
             }
         }
         

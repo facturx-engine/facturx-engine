@@ -1,0 +1,18 @@
+Saxon and SaxonC-HE License Attribution
+========================================
+
+This software includes SaxonC-HE, the Home Edition of the Saxon XSLT and XQuery
+Processor from Saxonica Limited.
+
+SaxonC-HE is distributed under the Mozilla Public License version 2.0 (MPL 2.0).
+
+For the full license text, see: https://www.mozilla.org/en-US/MPL/2.0/
+
+Copyright (c) Saxonica Limited. All rights reserved.
+https://www.saxonica.com/
+
+This product is NOT a modified version of SaxonC-HE. We use SaxonC-HE as a
+runtime dependency for XSLT 3.0 processing of official EN 16931 Schematron
+artifacts published by the European Committee for Standardization (CEN).
+
+For questions about Saxonica products: https://www.saxonica.com/contact/

@@ -81,6 +81,7 @@ class ValidationResult(BaseModel):
     format: Optional[str] = Field(None, description="Detected format (factur-x, zugferd, order-x)")
     flavor: Optional[str] = Field(None, description="Detected flavor/level")
     errors: list[str] = Field(default_factory=list, description="List of validation errors")
+    validation_mode: Optional[str] = Field(None, description="Validation mode: 'hybrid' (Pro) or 'lite' (Community)")
 
 
 class ErrorResponse(BaseModel):

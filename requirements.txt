@@ -14,4 +14,5 @@ requests==2.32.5
 pynacl==1.5.0
 jaraco.context==6.1.0
 setuptools==75.0.0
+saxonche==12.5.0
 
