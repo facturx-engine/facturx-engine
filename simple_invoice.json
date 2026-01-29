@@ -1,0 +1,53 @@
+{
+  "invoice_number": "INV-2024-001",
+  "issue_date": "20240117",
+  "seller": {
+    "name": "Acme Freelance",
+    "address": {
+      "line1": "42 Tech Boulevard",
+      "city": "Lyon",
+      "postcode": "69001",
+      "country_code": "FR"
+    },
+    "vat_number": "FR123456789"
+  },
+  "buyer": {
+    "name": "StartUp SAS",
+    "address": {
+      "line1": "123 Innovation Street",
+      "city": "Paris",
+      "postcode": "75001",
+      "country_code": "FR"
+    }
+  },
+  "lines": [
+    {
+      "line_id": "1",
+      "name": "Web Development Services",
+      "quantity": 1.0,
+      "unit_code": "C62",
+      "net_price": 500.00,
+      "net_total": 500.00,
+      "vat_rate": 20.0,
+      "vat_category": "S"
+    }
+  ],
+  "tax_details": [
+    {
+      "calculated_amount": "100.00",
+      "basis_amount": "500.00",
+      "rate": "20.00",
+      "category_code": "S"
+    }
+  ],
+  "amounts": {
+    "tax_basis_total": "500.00",
+    "tax_total": "100.00",
+    "grand_total": "600.00",
+    "due_payable": "600.00"
+  },
+  "due_date": "20240217",
+  "payment_terms": "Paiement à 30 jours net",
+  "currency_code": "EUR",
+  "profile": "en16931"
+}
