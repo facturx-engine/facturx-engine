@@ -1,6 +1,12 @@
 {
   "invoice_number": "INV-2024-001",
   "issue_date": "20240117",
+  "buyer_reference": "PO-2024-0042",
+  "delivery_date": "20240115",
+  "notes": [
+    "Order #12345 - Contact: John Doe",
+    "Merci pour votre confiance"
+  ],
   "seller": {
     "name": "Acme Freelance",
     "address": {
@@ -9,7 +15,10 @@
       "postcode": "69001",
       "country_code": "FR"
     },
-    "vat_number": "FR123456789"
+    "vat_number": "FR123456789",
+    "iban": "FR7630001007941234567890185",
+    "bic": "BDFEFRPP",
+    "bank_name": "Banque de France"
   },
   "buyer": {
     "name": "StartUp SAS",
@@ -29,7 +38,8 @@
       "net_price": 500.00,
       "net_total": 500.00,
       "vat_rate": 20.0,
-      "vat_category": "S"
+      "vat_category": "S",
+      "country_of_origin": "FR"
     }
   ],
   "tax_details": [
@@ -48,6 +58,10 @@
   },
   "due_date": "20240217",
   "payment_terms": "Paiement à 30 jours net",
+  "payment_discount": {
+    "days": 10,
+    "percent": 2.00
+  },
   "currency_code": "EUR",
   "profile": "en16931"
 }

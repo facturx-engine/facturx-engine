@@ -11,6 +11,11 @@
     <ram:IssueDateTime>
       <udt:DateTimeString format="102">{{ issue_date }}</udt:DateTimeString>
     </ram:IssueDateTime>
+    {% for note in notes | default([]) %}
+    <ram:IncludedNote>
+      <ram:Content>{{ note }}</ram:Content>
+    </ram:IncludedNote>
+    {% endfor %}
   </rsm:ExchangedDocument>
   <rsm:SupplyChainTradeTransaction>
     {% for line in lines %}
@@ -20,6 +25,11 @@
         </ram:AssociatedDocumentLineDocument>
         <ram:SpecifiedTradeProduct>
             <ram:Name>{{ line.name }}</ram:Name>
+            {% if line.country_of_origin %}
+            <ram:OriginTradeCountry>
+              <ram:ID>{{ line.country_of_origin }}</ram:ID>
+            </ram:OriginTradeCountry>
+            {% endif %}
         </ram:SpecifiedTradeProduct>
         <ram:SpecifiedLineTradeAgreement>
             <ram:NetPriceProductTradePrice>
@@ -42,6 +52,9 @@
     </ram:IncludedSupplyChainTradeLineItem>
     {% endfor %}
     <ram:ApplicableHeaderTradeAgreement>
+      {% if buyer_reference %}
+      <ram:BuyerReference>{{ buyer_reference }}</ram:BuyerReference>
+      {% endif %}
       <ram:SellerTradeParty>
         <ram:Name>{{ seller.name }}</ram:Name>
         {% if seller.siret %}
@@ -83,9 +96,33 @@
         {% endif %}
       </ram:BuyerTradeParty>
     </ram:ApplicableHeaderTradeAgreement>
-    <ram:ApplicableHeaderTradeDelivery/>
+    <ram:ApplicableHeaderTradeDelivery>
+      {% if delivery_date %}
+      <ram:ActualDeliverySupplyChainEvent>
+        <ram:OccurrenceDateTime>
+          <udt:DateTimeString format="102">{{ delivery_date }}</udt:DateTimeString>
+        </ram:OccurrenceDateTime>
+      </ram:ActualDeliverySupplyChainEvent>
+      {% endif %}
+    </ram:ApplicableHeaderTradeDelivery>
     <ram:ApplicableHeaderTradeSettlement>
       <ram:InvoiceCurrencyCode>{{ currency_code | default('EUR') }}</ram:InvoiceCurrencyCode>
+      {% if seller.iban or payment_means_code %}
+      <ram:SpecifiedTradeSettlementPaymentMeans>
+        <ram:TypeCode>{{ payment_means_code | default('58') }}</ram:TypeCode>
+        {% if seller.iban %}
+        <ram:PayeePartyCreditorFinancialAccount>
+          <ram:IBANID>{{ seller.iban }}</ram:IBANID>
+          {% if seller.bank_name %}<ram:AccountName>{{ seller.bank_name }}</ram:AccountName>{% endif %}
+        </ram:PayeePartyCreditorFinancialAccount>
+        {% if seller.bic %}
+        <ram:PayeeSpecifiedCreditorFinancialInstitution>
+          <ram:BICID>{{ seller.bic }}</ram:BICID>
+        </ram:PayeeSpecifiedCreditorFinancialInstitution>
+        {% endif %}
+        {% endif %}
+      </ram:SpecifiedTradeSettlementPaymentMeans>
+      {% endif %}
       {% for tax in tax_details %}
       <ram:ApplicableTradeTax>
             <ram:CalculatedAmount>{{ tax.calculated_amount }}</ram:CalculatedAmount>
@@ -95,13 +132,19 @@
             <ram:RateApplicablePercent>{{ tax.rate }}</ram:RateApplicablePercent>
       </ram:ApplicableTradeTax>
       {% endfor %}
-      {% if due_date or payment_terms %}
+      {% if due_date or payment_terms or payment_discount %}
       <ram:SpecifiedTradePaymentTerms>
         {% if payment_terms %}<ram:Description>{{ payment_terms }}</ram:Description>{% endif %}
         {% if due_date %}
         <ram:DueDateDateTime>
             <udt:DateTimeString format="102">{{ due_date }}</udt:DateTimeString>
         </ram:DueDateDateTime>
+        {% endif %}
+        {% if payment_discount %}
+        <ram:ApplicableTradePaymentDiscountTerms>
+          <ram:BasisPeriodMeasure unitCode="DAY">{{ payment_discount.days }}</ram:BasisPeriodMeasure>
+          <ram:CalculationPercent>{{ payment_discount.percent }}</ram:CalculationPercent>
+        </ram:ApplicableTradePaymentDiscountTerms>
         {% endif %}
       </ram:SpecifiedTradePaymentTerms>
       {% endif %}
