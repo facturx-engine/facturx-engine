@@ -1,7 +1,7 @@
 """
 Pydantic models for API request/response validation.
 """
-from typing import Optional, Literal, List
+from typing import Optional, Literal, List, Union
 from pydantic import BaseModel, Field
 
 
@@ -14,6 +14,33 @@ class Address(BaseModel):
     country_code: str = Field(..., description="ISO 3166-1 alpha-2 country code")
 
 
+class BillingPeriod(BaseModel):
+    """Period for billing or delivery."""
+    start: str = Field(..., description="Start date (YYYYMMDD)")
+    end: str = Field(..., description="End date (YYYYMMDD)")
+
+
+class ShipToParty(BaseModel):
+    """Ship-to / Delivery party information."""
+    name: str = Field(..., description="Name of the recipient")
+    address: Address
+
+
+class AllowanceCharge(BaseModel):
+    """Allowance or Charge detail."""
+    amount: float = Field(..., description="Amount")
+    reason: Optional[str] = Field(None, description="Reason text")
+    reason_code: Optional[str] = Field(None, description="Reason code (UN/TDID 5189 for allowances, 7161 for charges)")
+    vat_category: str = Field(..., description="VAT category code")
+    vat_rate: float = Field(..., description="VAT rate percent")
+
+
+class PaymentDiscount(BaseModel):
+    """Payment discount terms."""
+    days: int = Field(..., description="Number of days")
+    percent: float = Field(..., description="Discount percentage")
+
+
 class SellerInfo(BaseModel):
     """Seller (Supplier) information."""
     name: str = Field(..., description="Seller company name")
@@ -21,6 +48,14 @@ class SellerInfo(BaseModel):
     tax_number: Optional[str] = Field(None, description="Tax number (FC scheme)")
     vat_number: Optional[str] = Field(None, description="VAT identification number (VA scheme)")
     siret: Optional[str] = Field(None, description="SIRET (France specific)")
+    global_id: Optional[str] = Field(None, description="Global Identifier (e.g. DUNS, GLN)")
+    global_id_scheme: Optional[str] = Field(None, description="Scheme ID for Global ID (default: 0088 for GLN)")
+    contact_name: Optional[str] = Field(None, description="Contact person name")
+    phone: Optional[str] = Field(None, description="Phone number")
+    email: Optional[str] = Field(None, description="Email address")
+    iban: Optional[str] = Field(None, description="IBAN (Seller only)")
+    bic: Optional[str] = Field(None, description="BIC (Seller only)")
+    bank_name: Optional[str] = Field(None, description="Bank Name (Seller only)")
 
 
 class BuyerInfo(BaseModel):
@@ -28,6 +63,11 @@ class BuyerInfo(BaseModel):
     name: str = Field(..., description="Buyer company name")
     address: Optional[Address] = Field(None, description="Physical address")
     vat_number: Optional[str] = Field(None, description="VAT identification number")
+    global_id: Optional[str] = Field(None, description="Global Identifier")
+    global_id_scheme: Optional[str] = Field(None, description="Scheme ID for Global ID")
+    contact_name: Optional[str] = Field(None, description="Contact person name")
+    phone: Optional[str] = Field(None, description="Phone number")
+    email: Optional[str] = Field(None, description="Email address")
 
 
 class TaxDetail(BaseModel):
@@ -48,6 +88,16 @@ class LineItem(BaseModel):
     net_total: float = Field(..., description="Net line total (Qty * Price)")
     vat_rate: float = Field(..., description="VAT rate percent")
     vat_category: str = Field(default="S", description="VAT category code")
+    note: Optional[str] = Field(None, description="Line note")
+    global_id: Optional[str] = Field(None, description="Product Global ID (e.g. GTIN)")
+    global_id_scheme: Optional[str] = Field(None, description="Scheme ID for Global ID (default: 0160 for GTIN)")
+    seller_assigned_id: Optional[str] = Field(None, description="Seller's article number")
+    buyer_assigned_id: Optional[str] = Field(None, description="Buyer's article number")
+    description: Optional[str] = Field(None, description="Detailed description")
+    country_of_origin: Optional[str] = Field(None, description="ISO country code of origin")
+    gross_price: Optional[float] = Field(None, description="Gross price before line discount")
+    price_discount: Optional[float] = Field(None, description="Line level discount amount")
+    billing_period: Optional[BillingPeriod] = Field(None, description="Line specific billing period")
 
 
 class MonetaryAmounts(BaseModel):
@@ -56,6 +106,10 @@ class MonetaryAmounts(BaseModel):
     tax_total: str = Field(..., description="Total VAT amount")
     grand_total: str = Field(..., description="Total amount including VAT")
     due_payable: str = Field(..., description="Amount due for payment")
+    line_total: Optional[str] = Field(None, description="Sum of line net amounts")
+    charge_total: Optional[str] = Field(None, description="Total charges")
+    allowance_total: Optional[str] = Field(None, description="Total allowances")
+    prepaid: Optional[str] = Field(None, description="Amount already paid")
 
 
 class InvoiceMetadata(BaseModel):
@@ -75,6 +129,16 @@ class InvoiceMetadata(BaseModel):
     due_date: Optional[str] = Field(None, description="Payment due date (YYYYMMDD format)")
     payment_terms: Optional[str] = Field(None, description="Payment terms description")
     document_type_code: str = Field(default="380", description="Document type code (380=Commercial Invoice)")
+    notes: Optional[List[Union[str, dict]]] = Field(None, description="Header notes")
+    buyer_reference: Optional[str] = Field(None, description="Buyer reference (e.g. order number)")
+    contract_reference: Optional[str] = Field(None, description="Contract reference")
+    delivery_date: Optional[str] = Field(None, description="Actual delivery date (YYYYMMDD)")
+    ship_to: Optional[ShipToParty] = Field(None, description="Delivery party/address")
+    creditor_reference: Optional[str] = Field(None, description="Creditor Reference ID (e.g. SEPA)")
+    allowances: Optional[List[AllowanceCharge]] = Field(None, description="Document level allowances")
+    charges: Optional[List[AllowanceCharge]] = Field(None, description="Document level charges")
+    payment_discount: Optional[PaymentDiscount] = Field(None, description="Payment discount terms")
+    payment_means_code: Optional[str] = Field(None, description="Payment means code (e.g. 58=SEPA, 10=Cash)")
 
 
 class ValidationResult(BaseModel):

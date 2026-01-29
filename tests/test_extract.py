@@ -56,12 +56,42 @@ def test_end_to_end_convert_validate_extract():
         "issue_date": "20260113",
         "seller": {
             "name": "Test Seller Corp",
-            "country_code": "FR",
+            "address": {
+                "line1": "1 Seller Street",
+                "postcode": "75001",
+                "city": "Paris",
+                "country_code": "FR"
+            },
             "vat_number": "FR98765432101"
         },
         "buyer": {
-            "name": "Test Buyer Ltd"
+            "name": "Test Buyer Ltd",
+            "address": {
+                "line1": "2 Buyer Avenue",
+                "postcode": "69001",
+                "city": "Lyon",
+                "country_code": "FR"
+            }
         },
+        "lines": [
+            {
+                "line_id": "1",
+                "name": "Test Service",
+                "quantity": 1.0,
+                "net_price": 500.0,
+                "net_total": 500.0,
+                "vat_rate": 20.0,
+                "vat_category": "S"
+            }
+        ],
+        "tax_details": [
+            {
+                "calculated_amount": "100.00",
+                "basis_amount": "500.00",
+                "rate": "20.00",
+                "category_code": "S"
+            }
+        ],
         "amounts": {
             "tax_basis_total": "500.00",
             "tax_total": "100.00",
@@ -69,7 +99,8 @@ def test_end_to_end_convert_validate_extract():
             "due_payable": "600.00"
         },
         "currency_code": "EUR",
-        "profile": "minimum"
+        "profile": "en16931",
+        "payment_terms": "Net 30 days"
     }
     
     convert_response = client.post(
@@ -92,30 +123,19 @@ def test_end_to_end_convert_validate_extract():
     validation_data = validate_response.json()
     assert validation_data["valid"] is True
     assert validation_data["format"] == "factur-x"
-    assert validation_data["flavor"] == "minimum"
+    assert validation_data["flavor"] == "en16931"
     
     # Step 3: Extract
     extract_response = client.post(
         "/v1/extract",
         files={"file": ("facturx.pdf", facturx_pdf, "application/pdf")}
     )
-    
-    print(f"\nDEBUG_EXTRACT_STATUS: {extract_response.status_code}")
-    if extract_response.status_code != 200:
-        print(f"DEBUG_EXTRACT_FAIL_BODY: {extract_response.text}")
-    
-    # Try to parse anyway
-    try:
-        extract_data = extract_response.json()
-        print(f"\nDEBUG_EXTRACT_DATA: {json.dumps(extract_data, indent=2)}")
-    except:
-        print("Could not parse JSON response")
-        
     assert extract_response.status_code == 200
+    extract_data = extract_response.json()
     
     # Verify extraction succeeded
     assert extract_data["format_detected"] == "factur-x"
-    assert extract_data["profile_detected"] == "minimum"
+    assert extract_data["profile_detected"] == "en16931"
     assert extract_data["xml_extracted"] is True
     assert len(extract_data["errors"]) == 0
     
@@ -127,14 +147,9 @@ def test_end_to_end_convert_validate_extract():
     assert invoice_json["invoice_date"] == "20260113"
     assert invoice_json["currency"] == "EUR"
     
-    # Verify seller data
-    # Verify seller data (Demo Mode masks it)
-    # Pro would be "Test Seller Corp", Demo is "Test ****"
-    assert "Test" in invoice_json["seller"]["name"] 
-    assert "****" in invoice_json["seller"]["name"]
-    # assert invoice_json["seller"]["country"] == "FR" if "country" in invoice_json["seller"] else True
-    # VAT is masked to DEMO_***** in v1.3.1
-    assert invoice_json["seller"]["vat_number"] == "DEMO_*****"
+    # Verify seller data (Open Core - Full Data)
+    assert invoice_json["seller"]["name"] == "Test Seller Corp"
+    assert invoice_json["seller"]["vat_number"] == "FR98765432101"
     
     # Verify buyer data
     assert "Test" in invoice_json["buyer"]["name"]
@@ -145,11 +160,11 @@ def test_end_to_end_convert_validate_extract():
     assert invoice_json["totals"]["gross_amount"] == "600.00"
     assert invoice_json["totals"]["payable_amount"] == "600.00"
     
-    print("\n✓ END-TO-END TEST PASSED:")
-    print("  - Convert: PDF → Factur-X PDF")
+    print("\nEND-TO-END TEST PASSED:")
+    print("  - Convert: PDF -> Factur-X PDF")
     print("  - Validate: EN 16931 compliance")
     print("  - Extract: Structured JSON data")
-    print("  → Full product workflow validated!")
+    print("  - Full product workflow validated!")
 
 
 def test_diagnostics_endpoint():

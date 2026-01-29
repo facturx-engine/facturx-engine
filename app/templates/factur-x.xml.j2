@@ -148,13 +148,6 @@
       {% endif %}
     </ram:ApplicableHeaderTradeAgreement>
     <ram:ApplicableHeaderTradeDelivery>
-      {% if delivery_date %}
-      <ram:ActualDeliverySupplyChainEvent>
-        <ram:OccurrenceDateTime>
-          <udt:DateTimeString format="102">{{ delivery_date }}</udt:DateTimeString>
-        </ram:OccurrenceDateTime>
-      </ram:ActualDeliverySupplyChainEvent>
-      {% endif %}
       {% if ship_to %}
       <ram:ShipToTradeParty>
         <ram:Name>{{ ship_to.name }}</ram:Name>
@@ -165,6 +158,13 @@
             <ram:CountryID>{{ ship_to.address.country_code }}</ram:CountryID>
         </ram:PostalTradeAddress>
       </ram:ShipToTradeParty>
+      {% endif %}
+      {% if delivery_date %}
+      <ram:ActualDeliverySupplyChainEvent>
+        <ram:OccurrenceDateTime>
+          <udt:DateTimeString format="102">{{ delivery_date }}</udt:DateTimeString>
+        </ram:OccurrenceDateTime>
+      </ram:ActualDeliverySupplyChainEvent>
       {% endif %}
     </ram:ApplicableHeaderTradeDelivery>
     <ram:ApplicableHeaderTradeSettlement>
@@ -245,7 +245,7 @@
       </ram:SpecifiedTradePaymentTerms>
       {% endif %}
       <ram:SpecifiedTradeSettlementHeaderMonetarySummation>
-        {% if profile != 'minimum' %}<ram:LineTotalAmount>{{ amounts.line_total | default(amounts.tax_basis_total) }}</ram:LineTotalAmount>{% endif %}
+        <ram:LineTotalAmount>{{ amounts.line_total | default(amounts.tax_basis_total) }}</ram:LineTotalAmount>
         {% if amounts.charge_total is defined %}<ram:ChargeTotalAmount>{{ amounts.charge_total }}</ram:ChargeTotalAmount>{% endif %}
         {% if amounts.allowance_total is defined %}<ram:AllowanceTotalAmount>{{ amounts.allowance_total }}</ram:AllowanceTotalAmount>{% endif %}
         <ram:TaxBasisTotalAmount>{{ amounts.tax_basis_total }}</ram:TaxBasisTotalAmount>

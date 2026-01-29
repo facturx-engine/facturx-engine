@@ -39,20 +39,10 @@ class GeneratorService:
             template = jinja_env.get_template("factur-x.xml.j2")
             
             # Prepare context for template
-            context = {
-                "invoice_number": metadata.invoice_number,
-                "issue_date": metadata.issue_date,
-                "seller": metadata.seller.model_dump(),
-                "buyer": metadata.buyer.model_dump(),
-                "lines": [l.model_dump() for l in metadata.lines],
-                "tax_details": [t.model_dump() for t in metadata.tax_details],
-                "amounts": metadata.amounts.model_dump(),
-                "currency_code": metadata.currency_code,
-                "profile": metadata.profile,
-                "document_type_code": metadata.document_type_code,
-                "due_date": metadata.due_date,
-                "payment_terms": metadata.payment_terms,
-            }
+            # Prepare context for template
+            # Use model_dump to automatically include all new fields (IBAN, ShipTo, etc.)
+            # exclude_none=True ensures Jinja2 'default' filters work correctly for missing optional fields
+            context = metadata.model_dump(exclude_none=True)
             
             xml_content = template.render(**context)
             logger.info(f"Generated XML for invoice {metadata.invoice_number}")
