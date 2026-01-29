@@ -32,26 +32,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       # ----------------------------------------------------------------
-      # SECURITY: Fetch PRO Source Code from Private Repo (Public Repo Protection)
-      # ----------------------------------------------------------------
-      - name: Setup SSH for Private Repo
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-            ssh-private-key: ${{ secrets.PRO_REPO_KEY }}
-
-      - name: Fetch Pro Source
-        run: |
-            mkdir -p temp_pro_source
-            # STRICT HOST CHECKING DISABLED for simplicity in this specific context (GitHub)
-            ssh-keyscan github.com >> ~/.ssh/known_hosts
-            git clone git@github.com:${{ github.repository_owner }}/facturx-engine-pro-source.git temp_pro_source
-            
-            # OVERWRITE Demo Stub with Real Pro Code
-            cp temp_pro_source/extractor.py app/services/extractor.py
-            echo "✅ Pro Source Code injected into build context"
-            
-            # CLEANUP (Optional but good practice, though runner is ephemeral)
-            rm -rf temp_pro_source
+      # DECOUPLED: Pro Source Code is now managed differently (Admin Vault)
       # ----------------------------------------------------------------
 
       - name: Extract metadata (tags, labels)
