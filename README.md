@@ -1,4 +1,4 @@
-# Factur-X Engine v1.3 "Security & Compliance Edition"
+# Factur-X Engine v1.3.2 "License Gated Edition"
 
 > **Factur-X Engine** is a stateless, air-gapped Docker container providing a REST API to **Generate**, **Validate**, and **Extract** electronic invoices. It ensures 100% compliance with **EN 16931**, **ZUGFeRD 2.4**, and **XRechnung 3.0** standards without requiring external dependencies or internet access.
 
