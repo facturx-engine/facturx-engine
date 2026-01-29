@@ -298,40 +298,14 @@ def extract_facturx(
             )
         
         # Extract invoice data
-        # LICENSE CHECK: Dynamically load Pro or Demo extractor
-        import os
-        from app.license import is_licensed
+        # Extraction: Always use the full ExtractionService (Open Core Policy)
+        # Pro features are now strictly on Validation and Metrics.
+        from app.services.extractor import ExtractionService
         
-        license_key = os.getenv("LICENSE_KEY", "").strip()
-        use_pro = False
-        
-        if license_key:
-             try:
-                 if is_licensed():
-                     use_pro = True
-             except:
-                 pass
-        
-        if use_pro:
-            # Pro Mode: Import from optimized/compiled module
-            try:
-                from app.services.extractor import ExtractionService
-                logger.info("Extracting with PRO Engine")
-            except ImportError:
-                # Fallback if pro module missing (should not happen in pro build)
-                from app.services.extractor_demo import ExtractionService
-                logger.warning("Pro Engine missing, falling back to Demo")
-        else:
-            # Demo Mode: Import from community stub or local dev
-            try:
-                from app.services.extractor_demo import ExtractionService
-                logger.info("Extracting with DEMO Engine (Prod)")
-            except ImportError:
-                # Local dev fallback: extractor.py IS the demo version
-                from app.services.extractor import ExtractionService
-                logger.info("Extracting with DEMO Engine (Local)")
-
         result = ExtractionService.extract_invoice_data(
+            file_content,
+            file.filename
+        )
             file_content,
             file.filename
         )
