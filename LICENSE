@@ -1,21 +1,39 @@
-MIT License
+Functional Source License, Version 1.1
 
-Copyright (c) 2026 Factur-X Engine
+## Operating Notice
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+The "Change Date" is **two years** from the date the specific Software version is released.
+The "Change License" is **Apache License, Version 2.0**.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+## Terms
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+### 1. Grant of Copyright License.
+
+Subject to the terms and conditions of this License, each Licensor grants to You a perpetual, worldwide, non-exclusive, no-charge, royalty-free, irrevocable copyright license to reproduce, prepare Derivative Works of, publicly display, publicly perform, sublicense, and distribute the Software and Derivative Works.
+
+### 2. Grant of Patent License.
+
+Subject to the terms and conditions of this License, each Licensor grants to You a perpetual, worldwide, non-exclusive, no-charge, royalty-free, irrevocable (except as stated in this section) patent license to make, have made, use, offer to sell, sell, import, and otherwise transfer the Software, where such license applies only to those patent claims licensable by such Licensor that are necessarily infringed by their Contribution(s) alone or by combination of their Contribution(s) with the Software to which such Contribution(s) was submitted. If You institute patent litigation against any entity (including a cross-claim or counterclaim in a lawsuit) alleging that the Software or a Contribution incorporated within the Software constitutes direct or contributory patent infringement, then any patent licenses granted to You under this License for that Software shall terminate as of the date such litigation is filed.
+
+### 3. Limitations.
+
+The grants in sections 1 and 2 are subject to the following limitations:
+
+*   **Competing Use.** You may not make available the Software or a Derivative Work as a service to third parties, where the service is a substitute for the Software.
+*   **Change Date.** The limitations in this section 3 will terminate on the Change Date.
+
+### 4. No Trademark License.
+
+This License does not grant permission to use the trade names, trademarks, service marks, or product names of the Licensor, except as required for reasonable and customary use in describing the origin of the Software and reproducing the content of the NOTICE file.
+
+### 5. Definitions.
+
+"Contribution" means any work of authorship, including the original version of the Work and any modifications or additions to that Work or Derivative Works thereof, that is intentionally submitted to Licensor for inclusion in the Work by the copyright owner or by an individual or Legal Entity authorized to submit on behalf of the copyright owner.
+
+"Derivative Work" means any work that is based on (or derived from) the Work and for which the editorial revisions, annotations, elaborations, or other modifications represent, as a whole, an original work of authorship.
+
+"Licensor" means the copyright owner or entity authorized by the copyright owner that is granting the License.
+
+"Software" means the original work of authorship (as defined in the Notice, or as identified in the header of the file) made available under this License.
+
+"You" (or "Your") means an individual or Legal Entity exercising permissions granted by this License.

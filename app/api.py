@@ -306,9 +306,6 @@ def extract_facturx(
             file_content,
             file.filename
         )
-            file_content,
-            file.filename
-        )
         
         try:
             return ExtractionResult(**result)

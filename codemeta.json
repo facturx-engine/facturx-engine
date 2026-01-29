@@ -21,7 +21,7 @@
         "Python",
         "C++"
     ],
-    "license": "https://opensource.org/licenses/MIT",
+    "license": "https://fsl.software/",
     "codeRepository": "https://github.com/facturx-engine/facturx-engine",
     "issueTracker": "https://github.com/facturx-engine/facturx-engine/issues",
     "downloadUrl": "https://hub.docker.com/r/facturxengine/facturx-engine",

@@ -87,7 +87,7 @@ This **Community** version is production-ready.
 
 | Feature | Community Edition | Pro / Enterprise Edition |
 | :--- | :--- | :--- |
-| **License** | Open Source (MIT) | Commercial |
+| **License** | FSL 1.1 (Free for non-competing use) | Commercial (SLA & Indemnity) |
 | **Extraction** | **Full Data** | **Full Data** |
 | **Validation** | **Teaser Mode** (1 error) | **Full Report** |
 | **Metrics** | **Basic** (Ops) | **Full** (Business) |

@@ -72,26 +72,13 @@ curl http://localhost:8000/diagnostics | jq .features_enabled
 
 Pour les environnements sans Internet :
 
-### Option 1 : Fichier de Licence Offline
+### Activation par Variable d'Environnement (Standard)
+
+Pour tous les environnements (Docker, Kubernetes, Air-Gapped) :
 
 ```bash
-# 1. Récupérer votre licence offline
-curl https://licenses.votredomaine.com/generate \
-  -d "customer_id=YOUR_ID" \
-  > license.jwt
-
-# 2. Copier dans le container
-docker cp license.jwt facturx-api:/app/license.jwt
-
-# 3. Redémarrer
-docker-compose restart
-```
-
-### Option 2 : Variable d'Environnement
-
-```bash
-# Dans .env
-LICENSE_KEY=eyJhbGciOiJSUzI1NiIsInR5cCI6Ikp...
+# Dans .env ou var d'env
+LICENSE_KEY=votre-cle-de-licence-base64
 ```
 
 ## Vérification de Licence
@@ -108,7 +95,7 @@ La licence est vérifiée au démarrage uniquement. Aucun "phone home" pendant l
 
 - **RGPD** : Aucune donnée personnelle collectée
 - **Privacy** : Les PDFs/factures ne sont JAMAIS loggés ou transmis
-- **Open Source** : License MIT pour le code (sauf modules propriétaires futurs)
+- **Open Source** : Functional Source License (FSL) 1.1
 
 ## FAQ
 
@@ -126,8 +113,7 @@ R: Contactez-nous → Recevez la clé → Ajoutez à `.env` → Redémarrez. < 5
 
 ## Contact Commercial
 
-- Email : <sales@votredomaine.com>
-- Web : <https://votredomaine.com/facturx-pricing>
+- Achat & Clés : [Factur-X Engine sur Lemon Squeezy](https://facturx-engine.lemonsqueezy.com)
 
 ---
 
