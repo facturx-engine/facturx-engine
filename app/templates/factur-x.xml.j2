@@ -13,7 +13,12 @@
     </ram:IssueDateTime>
     {% for note in notes | default([]) %}
     <ram:IncludedNote>
+      {% if note is mapping %}
+      {% if note.subject_code %}<ram:SubjectCode>{{ note.subject_code }}</ram:SubjectCode>{% endif %}
+      <ram:Content>{{ note.content }}</ram:Content>
+      {% else %}
       <ram:Content>{{ note }}</ram:Content>
+      {% endif %}
     </ram:IncludedNote>
     {% endfor %}
   </rsm:ExchangedDocument>
@@ -22,9 +27,14 @@
     <ram:IncludedSupplyChainTradeLineItem>
         <ram:AssociatedDocumentLineDocument>
             <ram:LineID>{{ line.line_id }}</ram:LineID>
+            {% if line.note %}<ram:IncludedNote><ram:Content>{{ line.note }}</ram:Content></ram:IncludedNote>{% endif %}
         </ram:AssociatedDocumentLineDocument>
         <ram:SpecifiedTradeProduct>
+            {% if line.global_id %}<ram:GlobalID schemeID="{{ line.global_id_scheme | default('0160') }}">{{ line.global_id }}</ram:GlobalID>{% endif %}
+            {% if line.seller_assigned_id %}<ram:SellerAssignedID>{{ line.seller_assigned_id }}</ram:SellerAssignedID>{% endif %}
+            {% if line.buyer_assigned_id %}<ram:BuyerAssignedID>{{ line.buyer_assigned_id }}</ram:BuyerAssignedID>{% endif %}
             <ram:Name>{{ line.name }}</ram:Name>
+            {% if line.description %}<ram:Description>{{ line.description }}</ram:Description>{% endif %}
             {% if line.country_of_origin %}
             <ram:OriginTradeCountry>
               <ram:ID>{{ line.country_of_origin }}</ram:ID>
@@ -32,6 +42,17 @@
             {% endif %}
         </ram:SpecifiedTradeProduct>
         <ram:SpecifiedLineTradeAgreement>
+            {% if line.gross_price %}
+            <ram:GrossPriceProductTradePrice>
+                <ram:ChargeAmount>{{ "%.2f"|format(line.gross_price) }}</ram:ChargeAmount>
+                {% if line.price_discount %}
+                <ram:AppliedTradeAllowanceCharge>
+                    <ram:ChargeIndicator><udt:Indicator>false</udt:Indicator></ram:ChargeIndicator>
+                    <ram:ActualAmount>{{ "%.2f"|format(line.price_discount) }}</ram:ActualAmount>
+                </ram:AppliedTradeAllowanceCharge>
+                {% endif %}
+            </ram:GrossPriceProductTradePrice>
+            {% endif %}
             <ram:NetPriceProductTradePrice>
                 <ram:ChargeAmount>{{ "%.2f"|format(line.net_price) }}</ram:ChargeAmount>
             </ram:NetPriceProductTradePrice>
@@ -45,6 +66,12 @@
                 <ram:CategoryCode>{{ line.vat_category }}</ram:CategoryCode>
                 <ram:RateApplicablePercent>{{ "%.2f"|format(line.vat_rate) }}</ram:RateApplicablePercent>
             </ram:ApplicableTradeTax>
+            {% if line.billing_period %}
+            <ram:BillingSpecifiedPeriod>
+                <ram:StartDateTime><udt:DateTimeString format="102">{{ line.billing_period.start }}</udt:DateTimeString></ram:StartDateTime>
+                <ram:EndDateTime><udt:DateTimeString format="102">{{ line.billing_period.end }}</udt:DateTimeString></ram:EndDateTime>
+            </ram:BillingSpecifiedPeriod>
+            {% endif %}
             <ram:SpecifiedTradeSettlementLineMonetarySummation>
                 <ram:LineTotalAmount>{{ "%.2f"|format(line.net_total) }}</ram:LineTotalAmount>
             </ram:SpecifiedTradeSettlementLineMonetarySummation>
@@ -52,15 +79,21 @@
     </ram:IncludedSupplyChainTradeLineItem>
     {% endfor %}
     <ram:ApplicableHeaderTradeAgreement>
-      {% if buyer_reference %}
-      <ram:BuyerReference>{{ buyer_reference }}</ram:BuyerReference>
-      {% endif %}
+      {% if buyer_reference %}<ram:BuyerReference>{{ buyer_reference }}</ram:BuyerReference>{% endif %}
       <ram:SellerTradeParty>
+        {% if seller.global_id %}<ram:GlobalID schemeID="{{ seller.global_id_scheme | default('0088') }}">{{ seller.global_id }}</ram:GlobalID>{% endif %}
         <ram:Name>{{ seller.name }}</ram:Name>
         {% if seller.siret %}
         <ram:SpecifiedLegalOrganization>
              <ram:ID schemeID="0002">{{ seller.siret }}</ram:ID>
         </ram:SpecifiedLegalOrganization>
+        {% endif %}
+        {% if seller.email or seller.phone %}
+        <ram:DefinedTradeContact>
+            {% if seller.contact_name %}<ram:PersonName>{{ seller.contact_name }}</ram:PersonName>{% endif %}
+            {% if seller.phone %}<ram:TelephoneUniversalCommunication><ram:CompleteNumber>{{ seller.phone }}</ram:CompleteNumber></ram:TelephoneUniversalCommunication>{% endif %}
+            {% if seller.email %}<ram:EmailURIUniversalCommunication><ram:URIID>{{ seller.email }}</ram:URIID></ram:EmailURIUniversalCommunication>{% endif %}
+        </ram:DefinedTradeContact>
         {% endif %}
         <ram:PostalTradeAddress>
             {% if seller.address %}
@@ -85,7 +118,15 @@
         {% endif %}
       </ram:SellerTradeParty>
       <ram:BuyerTradeParty>
+        {% if buyer.global_id %}<ram:GlobalID schemeID="{{ buyer.global_id_scheme | default('0088') }}">{{ buyer.global_id }}</ram:GlobalID>{% endif %}
         <ram:Name>{{ buyer.name }}</ram:Name>
+        {% if buyer.email or buyer.phone %}
+        <ram:DefinedTradeContact>
+            {% if buyer.contact_name %}<ram:PersonName>{{ buyer.contact_name }}</ram:PersonName>{% endif %}
+            {% if buyer.phone %}<ram:TelephoneUniversalCommunication><ram:CompleteNumber>{{ buyer.phone }}</ram:CompleteNumber></ram:TelephoneUniversalCommunication>{% endif %}
+            {% if buyer.email %}<ram:EmailURIUniversalCommunication><ram:URIID>{{ buyer.email }}</ram:URIID></ram:EmailURIUniversalCommunication>{% endif %}
+        </ram:DefinedTradeContact>
+        {% endif %}
         {% if buyer.address %}
         <ram:PostalTradeAddress>
             {% if buyer.address.postcode %}<ram:PostcodeCode>{{ buyer.address.postcode }}</ram:PostcodeCode>{% endif %}
@@ -94,7 +135,17 @@
             <ram:CountryID>{{ buyer.address.country_code or 'FR' }}</ram:CountryID>
         </ram:PostalTradeAddress>
         {% endif %}
+        {% if buyer.vat_number %}
+        <ram:SpecifiedTaxRegistration>
+          <ram:ID schemeID="VA">{{ buyer.vat_number }}</ram:ID>
+        </ram:SpecifiedTaxRegistration>
+        {% endif %}
       </ram:BuyerTradeParty>
+      {% if contract_reference %}
+      <ram:ContractReferencedDocument>
+        <ram:IssuerAssignedID>{{ contract_reference }}</ram:IssuerAssignedID>
+      </ram:ContractReferencedDocument>
+      {% endif %}
     </ram:ApplicableHeaderTradeAgreement>
     <ram:ApplicableHeaderTradeDelivery>
       {% if delivery_date %}
@@ -104,8 +155,20 @@
         </ram:OccurrenceDateTime>
       </ram:ActualDeliverySupplyChainEvent>
       {% endif %}
+      {% if ship_to %}
+      <ram:ShipToTradeParty>
+        <ram:Name>{{ ship_to.name }}</ram:Name>
+        <ram:PostalTradeAddress>
+            {% if ship_to.address.postcode %}<ram:PostcodeCode>{{ ship_to.address.postcode }}</ram:PostcodeCode>{% endif %}
+            <ram:LineOne>{{ ship_to.address.line1 }}</ram:LineOne>
+            <ram:CityName>{{ ship_to.address.city }}</ram:CityName>
+            <ram:CountryID>{{ ship_to.address.country_code }}</ram:CountryID>
+        </ram:PostalTradeAddress>
+      </ram:ShipToTradeParty>
+      {% endif %}
     </ram:ApplicableHeaderTradeDelivery>
     <ram:ApplicableHeaderTradeSettlement>
+      {% if creditor_reference %}<ram:CreditorReferenceID>{{ creditor_reference }}</ram:CreditorReferenceID>{% endif %}
       <ram:InvoiceCurrencyCode>{{ currency_code | default('EUR') }}</ram:InvoiceCurrencyCode>
       {% if seller.iban or payment_means_code %}
       <ram:SpecifiedTradeSettlementPaymentMeans>
@@ -127,10 +190,43 @@
       <ram:ApplicableTradeTax>
             <ram:CalculatedAmount>{{ tax.calculated_amount }}</ram:CalculatedAmount>
             <ram:TypeCode>VAT</ram:TypeCode>
+            {% if tax.exemption_reason %}<ram:ExemptionReason>{{ tax.exemption_reason }}</ram:ExemptionReason>{% endif %}
             <ram:BasisAmount>{{ tax.basis_amount }}</ram:BasisAmount>
             <ram:CategoryCode>{{ tax.category_code }}</ram:CategoryCode>
             <ram:RateApplicablePercent>{{ tax.rate }}</ram:RateApplicablePercent>
       </ram:ApplicableTradeTax>
+      {% endfor %}
+      {% if billing_period %}
+      <ram:BillingSpecifiedPeriod>
+        <ram:StartDateTime><udt:DateTimeString format="102">{{ billing_period.start }}</udt:DateTimeString></ram:StartDateTime>
+        <ram:EndDateTime><udt:DateTimeString format="102">{{ billing_period.end }}</udt:DateTimeString></ram:EndDateTime>
+      </ram:BillingSpecifiedPeriod>
+      {% endif %}
+      {% for allowance in allowances | default([]) %}
+      <ram:SpecifiedTradeAllowanceCharge>
+        <ram:ChargeIndicator><udt:Indicator>false</udt:Indicator></ram:ChargeIndicator>
+        <ram:ActualAmount>{{ "%.2f"|format(allowance.amount) }}</ram:ActualAmount>
+        {% if allowance.reason %}<ram:Reason>{{ allowance.reason }}</ram:Reason>{% endif %}
+        {% if allowance.reason_code %}<ram:ReasonCode>{{ allowance.reason_code }}</ram:ReasonCode>{% endif %}
+        <ram:CategoryTradeTax>
+            <ram:TypeCode>VAT</ram:TypeCode>
+            <ram:CategoryCode>{{ allowance.vat_category }}</ram:CategoryCode>
+            <ram:RateApplicablePercent>{{ "%.2f"|format(allowance.vat_rate) }}</ram:RateApplicablePercent>
+        </ram:CategoryTradeTax>
+      </ram:SpecifiedTradeAllowanceCharge>
+      {% endfor %}
+      {% for charge in charges | default([]) %}
+      <ram:SpecifiedTradeAllowanceCharge>
+        <ram:ChargeIndicator><udt:Indicator>true</udt:Indicator></ram:ChargeIndicator>
+        <ram:ActualAmount>{{ "%.2f"|format(charge.amount) }}</ram:ActualAmount>
+        {% if charge.reason %}<ram:Reason>{{ charge.reason }}</ram:Reason>{% endif %}
+        {% if charge.reason_code %}<ram:ReasonCode>{{ charge.reason_code }}</ram:ReasonCode>{% endif %}
+        <ram:CategoryTradeTax>
+            <ram:TypeCode>VAT</ram:TypeCode>
+            <ram:CategoryCode>{{ charge.vat_category }}</ram:CategoryCode>
+            <ram:RateApplicablePercent>{{ "%.2f"|format(charge.vat_rate) }}</ram:RateApplicablePercent>
+        </ram:CategoryTradeTax>
+      </ram:SpecifiedTradeAllowanceCharge>
       {% endfor %}
       {% if due_date or payment_terms or payment_discount %}
       <ram:SpecifiedTradePaymentTerms>
@@ -149,10 +245,13 @@
       </ram:SpecifiedTradePaymentTerms>
       {% endif %}
       <ram:SpecifiedTradeSettlementHeaderMonetarySummation>
-        {% if profile != 'minimum' %}<ram:LineTotalAmount>{{ amounts.tax_basis_total }}</ram:LineTotalAmount>{% endif %}
+        {% if profile != 'minimum' %}<ram:LineTotalAmount>{{ amounts.line_total | default(amounts.tax_basis_total) }}</ram:LineTotalAmount>{% endif %}
+        {% if amounts.charge_total is defined %}<ram:ChargeTotalAmount>{{ amounts.charge_total }}</ram:ChargeTotalAmount>{% endif %}
+        {% if amounts.allowance_total is defined %}<ram:AllowanceTotalAmount>{{ amounts.allowance_total }}</ram:AllowanceTotalAmount>{% endif %}
         <ram:TaxBasisTotalAmount>{{ amounts.tax_basis_total }}</ram:TaxBasisTotalAmount>
         <ram:TaxTotalAmount currencyID="{{ currency_code | default('EUR') }}">{{ amounts.tax_total }}</ram:TaxTotalAmount>
         <ram:GrandTotalAmount>{{ amounts.grand_total }}</ram:GrandTotalAmount>
+        {% if amounts.prepaid %}<ram:TotalPrepaidAmount>{{ amounts.prepaid }}</ram:TotalPrepaidAmount>{% endif %}
 		<ram:DuePayableAmount>{{ amounts.due_payable }}</ram:DuePayableAmount>
       </ram:SpecifiedTradeSettlementHeaderMonetarySummation>
     </ram:ApplicableHeaderTradeSettlement>
