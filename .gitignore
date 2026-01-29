@@ -41,6 +41,7 @@ keys
 
 # === Temp Testing Files (To be moved to _INTERNAL eventually) ===
 *.pdf
+!examples/invoice_raw.pdf
 # test_*.py <-- We want to commit tests/
 verify_*.py
 audit_*.py
