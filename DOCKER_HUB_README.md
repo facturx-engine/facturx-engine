@@ -27,6 +27,14 @@ curl -X POST "http://localhost:8000/v1/convert" \
 echo "Invoice generated: invoice_compliant.pdf"
 ```
 
+### Generate Raw XML (No PDF)
+
+```bash
+curl -X POST "http://localhost:8000/v1/xml" \
+  -F "metadata=$(cat simple_invoice.json)" \
+  --output factur-x.xml
+```
+
 ### Extract to JSON (Open Core)
 
 ```bash

@@ -29,6 +29,16 @@ curl -X POST "http://localhost:8000/v1/convert" \
 # Invoke-WebRequest -Uri "http://localhost:8000/v1/convert" -Method Post -Form @{ pdf = Get-Item invoice_raw.pdf; metadata = $json } -OutFile invoice_compliant.pdf
 ```
 
+### Generate Raw XML (No PDF)
+
+Directly generate the **Cross Industry Invoice (CII)** XML without creating a PDF. Useful for headless integrations.
+
+```bash
+curl -X POST "http://localhost:8000/v1/xml" \
+  -F "metadata=$(cat simple_invoice.json)" \
+  --output factur-x.xml
+```
+
 ### Extract to JSON (Open Core)
 
 The Community Edition extracts **full financial and identity data**. No masking, no obfuscation.
