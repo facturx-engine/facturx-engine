@@ -1,4 +1,4 @@
-# Factur-X Engine v1.3.2 "License Gated Edition"
+# Factur-X Engine v1.3.3 "License Gated Edition"
 
 > **Self-hosted REST API to generate, validate, and extract Factur-X / ZUGFeRD 2.x (2.4) + XRechnung 3.x files.**
 
