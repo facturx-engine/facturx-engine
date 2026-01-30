@@ -3,7 +3,7 @@
 
 PRODUCT_NAME = "Factur-X Engine" 
 PRODUCT_SLUG = "factur-x-engine"
-PRODUCT_VERSION = "1.3.2"
+PRODUCT_VERSION = "1.3.3"
 
 # Community Edition Branding
 COMMUNITY_EDITION_NAME = f"{PRODUCT_NAME} (Community)"

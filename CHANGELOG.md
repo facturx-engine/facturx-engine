@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.3] - 2026-01-30
+
+### Added
+
+- **New Endpoint `POST /v1/xml`**: Directly generate Factur-X/CII XML without a PDF wrapper.
+- **Extended Field Coverage**: Added `id` and `global_id` support for `ShipToParty` and `BuyerTradeParty` to satisfy Issue #5 requirements.
+- **XRechnung Compliance**: Better mapping for `Leitweg-ID` using `BuyerReference`.
+- **Enhanced Metrics**: Split business vs operational metrics on `/metrics` (Pro feature).
+- **Diagnostics**: Added Git hash and build date to `/diagnostics`.
+
+## [1.3.2] - 2026-01-27
+
+### Changed
+
+- Minor stabilization and security patches for production readiness.
+
 ## [1.3.1] - 2026-01-26
 
 ### Added - Security & Compliance Edition
