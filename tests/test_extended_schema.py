@@ -30,6 +30,7 @@ def test_extended_fields_roundtrip():
         "issue_date": "20260129",
         "seller": {
             "name": "Super Seller Corp",
+            "id": "SELLER-ID-001",
             "address": {
                 "line1": "123 Seller St",
                 "postcode": "75001",
@@ -44,6 +45,7 @@ def test_extended_fields_roundtrip():
         },
         "buyer": {
             "name": "Greedy Buyer Ltd",
+            "id": "CUST-999",
             "address": {
                 "line1": "456 Buyer Rd",
                 "postcode": "69001",
@@ -53,6 +55,7 @@ def test_extended_fields_roundtrip():
         },
         "ship_to": {
             "name": "Warehouse A",
+            "id": "LOC-W-A",
             "address": {
                 "line1": "789 Delivery Ave",
                 "postcode": "13001",
@@ -130,6 +133,16 @@ def test_extended_fields_roundtrip():
     assert iban_element is not None, "IBAN not found in XML"
     assert iban_element.text == metadata["seller"]["iban"]
     
+    # Check IDs (Issue #5)
+    seller_id = root.find(".//ram:SellerTradeParty/ram:ID", namespaces)
+    assert seller_id is not None and seller_id.text == "SELLER-ID-001"
+    
+    buyer_id = root.find(".//ram:BuyerTradeParty/ram:ID", namespaces)
+    assert buyer_id is not None and buyer_id.text == "CUST-999"
+    
+    shipto_id = root.find(".//ram:ShipToTradeParty/ram:ID", namespaces)
+    assert shipto_id is not None and shipto_id.text == "LOC-W-A"
+    
     # Check Phone/Email in Contact
     phone_element = root.find(".//ram:SellerTradeParty//ram:TelephoneUniversalCommunication/ram:CompleteNumber", namespaces)
     assert phone_element is not None, "Seller phone not found"
@@ -153,3 +166,32 @@ def test_extended_fields_roundtrip():
     assert validate_response.status_code == 200
     validation_data = validate_response.json()
     assert validation_data["valid"] is True, f"Validation failed: {validation_data['errors']}"
+
+def test_xml_endpoint():
+    """Test the new /v1/xml endpoint for raw CII XML generation."""
+    metadata = {
+        "invoice_number": "XML-ONLY-001",
+        "issue_date": "20260130",
+        "seller": {"name": "Test Seller", "address": {"line1": "S1", "postcode": "1", "city": "C", "country_code": "FR"}},
+        "buyer": {"name": "Test Buyer", "address": {"line1": "B1", "postcode": "2", "city": "C", "country_code": "FR"}},
+        "lines": [{"line_id": "1", "name": "Item 1", "quantity": 1, "net_price": 10, "net_total": 10, "vat_rate": 20}],
+        "tax_details": [{"calculated_amount": "2.00", "basis_amount": "10.00", "rate": "20.00"}],
+        "amounts": {"tax_basis_total": "10.00", "tax_total": "2.00", "grand_total": "12.00", "due_payable": "12.00"},
+        "profile": "en16931"
+    }
+
+    response = client.post(
+        "/v1/xml",
+        data={"metadata": json.dumps(metadata)}
+    )
+
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "application/xml"
+    
+    xml_content = response.content
+    assert b"CrossIndustryInvoice" in xml_content
+    assert b"XML-ONLY-001" in xml_content
+    
+    # Verify it's valid XML
+    root = ET.fromstring(xml_content)
+    assert root.tag.endswith("CrossIndustryInvoice")

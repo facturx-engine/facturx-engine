@@ -27,6 +27,7 @@ class MetricsCollector:
             "requests_convert": 0,
             "requests_validate": 0,
             "requests_extract": 0,
+            "requests_xml": 0,
             "errors_total": 0,
         }
         self._gauges: Dict[str, float] = {

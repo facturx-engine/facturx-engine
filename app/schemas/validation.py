@@ -22,6 +22,9 @@ class BillingPeriod(BaseModel):
 
 class ShipToParty(BaseModel):
     """Ship-to / Delivery party information."""
+    id: Optional[str] = Field(None, description="Internal delivery location ID")
+    global_id: Optional[str] = Field(None, description="Global location ID (e.g. GLN)")
+    global_id_scheme: Optional[str] = Field(None, description="Global ID scheme (default: 0088 for GLN)")
     name: str = Field(..., description="Name of the recipient")
     address: Address
 
@@ -56,6 +59,7 @@ class SellerInfo(BaseModel):
     iban: Optional[str] = Field(None, description="IBAN (Seller only)")
     bic: Optional[str] = Field(None, description="BIC (Seller only)")
     bank_name: Optional[str] = Field(None, description="Bank Name (Seller only)")
+    id: Optional[str] = Field(None, description="Buyer-assigned seller ID")
 
 
 class BuyerInfo(BaseModel):
@@ -68,6 +72,7 @@ class BuyerInfo(BaseModel):
     contact_name: Optional[str] = Field(None, description="Contact person name")
     phone: Optional[str] = Field(None, description="Phone number")
     email: Optional[str] = Field(None, description="Email address")
+    id: Optional[str] = Field(None, description="Seller-assigned buyer ID (Customer Number)")
 
 
 class TaxDetail(BaseModel):

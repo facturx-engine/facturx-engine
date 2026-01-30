@@ -104,6 +104,76 @@ def convert_to_facturx(
         metrics.observe("request_duration_seconds", time.time() - start_time)
 
 
+@router.post("/xml",
+             response_class=StreamingResponse,
+             responses={
+                 200: {"description": "Factur-X/CII XML successfully generated"},
+                 400: {"model": ErrorResponse, "description": "Invalid input"},
+                 500: {"model": ErrorResponse, "description": "Server error"}
+             })
+def generate_facturx_xml(
+    metadata: str = Form(..., description="Invoice metadata as JSON")
+):
+    """
+    Generate the Factur-X/CII XML content directly from JSON metadata.
+    
+    This endpoint returns raw XML (Cross Industry Invoice D22B) 
+    without the PDF wrapper.
+    """
+    import time
+    from app.metrics import metrics
+    start_time = time.time()
+    metrics.inc("requests_total")
+    metrics.inc("requests_xml")
+    
+    try:
+        # Parse and validate metadata
+        try:
+            metadata_dict = json.loads(metadata)
+            invoice_metadata = InvoiceMetadata(**metadata_dict)
+        except json.JSONDecodeError as e:
+            raise HTTPException(
+                status_code=400,
+                detail={"error": "INVALID_JSON", "message": f"Invalid JSON in metadata: {str(e)}"}
+            )
+        except Exception as e:
+            raise HTTPException(
+                status_code=400,
+                detail={"error": "INVALID_METADATA", "message": f"Invalid metadata structure: {str(e)}"}
+            )
+        
+        # Generate XML content
+        try:
+            xml_content = GeneratorService.generate_xml(invoice_metadata)
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail={"error": "GENERATION_FAILED", "message": str(e)}
+            )
+        
+        # Return as streaming response
+        return StreamingResponse(
+            BytesIO(xml_content.encode('utf-8')),
+            media_type="application/xml",
+            headers={
+                "Content-Disposition": f"attachment; filename=facturx_{invoice_metadata.invoice_number}.xml"
+            }
+        )
+        
+    except HTTPException:
+        metrics.inc("errors_total")
+        raise
+    except Exception as e:
+        metrics.inc("errors_total")
+        logger.exception(f"Unexpected error in xml endpoint: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail={"error": "INTERNAL_ERROR", "message": "An unexpected error occurred"}
+        )
+    finally:
+        metrics.observe("request_duration_seconds", time.time() - start_time)
+
+
 @router.post("/validate",
              response_model=ValidationResult,
              responses={

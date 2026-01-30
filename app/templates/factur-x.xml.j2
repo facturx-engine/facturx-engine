@@ -81,6 +81,7 @@
     <ram:ApplicableHeaderTradeAgreement>
       {% if buyer_reference %}<ram:BuyerReference>{{ buyer_reference }}</ram:BuyerReference>{% endif %}
       <ram:SellerTradeParty>
+        {% if seller.id %}<ram:ID>{{ seller.id }}</ram:ID>{% endif %}
         {% if seller.global_id %}<ram:GlobalID schemeID="{{ seller.global_id_scheme | default('0088') }}">{{ seller.global_id }}</ram:GlobalID>{% endif %}
         <ram:Name>{{ seller.name }}</ram:Name>
         {% if seller.siret %}
@@ -118,6 +119,7 @@
         {% endif %}
       </ram:SellerTradeParty>
       <ram:BuyerTradeParty>
+        {% if buyer.id %}<ram:ID>{{ buyer.id }}</ram:ID>{% endif %}
         {% if buyer.global_id %}<ram:GlobalID schemeID="{{ buyer.global_id_scheme | default('0088') }}">{{ buyer.global_id }}</ram:GlobalID>{% endif %}
         <ram:Name>{{ buyer.name }}</ram:Name>
         {% if buyer.email or buyer.phone %}
@@ -150,6 +152,8 @@
     <ram:ApplicableHeaderTradeDelivery>
       {% if ship_to %}
       <ram:ShipToTradeParty>
+        {% if ship_to.id %}<ram:ID>{{ ship_to.id }}</ram:ID>{% endif %}
+        {% if ship_to.global_id %}<ram:GlobalID schemeID="{{ ship_to.global_id_scheme | default('0088') }}">{{ ship_to.global_id }}</ram:GlobalID>{% endif %}
         <ram:Name>{{ ship_to.name }}</ram:Name>
         <ram:PostalTradeAddress>
             {% if ship_to.address.postcode %}<ram:PostcodeCode>{{ ship_to.address.postcode }}</ram:PostcodeCode>{% endif %}
