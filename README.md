@@ -128,6 +128,22 @@ This **Community** version is production-ready. The code is Open Core (transpare
 
 ---
 
+## Legal Disclaimer & Limitation of Liability
+
+> **IMPORTANT**: This software is a technical tool for data formatting. It does not replace professional tax advice.
+
+**1. Verification Responsibility**
+Factur-X Engine generates files according to technical standards (EN 16931). The user retains full responsibility for the fiscal accuracy, completeness, and veracity of the invoice data (VAT rates, mandatory mentions, exemptions).
+
+**2. No Guarantee of Acceptance**
+While we strive for technical compliance with official Schematron rules, the acceptance of an invoice by a platform (Chorus Pro, PPF, OZG-RE) depends on business rules and external factors beyond our control.
+
+**3. Limitation of Liability**
+**THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.** Use of the Community Edition is at your own risk.
+For Commercial Licenses (Pro/Enterprise), liability is strictly limited to the technical availability terms defined in the Service Level Agreement (SLA). **We expressly exclude liability for indirect damages, including fiscal penalties or rejection of invoices.**
+
+---
+
 ## Legal & Compliance
 
 * **Vendor**: Factur-X Engine (Paris, France).

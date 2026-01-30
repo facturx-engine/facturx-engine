@@ -1,6 +1,5 @@
 on:
   push:
-    branches: [ "main" ]
     tags: [ "v*.*.*" ]
   workflow_dispatch:
 
@@ -42,7 +41,6 @@ jobs:
           images: ${{ env.DOCKER_IMAGE }}
           tags: |
             type=semver,pattern={{version}}
-            type=sha,format=long
             type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Get current date
@@ -54,6 +52,7 @@ jobs:
         with:
           context: .
           push: true
+          provenance: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
