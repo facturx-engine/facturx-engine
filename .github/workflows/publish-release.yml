@@ -85,3 +85,25 @@ jobs:
           cosign sign --yes ${{ env.DOCKER_IMAGE }}:latest
           echo "✅ Image signed successfully"
 
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          name: Release ${{ github.ref_name }}
+          body: |
+            ### Changes in ${{ github.ref_name }}
+            - BUG FIX: Issue #6 (Compliance). Fixed XSD sequence error in `/v1/convert`.
+            - General compliance and CI/CD hardening.
+          files: |
+            sbom.cyclonedx.json
+          draft: false
+          prerelease: false
+
+      - name: Update Docker Hub Description
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: ${{ env.DOCKER_IMAGE }}
+          readme-filepath: ./DOCKER_HUB_README.md
+
