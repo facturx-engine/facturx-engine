@@ -17,21 +17,21 @@ docker run -d -p 8000:8000 --name facturx-engine facturxengine/facturx-engine:la
 # 2. Create a sample PDF and JSON metadata (or use your own)
 # Sample files are available in the repository: examples/invoice_raw.pdf, examples/simple_invoice.json
 
-# 3. Generate compliant invoice (Merge PDF + Data)
-# Linux/macOS:
+### 2. Generate Factur-X (PDF + XML)
+
+Merge a standard PDF with JSON data to create a compliant **Factur-X** (PDF/A-3) invoice.
+
+```bash
+# Linux/macOS
 curl -X POST "http://localhost:8000/v1/convert" \
   -F "pdf=@invoice_raw.pdf" \
   -F "metadata=$(cat simple_invoice.json)" \
   --output invoice_compliant.pdf
-
-# Windows PowerShell:
-# $json = Get-Content simple_invoice.json -Raw
-# Invoke-WebRequest -Uri "http://localhost:8000/v1/convert" -Method Post -Form @{ pdf = Get-Item invoice_raw.pdf; metadata = $json } -OutFile invoice_compliant.pdf
 ```
 
-### Generate Raw XML (No PDF)
+### 3. Generate Raw XML (Headless / API-First)
 
-Directly generate the **Cross Industry Invoice (CII)** XML without creating a PDF. Useful for headless integrations.
+Directly generate the **Cross Industry Invoice (CII)** XML without creating a PDF. Ideal for backend integrations where you only need the structured data.
 
 ```bash
 curl -X POST "http://localhost:8000/v1/xml" \
@@ -59,12 +59,14 @@ curl -X POST "http://localhost:8000/v1/extract" \
 }
 ```
 
-### Validation (Teaser vs Pro)
+### 5. Validation (Compliance Gate)
 
-The engine validates files against the official **EN 16931 Schematron** rules using the SaxonC-HE engine.
+Protect your accounting system by verifying invoices **before** integration.
 
-* **Community Mode (No Key)**: Returns the **first** compliance error found and a count of remaining hidden errors (Teaser Mode).
-* **Pro Mode (License Key)**: Returns the **full** list of all validation errors/warnings suitable for compliance reporting.
+The engine uses **SaxonC-HE**, the same technology as **Chorus Pro/PPF**, to run official **EN 16931 Schematron** rules.
+
+* **Community (Teaser)**: Detects if the file is invalid. Returns the first error.
+* **Pro (Official Engine)**: Returns the **full compliance report**. Use this to know exactly why a file would be rejected by the tax authority.
 
 ```bash
 curl -X POST "http://localhost:8000/v1/validate" -F "file=@invoice_compliant.pdf"
@@ -103,11 +105,11 @@ The container is configurable via environment variables:
 
 This **Community** version is production-ready. The code is Open Core (transparent Python).
 
-| Feature | Community Edition | Pro / Enterprise Edition |
-| :--- | :--- | :--- |
+|Feature|Community Edition|Pro / Enterprise Edition|
+|:---|:---|:---|
 | **License** | FSL 1.1 (Free for non-competing use) | Commercial (SLA & Indemnity) |
 | **Extraction** | **Full Data** | **Full Data** |
-| **Validation** | **Teaser Mode** (1 error) | **Full Report** (SaxonC) |
+| **Validation** | **Teaser Mode** (1 error) | **Official Engine** (SaxonC / Parity with Chorus Pro) |
 | **Metrics** | **Basic** (Ops) | **Full** (Business) |
 | **Support** | Community | Priority / SLA |
 

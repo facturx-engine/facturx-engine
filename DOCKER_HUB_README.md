@@ -18,7 +18,11 @@ docker run -d -p 8000:8000 --name facturx-engine facturxengine/facturx-engine:la
 curl -O https://raw.githubusercontent.com/facturx-engine/facturx-engine/main/examples/invoice_raw.pdf
 curl -O https://raw.githubusercontent.com/facturx-engine/facturx-engine/main/examples/simple_invoice.json
 
-# 3. Generate compliant invoice (Merge PDF + Data)
+### 2. Generate Factur-X (PDF + XML)
+
+Merge a standard PDF with JSON data to create a compliant **Factur-X** (PDF/A-3) invoice.
+
+```bash
 curl -X POST "http://localhost:8000/v1/convert" \
   -F "pdf=@invoice_raw.pdf" \
   -F "metadata=$(cat simple_invoice.json)" \
@@ -27,7 +31,9 @@ curl -X POST "http://localhost:8000/v1/convert" \
 echo "Invoice generated: invoice_compliant.pdf"
 ```
 
-### Generate Raw XML (No PDF)
+### 3. Generate Raw XML (Headless / API-First)
+
+Directly generate the **Cross Industry Invoice (CII)** XML without creating a PDF. Ideal for backend integrations where you only need the structured data.
 
 ```bash
 curl -X POST "http://localhost:8000/v1/xml" \
@@ -97,7 +103,7 @@ This **Community** version is production-ready.
 | :--- | :--- | :--- |
 | **License** | FSL 1.1 (Free for non-competing use) | Commercial (SLA & Indemnity) |
 | **Extraction** | **Full Data** | **Full Data** |
-| **Validation** | **Teaser Mode** (1 error) | **Full Report** |
+| **Validation** | **Teaser Mode** (1 error) | **Official Engine** (SaxonC / Parity with Chorus Pro) |
 | **Metrics** | **Basic** (Ops) | **Full** (Business) |
 | **Support** | Community | Priority / SLA |
 
