@@ -240,6 +240,7 @@
             <udt:DateTimeString format="102">{{ due_date }}</udt:DateTimeString>
         </ram:DueDateDateTime>
         {% endif %}
+        {% if mandate_id %}<ram:DirectDebitMandateID>{{ mandate_id }}</ram:DirectDebitMandateID>{% endif %}
         {% if payment_discount %}
         <ram:ApplicableTradePaymentDiscountTerms>
           <ram:BasisPeriodMeasure unitCode="DAY">{{ payment_discount.days }}</ram:BasisPeriodMeasure>
