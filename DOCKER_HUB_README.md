@@ -103,11 +103,11 @@ This **Community** version is production-ready.
 
 ### Pricing & Licenses
 
-**1. For Internal Use (SME / Bank / Corporate)**
+#### 1. For Internal Use (SME / Bank / Corporate)
 
 * **Standard License**: Unlimited usage for your own company.
 
-**2. For OEM & Integrators (SaaS / ERP)**
+#### 2. For OEM & Integrators (SaaS / ERP)
 
 * **OEM Growth**: Commercial Redistribution. Standard Liability Terms.
 * **OEM Scale (Contact Only)**: Enterprise Redistribution. **Includes Legal Indemnification & Insurance**.
