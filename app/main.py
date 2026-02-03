@@ -1,5 +1,6 @@
 """
 Factur-X API - Main Application Entry Point
+# Triggering security scan to check GitHub Actions health
 """
 import logging
 from fastapi import FastAPI, Request
