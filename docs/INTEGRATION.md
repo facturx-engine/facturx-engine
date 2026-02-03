@@ -33,7 +33,7 @@ def generate_invoice(pdf_path, metadata):
 generate_invoice("invoice.pdf", {"invoice_id": "INV-001"})
 ```
 
-[View Full Recipe](recipes/python-requests.md)
+[View Full Recipe](https://facturx-engine.github.io/facturx-engine/tutorials/python-facturx.html)
 
 ---
 
@@ -60,7 +60,7 @@ async function convert() {
 }
 ```
 
-[View Full Recipe](recipes/nodejs-axios.md)
+[View Full Recipe](https://facturx-engine.github.io/facturx-engine/tutorials/nodejs-facturx.html)
 
 ---
 
@@ -88,7 +88,7 @@ $response = $client->post('http://localhost:8000/v1/convert', [
 file_put_contents('output_factur_x.pdf', $response->getBody());
 ```
 
-[View Full Recipe](recipes/php-guzzle.md)
+[View Full Recipe](https://facturx-engine.github.io/facturx-engine/tutorials/php-facturx.html)
 
 ---
 

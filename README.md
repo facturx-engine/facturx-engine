@@ -91,7 +91,7 @@ curl http://localhost:8000/metrics
 ## Developer Integration
 
 Factur-X Engine is designed to be language-agnostic.
-**[View Full Integration Guide (Python, Node, PHP, C#, Java)](docs/INTEGRATION.md)**
+**[View Integration Recipes (Python, Node, PHP)](https://facturx-engine.github.io/facturx-engine/#api)**
 
 ---
 
