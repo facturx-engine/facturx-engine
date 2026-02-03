@@ -10,12 +10,11 @@
 
 Runs immediately on any Docker host. No Python/Java dependencies.
 
-```bash
-# 1. Start the Engine (API)
-docker run -d -p 8000:8000 --name facturx-engine facturxengine/facturx-engine:latest
+### 1. Start the Engine (API)
 
-# 2. Create a sample PDF and JSON metadata (or use your own)
-# Sample files are available in the repository: examples/invoice_raw.pdf, examples/simple_invoice.json
+```bash
+docker run -d -p 8000:8000 --name facturx-engine facturxengine/facturx-engine:latest
+```
 
 ### 2. Generate Factur-X (PDF + XML)
 
@@ -39,7 +38,7 @@ curl -X POST "http://localhost:8000/v1/xml" \
   --output factur-x.xml
 ```
 
-### Extract to JSON (Open Core)
+### 4. Extract to JSON (Open Core)
 
 The Community Edition extracts **full financial and identity data**. No masking, no obfuscation.
 
@@ -112,8 +111,8 @@ The container is configurable via environment variables:
 
 This **Community** version is production-ready. The code is Open Core (transparent Python).
 
-|Feature|Community Edition|Pro / Enterprise Edition|
-|:---|:---|:---|
+| Feature | Community Edition | Pro / Enterprise Edition |
+| :--- | :--- | :--- |
 | **License** | FSL 1.1 (Free for non-competing use) | Commercial (SLA & Indemnity) |
 | **Extraction** | **Full Data** | **Full Data** |
 | **Validation** | **Teaser Mode** (1 error) | **Official Engine** (SaxonC / Parity with Chorus Pro) |
@@ -165,9 +164,13 @@ For Commercial Licenses (Pro/Enterprise), liability is strictly limited to the t
 
 **A:** No. The container is strictly **air-gapped** by design. It contains all necessary schemas (XSD) and Schematron rules (XSLT) internally.
 
-### Q: Why use a Docker container instead of a library?
+### Q: Is it compliant with the 2026 French Reform (PDP) and German E-Rechnung?
 
-**A:** PDF/A-3 conversion requires complex system dependencies. Using a Docker container isolates this complexity, ensuring an **"Iso-Prod"** environment everywhere.
+**A:** Yes. It generates files strictly compliant with **EN 16931**, supporting both Factur-X (hybrid PDF) and XRechnung 3.0 (pure XML).
+
+### Q: Why use a Docker container instead of a Python/PHP library?
+
+**A:** PDF/A-3 conversion and Schematron validation require complex system dependencies (SaxonC, Ghostscript). Docker isolates this complexity, ensuring a stable **"Iso-Prod"** environment avoiding dependency conflicts.
 
 ---
 
