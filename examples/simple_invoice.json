@@ -58,10 +58,6 @@
   },
   "due_date": "20240217",
   "payment_terms": "Paiement à 30 jours net",
-  "payment_discount": {
-    "days": 10,
-    "percent": 2.00
-  },
   "currency_code": "EUR",
   "profile": "en16931"
 }
