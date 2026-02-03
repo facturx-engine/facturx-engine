@@ -1,6 +1,6 @@
 # Factur-X Engine v1.3.4 "License Gated Edition"
 
-> **Self-hosted REST API to generate, validate, and extract Factur-X / ZUGFeRD 2.x (2.4) + XRechnung 3.x files.**
+> **The Privacy-First Invoicing Engine.** 100% Air-gapped, Official SaxonC Validation. Generate & Validate Factur-X / ZUGFeRD 2.x without cloud dependencies.
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/facturxengine/facturx-engine)](https://hub.docker.com/r/facturxengine/facturx-engine) [![GitHub](https://img.shields.io/badge/github-repo-181717?logo=github)](https://github.com/facturx-engine/facturx-engine) [![License](https://img.shields.io/badge/license-Community-blue.svg)](https://github.com/facturx-engine/facturx-engine) [![Standard](https://img.shields.io/badge/standard-EN16931-green.svg)](https://fnfe-mpe.org/factur-x/) [![CRA](https://img.shields.io/badge/EU_CRA-Ready-blueviolet)](https://github.com/facturx-engine/facturx-engine/blob/main/docs/cra.md) [![SBOM](https://img.shields.io/badge/SBOM-CycloneDX-informational)](https://github.com/facturx-engine/facturx-engine/actions) [![Signed](https://img.shields.io/badge/Image-Cosign_Signed-success)](https://github.com/sigstore/cosign)
 
@@ -67,6 +67,7 @@ High-performance compliance engine for **EN 16931**.
 ## Use Cases & Integrations
 
 The Docker architecture makes the tool agnostic to your programming language.
+**[View Full Integration Guide (Python, Node, PHP, C#, Java)](https://github.com/facturx-engine/facturx-engine/blob/main/docs/INTEGRATION.md)**
 
 ### PHP (Symfony / Laravel)
 >

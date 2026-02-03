@@ -1,6 +1,6 @@
 # Factur-X Engine v1.3.4 "License Gated Edition"
 
-> **Factur-X Engine** is a stateless, air-gapped Docker container providing a REST API to **Generate**, **Validate**, and **Extract** electronic invoices. It ensures 100% compliance with **EN 16931**, **ZUGFeRD 2.4**, and **XRechnung 3.0** standards without requiring external dependencies or internet access.
+> **The Privacy-First Invoicing Engine.** 100% Air-gapped, Official SaxonC Validation. Generate & Validate Factur-X / ZUGFeRD 2.x without cloud dependencies.
 
 ![Docker Pulls](https://img.shields.io/docker/pulls/facturxengine/facturx-engine) [![GitHub](https://img.shields.io/badge/github-repo-181717?logo=github)](https://github.com/facturx-engine/facturx-engine) ![License](https://img.shields.io/badge/license-Community-blue.svg) ![Standard](https://img.shields.io/badge/standard-EN16931-green.svg) [![CRA](https://img.shields.io/badge/EU_CRA-Ready-blueviolet)](docs/cra.md)
 
@@ -86,6 +86,13 @@ curl http://localhost:8000/metrics
 
 * **Community**: Basic operational metrics (uptime, request counts, latency).
 * **Pro**: Full business metrics (validation outcomes, profile types, error rule IDs) tailored for business intelligence dashboards.
+
+---
+
+## Developer Integration
+
+Factur-X Engine is designed to be language-agnostic.
+**[View Full Integration Guide (Python, Node, PHP, C#, Java)](docs/INTEGRATION.md)**
 
 ---
 

@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="de" class="scroll-smooth">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Factur-X Engine | High-Performance Electronic Invoice API for Docker</title>
+    <title>Factur-X Engine | E-Rechnung API für Docker (ZUGFeRD & XRechnung)</title>
     <meta name="description"
-        content="Factur-X, ZUGFeRD 2.4 and XRechnung 3.0 Docker engine. Air-gapped security, extreme performance, no Java dependencies.">
+        content="Erstellen und validieren Sie ZUGFeRD 2.4 und XRechnung 3.0. Docker-Engine, Air-gapped, keine Java-Abhängigkeiten. Konform mit EN 16931.">
     <!-- Canonical URL to consolidate indexing signals -->
-    <link rel="canonical" href="https://facturx-engine.github.io/facturx-engine/" />
+    <link rel="canonical" href="https://facturx-engine.github.io/facturx-engine/de/" />
     <link rel="alternate" hreflang="en" href="https://facturx-engine.github.io/facturx-engine/" />
     <link rel="alternate" hreflang="fr" href="https://facturx-engine.github.io/facturx-engine/fr/" />
     <link rel="alternate" hreflang="de" href="https://facturx-engine.github.io/facturx-engine/de/" />
@@ -16,17 +16,17 @@
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://facturx-engine.github.io/facturx-engine/">
-    <meta property="og:title" content="Factur-X Engine | High-Performance Electronic Invoice API">
+    <meta property="og:url" content="https://facturx-engine.github.io/facturx-engine/de/">
+    <meta property="og:title" content="Factur-X Engine | Sichere E-Rechnungs-API">
     <meta property="og:description"
-        content="Generate and validate Factur-X/ZUGFeRD/XRechnung invoices in milliseconds. Air-gapped, Python-based, Docker-ready.">
+        content="Offizielle EN 16931 Validierung und ZUGFeRD Generierung. Souveräne Infrastruktur, ohne Cloud.">
     <meta property="og:image" content="https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Factur-X Engine | Electronic Invoice Middleware">
+    <meta name="twitter:title" content="Factur-X Engine | E-Rechnungs-Middleware">
     <meta name="twitter:description"
-        content="The fastest way to generate EN 16931 compliant invoices. No Java, No Cloud dependencies.">
+        content="Der schnellste Weg zu konformen ZUGFeRD und XRechnung Dateien. Keine Java-Hölle, keine Cloud-Abhängigkeit.">
     <meta name="twitter:image" content="https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png">
 
     <!-- JSON-LD Schema (Enriched) -->
@@ -37,13 +37,14 @@
       "name": "Factur-X Engine",
       "operatingSystem": "Docker",
       "applicationCategory": "BusinessApplication",
-      "url": "https://facturx-engine.github.io/facturx-engine/",
+      "url": "https://facturx-engine.github.io/facturx-engine/de/",
+      "inLanguage": "de",
       "softwareVersion": "1.3",
       "sameAs": [
           "https://github.com/facturx-engine/facturx-engine",
           "https://hub.docker.com/r/facturxengine/facturx-engine"
       ],
-      "description": "High-performance API for generation and validation of Factur-X and XRechnung electronic invoices.",
+      "description": "Hochleistungs-API für die Erstellung und Validierung von elektronischen Rechnungen (ZUGFeRD, XRechnung).",
       "offers": { 
           "@type": "Offer", 
           "price": "0.00", 
@@ -133,14 +134,14 @@
 
             <div
                 class="hidden md:flex items-center gap-10 text-[11px] font-mono tracking-widest uppercase text-slate-500">
-                <a href="#security" class="hover:text-amber-500 transition-colors">Security</a>
+                <a href="#security" class="hover:text-amber-500 transition-colors">Sicherheit</a>
                 <a href="#compliance" class="hover:text-amber-500 transition-colors">Standards</a>
                 <a href="#api" class="hover:text-amber-500 transition-colors">API</a>
                 <a href="#faq" class="hover:text-amber-500 transition-colors">FAQ</a>
                 <div class="h-4 w-px bg-white/10 mx-2"></div>
-                <span class="text-amber-500">EN</span>
-                <a href="./fr/" class="hover:text-white transition-colors">FR</a>
-                <a href="./de/" class="hover:text-white transition-colors">DE</a>
+                <a href="../" class="hover:text-white transition-colors">EN</a>
+                <a href="../fr/" class="hover:text-white transition-colors">FR</a>
+                <span class="text-amber-500">DE</span>
             </div>
 
             <div class="flex items-center gap-4">
@@ -162,19 +163,20 @@
             <div class="relative z-20">
                 <div
                     class="inline-block px-3 py-1 border border-amber-500/30 bg-amber-500/5 text-amber-500 text-[10px] font-mono tracking-widest uppercase mb-8">
-                    Status: v1.3 stable // Air-Gapped Ready
+                    Status: v1.3 stable // ZUGFeRD 2.4 Ready
                 </div>
                 <h1 class="text-6xl md:text-8xl font-bold text-white tracking-tighter leading-none mb-8">
-                    Compliance <br /> <span class="text-amber-500 italic">Hardened.</span>
+                    E-Rechnung. <br /> <span class="text-amber-500 italic">Abgesichert.</span>
                 </h1>
                 <p class="text-lg text-slate-400 max-w-xl mb-12 leading-relaxed">
-                    The <strong>Privacy-First</strong> invoicing engine. 100% <strong>Air-gapped</strong>, Official <strong>SaxonC</strong> Validation.
-                    Zero Cloud dependencies. Your data never leaves your infrastructure.
+                    Die <strong>Privacy-First</strong> E-Rechnungs-Engine. 100% <strong>Air-gapped</strong>, Offizielle
+                    <strong>SaxonC</strong> Validierung.
+                    Keine Cloud-Abhängigkeiten. Ihre Daten verlassen niemals Ihre Infrastruktur.
                 </p>
                 <div class="flex flex-wrap gap-4">
                     <a href="https://github.com/facturx-engine/facturx-engine#quickstart"
                         class="px-8 py-4 bg-amber-500 text-black font-bold uppercase tracking-widest text-sm hover:bg-amber-400 transition-colors">
-                        Get Started
+                        Los geht's
                     </a>
                     <a href="https://github.com/facturx-engine/facturx-engine"
                         class="px-8 py-4 border border-white/10 text-white font-bold uppercase tracking-widest text-sm hover:bg-white/5 transition-colors">
@@ -194,7 +196,7 @@
                             /v1/convert</span>
                     </div>
                     <div class="p-6 font-mono text-sm space-y-3">
-                        <div class="text-amber-500">Sending payload...</div>
+                        <div class="text-amber-500">Sende Payload...</div>
                         <div class="text-slate-400">
                             {<br />
                             &nbsp;&nbsp;"profile": "BASIC",<br />
@@ -209,8 +211,8 @@
                             </svg>
                             200 OK
                         </div>
-                        <div class="text-slate-500 text-xs">Processing time: 142ms</div>
-                        <div class="text-slate-500 text-xs">Standard: EN 16931 Verified</div>
+                        <div class="text-slate-500 text-xs">Zeit: 142ms</div>
+                        <div class="text-slate-500 text-xs">Standard: EN 16931 Verifiziert</div>
                     </div>
                 </div>
             </div>
@@ -222,11 +224,11 @@
         <div class="max-w-4xl mx-auto px-6 space-y-16">
 
             <div class="space-y-4">
-                <h3 class="text-2xl font-bold text-white">Generate Factur-X PDF/A-3 + embedded XML</h3>
+                <h3 class="text-2xl font-bold text-white">Generieren Sie ZUGFeRD PDF/A-3 + XML</h3>
                 <p class="text-slate-400 leading-relaxed">
-                    Convert any standard PDF into a compliant hybrid invoice. The engine handles the complex PDF
-                    structure, attaching the XML payload and creating the necessary Archive-compliant PDF/A-3 file
-                    structure automatically.
+                    Konvertieren Sie jedes Standard-PDF in eine konforme Hybrid-Rechnung. Die Engine verwaltet die
+                    komplexe PDF-Struktur,
+                    hängt die XML-Nutzlast an und erstellt automatisch die archivkonforme PDF/A-3 Dateistruktur.
                 </p>
                 <div class="bg-black p-4 rounded border border-white/10 font-mono text-xs text-slate-300">
                     $ docker run -p 8000:8000 facturxengine/facturx-engine
@@ -234,20 +236,22 @@
             </div>
 
             <div class="space-y-4">
-                <h3 class="text-2xl font-bold text-white">Validate EN 16931 (Schematron)</h3>
+                <h3 class="text-2xl font-bold text-white">Validieren Sie EN 16931 (Schematron)</h3>
                 <p class="text-slate-400 leading-relaxed">
-                    Designed for EN 16931 compliance. The engine includes official Schematron profiles (CII &
-                    UBL) to validate strict business rules (totals, tax calculations, mandatory fields) before you emit
-                    the invoice.
+                    Entwickelt für die Konformität mit <strong>EN 16931</strong>. Die Engine enthält offizielle
+                    Schematron-Profile (CII & UBL),
+                    um strenge Geschäftsregeln (Summen, Steuerberechnungen, Pflichtfelder) zu validieren, bevor Sie die
+                    Rechnung versenden.
                 </p>
             </div>
 
             <div class="space-y-4">
-                <h3 class="text-2xl font-bold text-white">Self-hosted Docker Middleware</h3>
+                <h3 class="text-2xl font-bold text-white">Self-Hosted Docker Middleware</h3>
                 <p class="text-slate-400 leading-relaxed">
-                    Designed for ERP and Accounting software integration. Deploy it as a microservice in your Kubernetes
-                    cluster or on a simple VM. It acts as a black-box middleware: send raw data, receive compliant
-                    documents.
+                    Entwickelt für die Integration in ERP- und Buchhaltungssoftware. Stellen Sie es als Microservice in
+                    Ihrem Kubernetes-Cluster
+                    oder auf einer einfachen VM bereit. Es fungiert als Black-Box-Middleware: Senden Sie Rohdaten,
+                    erhalten Sie konforme Dokumente.
                 </p>
             </div>
 
@@ -259,42 +263,47 @@
         <div class="max-w-7xl mx-auto px-6">
             <div class="grid md:grid-cols-3 gap-16">
                 <div class="space-y-4">
-                    <div class="text-amber-500 font-mono text-xs tracking-widest uppercase">01 / Privacy</div>
-                    <h3 class="text-2xl font-bold text-white">Air-Gapped by Design</h3>
-                    <p class="text-sm text-slate-500 leading-relaxed"><strong>Data Sovereignty.</strong> No external calls. No telemetry. Perfect for banks
-                        and ultra-secure environments where no data should ever leave the server.</p>
+                    <div class="text-amber-500 font-mono text-xs tracking-widest uppercase">01 / Datenschutz</div>
+                    <h3 class="text-2xl font-bold text-white">Datensouveränität</h3>
+                    <p class="text-sm text-slate-500 leading-relaxed"><strong>Air-Gapped Design.</strong> Keine externen
+                        Aufrufe. Keine Telemetrie. Perfekt für Banken
+                        und hochsichere Umgebungen (KRITIS), wo keine Daten den Server verlassen dürfen.</p>
                 </div>
                 <div class="space-y-4">
-                    <div class="text-amber-500 font-mono text-xs tracking-widest uppercase">02 / Architecture</div>
-                    <h3 class="text-2xl font-bold text-white">Zero Java Dependency</h3>
-                    <p class="text-sm text-slate-500 leading-relaxed">Pure Python core. No heavy JVM, no complex Java
-                        licensing, no Ghostscript overhead. A lean, fast Docker container.</p>
+                    <div class="text-amber-500 font-mono text-xs tracking-widest uppercase">02 / Architektur</div>
+                    <h3 class="text-2xl font-bold text-white">Keine Java-Abhängigkeit</h3>
+                    <p class="text-sm text-slate-500 leading-relaxed">Reiner Python-Kern. Keine schwere JVM, keine
+                        komplexen Java-Lizenzen.
+                        Ein schlanker, schneller Docker-Container.</p>
                 </div>
                 <div class="space-y-4">
-                    <div class="text-amber-500 font-mono text-xs tracking-widest uppercase">03 / Integrity</div>
-                    <h3 class="text-2xl font-bold text-white">SaxonC Process Isolation</h3>
-                    <p class="text-sm text-slate-500 leading-relaxed">Don't just generate. Validate. Every invoice is
-                        checked against EN 16931 rules in isolated processes for maximum stability.</p>
+                    <div class="text-amber-500 font-mono text-xs tracking-widest uppercase">03 / Integrität</div>
+                    <h3 class="text-2xl font-bold text-white">SaxonC Prozess-Isolation</h3>
+                    <p class="text-sm text-slate-500 leading-relaxed">Nicht nur generieren. Validieren. Jede Rechnung
+                        wird
+                        gegen offizielle EN 16931 Regeln in isolierten Prozessen geprüft.</p>
                 </div>
                 <!-- Row 2 -->
                 <div class="space-y-4">
                     <div class="text-amber-500 font-mono text-xs tracking-widest uppercase">04 / Observability</div>
                     <h3 class="text-2xl font-bold text-white">Split Metrics</h3>
-                    <p class="text-sm text-slate-500 leading-relaxed">Enterprise-grade monitoring. Basic ops metrics for
-                        all, plus
-                        detailed Business Intelligence metrics for Pro users (Profiles, Error Types).</p>
+                    <p class="text-sm text-slate-500 leading-relaxed">Monitoring auf Enterprise-Niveau. Ops-Metriken für
+                        alle,
+                        plus detaillierte Business-Intelligence-Metriken für Pro-Nutzer (Profile, Fehlertypen).</p>
                 </div>
                 <div class="space-y-4">
                     <div class="text-amber-500 font-mono text-xs tracking-widest uppercase">05 / Supply Chain</div>
                     <h3 class="text-2xl font-bold text-white">Trust Pack</h3>
-                    <p class="text-sm text-slate-500 leading-relaxed"> SBOM (CycloneDX) available for every release. All
-                        Docker images are cryptographically signed with Cosign for absolute trust.</p>
+                    <p class="text-sm text-slate-500 leading-relaxed"> SBOM (CycloneDX) für jedes Release verfügbar.
+                        Alle
+                        Docker-Images sind kryptographisch mit Cosign signiert.</p>
                 </div>
                 <div class="space-y-4">
-                    <div class="text-amber-500 font-mono text-xs tracking-widest uppercase">06 / Compliance</div>
-                    <h3 class="text-2xl font-bold text-white">PDP Ready</h3>
-                    <p class="text-sm text-slate-500 leading-relaxed">Aligned with French 2026 mandates. Generate files
-                        that are strictly compliant with the Public Billing Portal (Chorus Pro).</p>
+                    <div class="text-amber-500 font-mono text-xs tracking-widest uppercase">06 / Konformität</div>
+                    <h3 class="text-2xl font-bold text-white">ZUGFeRD Ready</h3>
+                    <p class="text-sm text-slate-500 leading-relaxed">Abgestimmt auf die E-Rechnungspflicht (B2B).
+                        Generieren Sie Dateien,
+                        die strikt konform mit XRechnung und ZUGFeRD 2.x sind.</p>
                 </div>
             </div>
         </div>
@@ -303,87 +312,44 @@
     <!-- FAQ / GEO Section -->
     <section id="faq" class="py-24 border-b border-white/5 bg-slate-950">
         <div class="max-w-4xl mx-auto px-6">
-            <h2 class="text-3xl font-bold text-white mb-16 text-center">Frequently Asked Questions</h2>
+            <h2 class="text-3xl font-bold text-white mb-16 text-center">Häufig gestellte Fragen</h2>
             <div class="grid gap-8">
                 <div class="space-y-2">
-                    <h4 class="text-lg font-bold text-amber-500">Why use a Docker container?</h4>
-                    <p class="text-slate-400">PDF/A-3 conversion is complex. Docker isolates dependencies (no
-                        Ghostscript/Java hell) ensuring a stable <strong>"Iso-Prod" environment</strong> everywhere. You
-                        avoid "It works on my machine" issues entirely.</p>
+                    <h4 class="text-lg font-bold text-amber-500">Warum einen Docker-Container verwenden?</h4>
+                    <p class="text-slate-400">PDF/A-3 Konvertierung ist komplex. Docker isoliert Abhängigkeiten
+                        (vermeidet die
+                        Ghostscript/Java-Hölle) und garantiert eine stabile <strong>"Iso-Prod" Umgebung</strong>
+                        überall.</p>
                 </div>
                 <div class="space-y-2">
-                    <h4 class="text-lg font-bold text-amber-500">Does it generate or also validate?</h4>
-                    <p class="text-slate-400">Both. You can use it to convert ordinary PDFs into Factur-X, OR to
-                        separate validate input XML/PDFs against official EN 16931 rules.</p>
+                    <h4 class="text-lg font-bold text-amber-500">Generiert oder validiert es auch?</h4>
+                    <p class="text-slate-400">Beides. Sie können es nutzen, um normale PDFs in ZUGFeRD zu konvertieren,
+                        ODER um
+                        Eingangs-XML/PDFs separat gegen offizielle EN 16931 Regeln zu validieren.</p>
                 </div>
                 <div class="space-y-2">
-                    <h4 class="text-lg font-bold text-amber-500">Licensing: Community vs Pro?</h4>
-                    <p class="text-slate-400">The <strong>Community Edition</strong> is fully featured for Generation
-                        and Validation (all profiles).
-                        The <strong>Pro Edition</strong> unlocks <strong>unmasked data extraction</strong>,
-                        <strong>commercial OEM redistribution</strong>, and <strong>legal warranty/support</strong>.
+                    <h4 class="text-lg font-bold text-amber-500">Lizenz: Community vs Pro?</h4>
+                    <p class="text-slate-400">Die <strong>Community Edition</strong> ist voll funktionsfähig für
+                        Generierung
+                        und Validierung.
+                        Die <strong>Pro Edition</strong> schaltet die <strong>unmaskierte Datenextraktion</strong>,
+                        die <strong>kommerzielle OEM-Weitergabe</strong> und <strong>rechtliche
+                            Garantie/Support</strong> frei.
                     </p>
                 </div>
                 <div class="space-y-2">
-                    <h4 class="text-lg font-bold text-amber-500">Is it compliant (French Reform 2026 / PDP)?</h4>
-                    <p class="text-slate-400">Yes. The engine produces files strictly compliant with the <strong>EN
-                            16931</strong> syntax mandated by the French PPF and PDP candidates. It supports all
-                        required profiles (Minimum, Basic WL, EN 16931).</p>
+                    <h4 class="text-lg font-bold text-amber-500">Ist es konform mit der E-Rechnungspflicht?</h4>
+                    <p class="text-slate-400">Ja. Die Engine produziert Dateien, die strikt der <strong>EN
+                            16931</strong> Syntax entsprechen.
+                        Sie unterstützt alle erforderlichen Profile für XRechnung und ZUGFeRD.</p>
                 </div>
                 <div class="space-y-2">
-                    <h4 class="text-lg font-bold text-amber-500">Which profiles are supported?</h4>
-                    <p class="text-slate-400">We support all standard profiles: <strong>MINIMUM</strong>,
+                    <h4 class="text-lg font-bold text-amber-500">Welche Profile werden unterstützt?</h4>
+                    <p class="text-slate-400">Wir unterstützen alle Standardprofile: <strong>MINIMUM</strong>,
                         <strong>BASIC</strong>, <strong>BASIC WL</strong>,
-                        <strong>EN 16931 (Comfort)</strong>, and <strong>EXTENDED</strong>. XRechnung 3.0 is available
-                        in the Pro Edition.
+                        <strong>EN 16931 (Comfort)</strong> und <strong>EXTENDED</strong>. XRechnung 3.0 ist ebenfalls
+                        verfügbar.
                     </p>
-                </div>
-                <div class="space-y-2">
-                    <h4 class="text-lg font-bold text-amber-500">Does it extract data to JSON?</h4>
-                    <p class="text-slate-400">Yes. The engine extracts embedded XML data. The <strong>Community
-                            Edition</strong> extracts <strong>real financial values</strong> but masks identity fields
-                        (Names, VAT) for privacy. The <strong>Pro Edition</strong> allows full unmasked extraction.</p>
-                </div>
-                <div class="space-y-2">
-                    <h4 class="text-lg font-bold text-amber-500">What is the typical latency?</h4>
-                    <p class="text-slate-400">The engine is highly optimized for performance. Standard conversions and
-                        validations typically complete in <strong>under 200ms</strong>, making it suitable for
-                        real-time industrial workflows.</p>
-                </div>
-                <div class="space-y-2">
-                    <h4 class="text-lg font-bold text-amber-500">What are the resource requirements?</h4>
-                    <p class="text-slate-400">The engine is extremely lightweight. It can run in a standard Docker
-                        container with as little as <strong>0.5 vCPU and 512MB RAM</strong>, scaling easily with your
-                        workload.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Compliance Norms -->
-    <section id="compliance" class="py-32">
-        <div class="max-w-7xl mx-auto px-6">
-            <h2 class="text-3xl font-bold text-white mb-16 text-center">Supported Standards</h2>
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-px bg-white/5 border border-white/5">
-                <div
-                    class="bg-slate-950 p-12 flex flex-col items-center text-center group hover:bg-amber-500/5 transition-colors">
-                    <span class="text-amber-500 font-mono text-sm mb-4">v1.0.07</span>
-                    <span class="text-xl font-bold text-white">Factur-X</span>
-                </div>
-                <div
-                    class="bg-slate-950 p-12 flex flex-col items-center text-center group hover:bg-amber-500/5 transition-colors">
-                    <span class="text-amber-500 font-mono text-sm mb-4">v2.4</span>
-                    <span class="text-xl font-bold text-white">ZUGFeRD</span>
-                </div>
-                <div
-                    class="bg-slate-950 p-12 flex flex-col items-center text-center group hover:bg-amber-500/5 transition-colors">
-                    <span class="text-amber-500 font-mono text-sm mb-4">v3.0</span>
-                    <span class="text-xl font-bold text-white">XRechnung</span>
-                </div>
-                <div
-                    class="bg-slate-950 p-12 flex flex-col items-center text-center group hover:bg-amber-500/5 transition-colors">
-                    <span class="text-amber-500 font-mono text-sm mb-4">Core</span>
-                    <span class="text-xl font-bold text-white">EN 16931</span>
                 </div>
             </div>
         </div>
@@ -401,7 +367,7 @@
                     <span class="text-lg font-bold tracking-tighter text-white uppercase">Factur-X <span
                             class="text-amber-500">Engine</span></span>
                 </div>
-                <p class="text-xs text-slate-600">Performance and compliance for sovereign enterprises.</p>
+                <p class="text-xs text-slate-600">Performance und Konformität für souveräne Unternehmen.</p>
             </div>
 
             <div class="flex gap-8 text-[10px] font-mono uppercase tracking-widest text-slate-500">
@@ -412,7 +378,7 @@
             </div>
 
             <div class="text-[10px] font-mono text-slate-600 uppercase tracking-widest">
-                © <span id="year"></span> FACTUR-X ENGINE. ALL RIGHTS RESERVED.
+                © <span id="year"></span> FACTUR-X ENGINE. ALLE RECHTE VORBEHALTEN.
             </div>
         </div>
     </footer>
