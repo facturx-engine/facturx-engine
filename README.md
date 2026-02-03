@@ -1,4 +1,4 @@
-# Factur-X Engine v1.3.4 "License Gated Edition"
+# Factur-X Engine "License Gated Edition"
 
 > **The Privacy-First Invoicing Engine.** 100% Air-gapped, Official SaxonC Validation. Generate & Validate Factur-X / ZUGFeRD 2.x without cloud dependencies.
 

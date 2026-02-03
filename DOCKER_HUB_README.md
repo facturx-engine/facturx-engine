@@ -1,4 +1,4 @@
-# Factur-X Engine v1.3.4 "License Gated Edition"
+# Factur-X Engine "License Gated Edition"
 
 > **The Privacy-First Invoicing Engine.** 100% Air-gapped, Official SaxonC Validation. Generate & Validate Factur-X / ZUGFeRD 2.x without cloud dependencies.
 
@@ -10,13 +10,11 @@
 
 Runs immediately on any Docker host. No Python/Java dependencies.
 
-```bash
-# 1. Start the Engine (API)
-docker run -d -p 8000:8000 --name facturx-engine facturxengine/facturx-engine:latest
+### 1. Start the Engine (API)
 
-# 2. Download example files (from GitHub)
-curl -O https://raw.githubusercontent.com/facturx-engine/facturx-engine/main/examples/invoice_raw.pdf
-curl -O https://raw.githubusercontent.com/facturx-engine/facturx-engine/main/examples/simple_invoice.json
+```bash
+docker run -d -p 8000:8000 --name facturx-engine facturxengine/facturx-engine:latest
+```
 
 ### 2. Generate Factur-X (PDF + XML)
 
@@ -41,7 +39,7 @@ curl -X POST "http://localhost:8000/v1/xml" \
   --output factur-x.xml
 ```
 
-### Extract to JSON (Open Core)
+### 4. Extract to JSON (Open Core)
 
 ```bash
 curl -X POST "http://localhost:8000/v1/extract" \
