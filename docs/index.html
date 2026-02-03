@@ -148,7 +148,7 @@
                     class="px-5 py-2 border border-white/10 text-slate-400 text-[10px] font-bold uppercase tracking-widest hover:border-amber-500 hover:text-amber-500 transition-all">
                     GitHub
                 </a>
-                <a href="https://github.com/facturx-engine/facturx-engine"
+                <a href="#api"
                     class="px-5 py-2 bg-amber-500 text-black text-[10px] font-bold uppercase tracking-widest hover:bg-amber-600 transition-all">
                     Docs
                 </a>
@@ -168,7 +168,8 @@
                     Compliance <br /> <span class="text-amber-500 italic">Hardened.</span>
                 </h1>
                 <p class="text-lg text-slate-400 max-w-xl mb-12 leading-relaxed">
-                    The <strong>Privacy-First</strong> invoicing engine. 100% <strong>Air-gapped</strong>, Official <strong>SaxonC</strong> Validation.
+                    The <strong>Privacy-First</strong> invoicing engine. 100% <strong>Air-gapped</strong>, Official
+                    <strong>SaxonC</strong> Validation.
                     Zero Cloud dependencies. Your data never leaves your infrastructure.
                 </p>
                 <div class="flex flex-wrap gap-4">
@@ -221,8 +222,40 @@
     <section class="py-24 bg-slate-900 border-b border-white/5" id="api">
         <div class="max-w-4xl mx-auto px-6 space-y-16">
 
+            <!-- Integration Tutorials (NEW) -->
+            <div class="space-y-6">
+                <div class="flex items-center gap-4 mb-8">
+                    <h3 class="text-2xl font-bold text-white">Integration Recipes</h3>
+                    <div class="h-px bg-white/10 flex-grow"></div>
+                </div>
+                <div class="grid md:grid-cols-3 gap-4">
+                    <a href="./tutorials/python-facturx.html"
+                        class="group block p-6 bg-black border border-white/10 rounded hover:border-amber-500 transition-colors">
+                        <div class="text-amber-500 font-mono text-xs mb-2">PYTHON</div>
+                        <div class="text-white font-bold mb-2 group-hover:text-amber-500">Requests</div>
+                        <p class="text-xs text-slate-500">FastAPI, Django, Flask integration guide.</p>
+                    </a>
+                    <a href="./tutorials/nodejs-facturx.html"
+                        class="group block p-6 bg-black border border-white/10 rounded hover:border-amber-500 transition-colors">
+                        <div class="text-amber-500 font-mono text-xs mb-2">NODE.JS</div>
+                        <div class="text-white font-bold mb-2 group-hover:text-amber-500">Axios</div>
+                        <p class="text-xs text-slate-500">NestJS, Express, Serverless guide.</p>
+                    </a>
+                    <a href="./tutorials/php-facturx.html"
+                        class="group block p-6 bg-black border border-white/10 rounded hover:border-amber-500 transition-colors">
+                        <div class="text-amber-500 font-mono text-xs mb-2">PHP</div>
+                        <div class="text-white font-bold mb-2 group-hover:text-amber-500">Guzzle</div>
+                        <p class="text-xs text-slate-500">Symfony, Laravel, WordPress guide.</p>
+                    </a>
+                </div>
+            </div>
+
             <div class="space-y-4">
-                <h3 class="text-2xl font-bold text-white">Generate Factur-X PDF/A-3 + embedded XML</h3>
+                <div class="flex items-center gap-4">
+                    <h3 class="text-2xl font-bold text-white">Core Capabilities</h3>
+                    <div class="h-px bg-white/10 flex-grow"></div>
+                </div>
+                <h3 class="text-xl font-bold text-white text-slate-200">1. Generate Factur-X PDF/A-3</h3>
                 <p class="text-slate-400 leading-relaxed">
                     Convert any standard PDF into a compliant hybrid invoice. The engine handles the complex PDF
                     structure, attaching the XML payload and creating the necessary Archive-compliant PDF/A-3 file
@@ -234,7 +267,7 @@
             </div>
 
             <div class="space-y-4">
-                <h3 class="text-2xl font-bold text-white">Validate EN 16931 (Schematron)</h3>
+                <h3 class="text-xl font-bold text-white text-slate-200">2. Validate EN 16931 (Schematron)</h3>
                 <p class="text-slate-400 leading-relaxed">
                     Designed for EN 16931 compliance. The engine includes official Schematron profiles (CII &
                     UBL) to validate strict business rules (totals, tax calculations, mandatory fields) before you emit
@@ -243,7 +276,7 @@
             </div>
 
             <div class="space-y-4">
-                <h3 class="text-2xl font-bold text-white">Self-hosted Docker Middleware</h3>
+                <h3 class="text-xl font-bold text-white text-slate-200">3. Self-hosted Docker Middleware</h3>
                 <p class="text-slate-400 leading-relaxed">
                     Designed for ERP and Accounting software integration. Deploy it as a microservice in your Kubernetes
                     cluster or on a simple VM. It acts as a black-box middleware: send raw data, receive compliant
@@ -261,7 +294,8 @@
                 <div class="space-y-4">
                     <div class="text-amber-500 font-mono text-xs tracking-widest uppercase">01 / Privacy</div>
                     <h3 class="text-2xl font-bold text-white">Air-Gapped by Design</h3>
-                    <p class="text-sm text-slate-500 leading-relaxed"><strong>Data Sovereignty.</strong> No external calls. No telemetry. Perfect for banks
+                    <p class="text-sm text-slate-500 leading-relaxed"><strong>Data Sovereignty.</strong> No external
+                        calls. No telemetry. Perfect for banks
                         and ultra-secure environments where no data should ever leave the server.</p>
                 </div>
                 <div class="space-y-4">
