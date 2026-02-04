@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Factur-X / EN 16931 Error Code Library | Fix BR-CO-10, BR-CO-16</title>
+    <meta name="description"
+        content="Detailed guide to fixing common Factur-X and Chorus Pro validation errors. Solutions for BR-CO-10, BR-CO-16, BR-S-08, and more.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        amber: { 500: '#f59e0b', 600: '#d97706' },
+                        slate: { 950: '#020617' }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+
+    <!-- FAQ Schema for Rich Snippets -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [{
+        "@type": "Question",
+        "name": "How to fix BR-CO-10 in Factur-X?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "BR-CO-10 means the 'Buyer VAT Identifier' is missing or invalid. In Factur-X Engine, ensure you pass 'buyer.vat_number' in your JSON payload."
+        }
+      }, {
+        "@type": "Question",
+        "name": "What is error BR-CO-16?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "BR-CO-16 indicates a missing 'Payment Account Identifier' (IBAN). If payment means is Credit Transfer (58), you MUST provide an IBAN in 'seller.iban'."
+        }
+      }]
+    }
+    </script>
+</head>
+
+<body class="bg-slate-950 text-slate-300 font-sans selection:bg-amber-500 selection:text-black leading-relaxed">
+
+    <nav
+        class="fixed top-0 w-full z-50 border-b border-white/5 bg-slate-950/80 backdrop-blur-md h-20 flex items-center">
+        <div class="max-w-7xl mx-auto px-6 w-full flex items-center justify-between">
+            <a href="../../" class="flex items-center gap-3">
+                <div
+                    class="w-10 h-10 border-2 border-amber-500 flex items-center justify-center rounded-sm bg-slate-900">
+                    <span class="font-mono font-bold text-amber-500">FX</span>
+                </div>
+                <span class="text-xl font-bold tracking-tighter text-white uppercase">Factur-X <span
+                        class="text-amber-500">Engine</span></span>
+            </a>
+            <div class="flex items-center gap-4">
+                <a href="../../ref/api-overview.html"
+                    class="text-slate-400 hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest">Reference</a>
+                <a href="https://github.com/facturx-engine/facturx-engine"
+                    class="px-4 py-2 border border-white/10 rounded text-xs font-bold uppercase tracking-widest hover:bg-white/5 transition-colors">GitHub</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-40 pb-20">
+        <div class="max-w-4xl mx-auto px-6">
+
+            <header class="mb-16 border-b border-white/5 pb-10">
+                <div class="text-amber-500 font-mono text-sm tracking-widest uppercase mb-4">Knowledge Base</div>
+                <h1 class="text-4xl md:text-6xl font-black text-white tracking-tight mb-6 uppercase">
+                    Common Validation <span class="text-red-500">Errors</span>
+                </h1>
+                <p class="text-xl text-slate-400 leading-relaxed font-light">
+                    Decrypting the cryptic error codes from **Chorus Pro**, **CII**, and **EN 16931**.
+                </p>
+            </header>
+
+            <div class="space-y-12">
+
+                <!-- Error Block -->
+                <div
+                    class="group bg-slate-900/50 border border-white/10 rounded-xl overflow-hidden hover:border-amber-500/50 transition-colors">
+                    <div class="bg-slate-900 px-6 py-4 border-b border-white/5 flex justify-between items-center">
+                        <code class="text-red-400 font-mono font-bold text-lg">BR-CO-10</code>
+                        <span class="text-[10px] uppercase tracking-widest text-slate-500">Critical</span>
+                    </div>
+                    <div class="p-8">
+                        <h3 class="text-xl font-bold text-white mb-4">Buyer VAT Identifier Missing</h3>
+                        <p class="mb-6 text-slate-400">
+                            The invoice attempts to trigger VAT accounting logic but the system cannot identify the
+                            Buyer's tax status.
+                        </p>
+                        <div class="bg-black p-4 rounded border border-white/5 font-mono text-sm text-green-400">
+                            "buyer": {<br>
+                            &nbsp;&nbsp;"name": "Client SAS",<br>
+                            &nbsp;&nbsp;<strong>"vat_number": "FR12345678901"</strong> <-- Missing<br>
+                                }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Error Block -->
+                <div
+                    class="group bg-slate-900/50 border border-white/10 rounded-xl overflow-hidden hover:border-amber-500/50 transition-colors">
+                    <div class="bg-slate-900 px-6 py-4 border-b border-white/5 flex justify-between items-center">
+                        <code class="text-red-400 font-mono font-bold text-lg">BR-CO-16</code>
+                        <span class="text-[10px] uppercase tracking-widest text-slate-500">Payment</span>
+                    </div>
+                    <div class="p-8">
+                        <h3 class="text-xl font-bold text-white mb-4">Payment Account Identifier Missing (IBAN)</h3>
+                        <p class="mb-6 text-slate-400">
+                            You specified a "Credit Transfer" payment means (Code 58 or 30) but did not provide the bank
+                            account details.
+                        </p>
+                        <div class="bg-black p-4 rounded border border-white/5 font-mono text-sm text-green-400">
+                            "seller": {<br>
+                            &nbsp;&nbsp;"name": "My Company",<br>
+                            &nbsp;&nbsp;<strong>"iban": "FR76..."</strong> <-- Required<br>
+                                }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Error Block -->
+                <div
+                    class="group bg-slate-900/50 border border-white/10 rounded-xl overflow-hidden hover:border-amber-500/50 transition-colors">
+                    <div class="bg-slate-900 px-6 py-4 border-b border-white/5 flex justify-between items-center">
+                        <code class="text-red-400 font-mono font-bold text-lg">BR-S-08</code>
+                        <span class="text-[10px] uppercase tracking-widest text-slate-500">Tax</span>
+                    </div>
+                    <div class="p-8">
+                        <h3 class="text-xl font-bold text-white mb-4">VAT Category Rate Mismatch</h3>
+                        <p class="mb-6 text-slate-400">
+                            For VAT Category 'S' (Standard), the rate MUST NOT be zero.
+                        </p>
+                        <div class="bg-black p-4 rounded border border-white/5 font-mono text-sm text-green-400">
+                            "items": [{<br>
+                            &nbsp;&nbsp;"vat_category": "S",<br>
+                            &nbsp;&nbsp;<strong>"vat_rate": 20.0</strong> <-- Must be> 0<br>
+                                }]
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="mt-20 p-8 bg-amber-500/10 border border-amber-500/20 rounded-xl text-center">
+                <h3 class="text-2xl font-bold text-white mb-2">Tired of debugging XML?</h3>
+                <p class="mb-6 text-amber-500">Let the engine handle compliance for you.</p>
+                <a href="https://github.com/facturx-engine/facturx-engine"
+                    class="inline-block px-8 py-3 bg-amber-500 text-black font-bold uppercase tracking-widest hover:bg-amber-400 transition-colors">
+                    Get Started
+                </a>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="py-12 bg-slate-900 border-t border-white/5">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <a href="../../"
+                class="text-slate-500 hover:text-white transition-colors text-xs font-bold uppercase tracking-widest">Back
+                to Home</a>
+        </div>
+    </footer>
+
+</body>
+
+</html>
