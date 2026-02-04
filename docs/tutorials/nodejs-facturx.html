@@ -56,7 +56,7 @@
                 <h1 class="text-4xl md:text-5xl font-bold text-white tracking-tight mb-6">Generate Factur-X with Node.js
                 </h1>
                 <p class="text-lg text-slate-400 leading-relaxed">
-                    Standard integration for **NestJS**, **Express**, or serverless functions using `axios`.
+                    Standard integration for NestJS, Express, or serverless functions using `axios`.
                 </p>
             </div>
 
@@ -99,7 +99,7 @@ async function convertToFacturX(pdfPath, metadata) {
 
 // Example usage
 const myMetadata = {
-  invoice_id: "NODE-42",
+  invoice_number: "NODE-42",
   seller: { name: "JS Services" },
   totals: { net_amount: 50.00 }
 };

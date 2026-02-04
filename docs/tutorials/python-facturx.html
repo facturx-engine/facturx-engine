@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Python Factur-X Tutorial | Factur-X Engine</title>
-    <meta name="description" content="Learn how to generate Factur-X and ZUGFeRD invoices using Python (Requests) and Factur-X Engine.">
-    
+    <meta name="description"
+        content="Learn how to generate Factur-X and ZUGFeRD invoices using Python (Requests) and Factur-X Engine.">
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -24,21 +26,28 @@
             }
         }
     </script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
 </head>
+
 <body class="bg-slate-950 text-slate-300 font-sans selection:bg-amber-500 selection:text-black">
 
     <!-- Header -->
-    <nav class="fixed top-0 w-full z-50 border-b border-white/5 bg-slate-950/80 backdrop-blur-md h-20 flex items-center">
+    <nav
+        class="fixed top-0 w-full z-50 border-b border-white/5 bg-slate-950/80 backdrop-blur-md h-20 flex items-center">
         <div class="max-w-7xl mx-auto px-6 w-full flex items-center justify-between">
             <a href="../" class="flex items-center gap-3">
-                <div class="w-10 h-10 border-2 border-amber-500 flex items-center justify-center rounded-sm bg-slate-900">
+                <div
+                    class="w-10 h-10 border-2 border-amber-500 flex items-center justify-center rounded-sm bg-slate-900">
                     <span class="font-mono font-bold text-amber-500">FX</span>
                 </div>
-                <span class="text-xl font-bold tracking-tighter text-white uppercase">Factur-X <span class="text-amber-500">Engine</span></span>
+                <span class="text-xl font-bold tracking-tighter text-white uppercase">Factur-X <span
+                        class="text-amber-500">Engine</span></span>
             </a>
             <div class="flex items-center gap-4">
-                <a href="https://github.com/facturx-engine/facturx-engine" class="text-slate-400 hover:text-white transition-colors text-sm font-bold uppercase tracking-widest">GitHub</a>
+                <a href="https://github.com/facturx-engine/facturx-engine"
+                    class="text-slate-400 hover:text-white transition-colors text-sm font-bold uppercase tracking-widest">GitHub</a>
             </div>
         </div>
     </nav>
@@ -48,14 +57,16 @@
         <div class="max-w-3xl mx-auto px-6">
             <div class="mb-12">
                 <div class="text-amber-500 font-mono text-sm tracking-widest uppercase mb-4">Tutorials / Python</div>
-                <h1 class="text-4xl md:text-5xl font-bold text-white tracking-tight mb-6">Generate Factur-X with Python</h1>
+                <h1 class="text-4xl md:text-5xl font-bold text-white tracking-tight mb-6">Generate Factur-X with Python
+                </h1>
                 <p class="text-lg text-slate-400 leading-relaxed">
-                    Integrate <strong>Factur-X Engine</strong> into your FastAPI, Django, or script-based workflows using the standard `requests` library.
+                    Integrate <strong>Factur-X Engine</strong> into your FastAPI, Django, or script-based workflows
+                    using the standard `requests` library.
                 </p>
             </div>
 
             <div class="space-y-12">
-                
+
                 <!-- Prerequisites -->
                 <div class="space-y-4">
                     <h2 class="text-2xl font-bold text-white">Prerequisites</h2>
@@ -96,7 +107,7 @@ def generate_invoice(pdf_path, json_metadata):
 # Example Metadata
 metadata = """
 {
-    "invoice_id": "INV-2026-001",
+    "invoice_number": "INV-2026-001",
     "seller": { "name": "Python Dev", "vat_id": "FR123456789" },
     "totals": { "net_amount": 100.00, "tax_amount": 20.00 }
 }
@@ -109,7 +120,9 @@ generate_invoice("input.pdf", metadata)</code></pre>
                 <div class="bg-white/5 border-l-4 border-amber-500 p-6 rounded-r-lg">
                     <h3 class="text-xl font-bold text-white mb-2">Why use the API?</h3>
                     <p class="text-slate-400">
-                        Using the engine avoids dependency hell. You don't need to manage <code>lxml</code> versions, <code>SaxoC</code> binaries, or JVM heaps in your Python environment. The Docker container handles the strict EN16931 validation logic in an isolated "Iso-Prod" environment.
+                        Using the engine avoids dependency hell. You don't need to manage <code>lxml</code> versions,
+                        <code>SaxoC</code> binaries, or JVM heaps in your Python environment. The Docker container
+                        handles the strict EN16931 validation logic in an isolated "Iso-Prod" environment.
                     </p>
                 </div>
 
@@ -125,4 +138,5 @@ generate_invoice("input.pdf", metadata)</code></pre>
     </footer>
 
 </body>
+
 </html>
