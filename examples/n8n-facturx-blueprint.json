@@ -1,0 +1,121 @@
+{
+    "name": "Factur-X Engine Demo",
+    "nodes": [
+        {
+            "parameters": {},
+            "name": "Start",
+            "type": "n8n-nodes-base.start",
+            "typeVersion": 1,
+            "position": [
+                250,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "keepOnlySet": true,
+                "values": {
+                    "string": [
+                        {
+                            "name": "invoice_number",
+                            "value": "INV-{{$now.format('yyyyMMdd-HHmm')}}"
+                        },
+                        {
+                            "name": "buyer.name",
+                            "value": "Acme Corp"
+                        },
+                        {
+                            "name": "seller.name",
+                            "value": "My Company"
+                        }
+                    ],
+                    "number": [
+                        {
+                            "name": "amount",
+                            "value": 1500.00
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "name": "Set Invoice Data",
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 1,
+            "position": [
+                450,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "http://facturx:8000/v1/convert",
+                "sendBinaryData": true,
+                "binaryPropertyName": "pdf:data",
+                "jsonParameters": true,
+                "options": {},
+                "bodyParametersJson": "={ \"metadata\": { \"invoice_number\": \"{{$node[\"Set Invoice Data\"].json[\"invoice_number\"]}}\", \"seller\": { \"name\": \"{{$node[\"Set Invoice Data\"].json[\"seller\"][\"name\"]}}\", \"country_code\": \"FR\" }, \"buyer\": { \"name\": \"{{$node[\"Set Invoice Data\"].json[\"buyer\"][\"name\"]}}\", \"country_code\": \"DE\" }, \"items\": [ { \"name\": \"Consulting Services\", \"quantity\": 1, \"price\": {{$node[\"Set Invoice Data\"].json[\"amount\"]}}, \"vat\": 20.0 } ] } }"
+            },
+            "name": "Generate Factur-X",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 2,
+            "position": [
+                650,
+                300
+            ],
+            "notes": "Generates a PDF/A-3 from raw data and a template PDF"
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "http://facturx:8000/v1/validate",
+                "sendBinaryData": true,
+                "binaryPropertyName": "file:data",
+                "options": {}
+            },
+            "name": "Validate Invoice",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 2,
+            "position": [
+                850,
+                300
+            ],
+            "notes": "Validates compliance with EN 16931"
+        }
+    ],
+    "connections": {
+        "Start": {
+            "main": [
+                [
+                    {
+                        "node": "Set Invoice Data",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Set Invoice Data": {
+            "main": [
+                [
+                    {
+                        "node": "Generate Factur-X",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Generate Factur-X": {
+            "main": [
+                [
+                    {
+                        "node": "Validate Invoice",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    }
+}

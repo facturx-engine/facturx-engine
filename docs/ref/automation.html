@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automation & Ecosystem | Factur-X Engine Reference</title>
+    <meta name="description"
+        content="Integrate Factur-X Engine with n8n, Make, and MCP (Model Context Protocol). Automation blueprints for Low-Code Invoicing.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        amber: { 500: '#f59e0b', 600: '#d97706' },
+                        slate: { 950: '#020617' }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+</head>
+
+<body class="bg-slate-950 text-slate-300 font-sans selection:bg-amber-500 selection:text-black leading-relaxed">
+
+    <nav
+        class="fixed top-0 w-full z-50 border-b border-white/5 bg-slate-950/80 backdrop-blur-md h-20 flex items-center">
+        <div class="max-w-7xl mx-auto px-6 w-full flex items-center justify-between">
+            <a href="../" class="flex items-center gap-3">
+                <div
+                    class="w-10 h-10 border-2 border-amber-500 flex items-center justify-center rounded-sm bg-slate-900">
+                    <span class="font-mono font-bold text-amber-500">FX</span>
+                </div>
+                <span class="text-xl font-bold tracking-tighter text-white uppercase">Factur-X <span
+                        class="text-amber-500">Engine</span></span>
+            </a>
+            <div class="flex items-center gap-4">
+                <a href="https://github.com/facturx-engine/facturx-engine"
+                    class="text-slate-400 hover:text-white transition-colors text-sm font-bold uppercase tracking-widest">GitHub</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-40 pb-20">
+        <div class="max-w-4xl mx-auto px-6">
+            <div class="mb-16 border-b border-white/5 pb-10">
+                <div class="text-amber-500 font-mono text-sm tracking-widest uppercase mb-4">Ecosystem / Integration
+                </div>
+                <h1 class="text-4xl md:text-6xl font-black text-white tracking-tight mb-6 uppercase">Automation &
+                    No-Code</h1>
+                <p class="text-xl text-slate-400 leading-relaxed font-light">
+                    Connect Factur-X Engine to your existing workflows. Ready for **n8n**, **Make**, and **AI Agents**.
+                </p>
+            </div>
+
+            <div class="space-y-20">
+
+                <!-- n8n Section -->
+                <section>
+                    <div class="flex items-center gap-4 mb-6">
+                        <div
+                            class="w-12 h-12 bg-[#ff6d5a] rounded flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-[#ff6d5a]/20">
+                            n8n</div>
+                        <h2 class="text-3xl font-bold text-white uppercase tracking-tight">n8n Integration</h2>
+                    </div>
+
+                    <p class="mb-8">
+                        The fastest way to use Factur-X Engine in automation pipelines is via our **Blueprints**. Zero
+                        plugins required. Just standard HTTP requests.
+                    </p>
+
+                    <div class="bg-slate-900 border border-white/10 rounded-xl p-8">
+                        <h3 class="text-xl font-bold text-white mb-4">Quick Start Blueprint</h3>
+                        <p class="text-sm text-slate-500 mb-6">
+                            This workflow demonstrates how to generate an invoice from JSON data and validate the output
+                            immediately.
+                        </p>
+
+                        <div class="flex gap-4 mb-8">
+                            <a href="../../examples/n8n-facturx-blueprint.json" download
+                                class="px-6 py-3 bg-amber-500 text-black font-bold uppercase tracking-widest text-xs hover:bg-amber-400 transition-colors flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                Download Blueprint (.json)
+                            </a>
+                            <a href="https://n8n.io" target="_blank"
+                                class="px-6 py-3 border border-white/10 text-white font-bold uppercase tracking-widest text-xs hover:bg-white/5 transition-colors">
+                                Valid for n8n v1.0+
+                            </a>
+                        </div>
+
+                        <div
+                            class="font-mono text-[10px] bg-black p-4 rounded text-slate-400 border border-white/5 overflow-x-auto">
+                            Step 1: Download the JSON file above.<br>
+                            Step 2: In your n8n editor, click "Import from File".<br>
+                            Step 3: Update the API URL in the HTTP Request node to point to your Factur-X Engine
+                            instance.<br>
+                            Step 4: Click "Execute Workflow".
+                        </div>
+                    </div>
+                </section>
+
+                <!-- MCP Section (Future) -->
+                <section class="opacity-70 group hover:opacity-100 transition-opacity duration-300">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div
+                            class="w-12 h-12 bg-white rounded flex items-center justify-center text-black font-bold text-xl">
+                            AI</div>
+                        <h2 class="text-3xl font-bold text-white uppercase tracking-tight">MCP (AI Integration)</h2>
+                    </div>
+
+                    <p class="mb-4">
+                        Factur-X Engine is **Model Context Protocol (MCP)** ready via its OpenAPI specification.
+                    </p>
+                    <p class="text-sm text-slate-500 leading-relaxed">
+                        You can expose the engine tools (`validate`, `convert`, `extract`) to AI assistants like Claude
+                        Desktop or IDEs (Cursor) by using a generic MCP OpenAPI server pointing to `/docs/openapi.json`.
+                    </p>
+                </section>
+
+            </div>
+        </div>
+    </main>
+
+    <footer class="py-12 border-t border-white/5 bg-slate-900">
+        <div class="max-w-7xl mx-auto px-6 text-center text-slate-600 font-mono text-xs uppercase tracking-widest">
+            &copy; 2026 Factur-X Engine. All rights reserved.
+        </div>
+    </footer>
+
+</body>
+
+</html>
