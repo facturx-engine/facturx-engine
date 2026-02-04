@@ -179,10 +179,99 @@ $client = new Client();
 $response = $client->post('http://localhost:8000/v1/convert', [
     'multipart' => [
         ['name' => 'pdf', 'contents' => fopen('input.pdf', 'r')],
-        ['name' => 'metadata', 'contents' => json_encode(['invoice_id' => '123'])]
+        ['name' => 'metadata', 'contents' => json_encode(['invoice_number' => '123'])]
     ]
 ]);
 file_put_contents('factur-x-final.pdf', $response->getBody());
 ?>
+```
+
+---
+
+## 6. Canonical Examples for Agents
+
+Use these payloads as reliable templates.
+
+### A. Minimal Payload (Service)
+**Scenario**: Simple freelance invoice.
+```json
+{
+  "invoice_number": "INV-2024-001",
+  "issue_date": "2024-01-01",
+  "seller": {
+    "name": "Freelancer SAS",
+    "vat_number": "FR123456789"
+  },
+  "buyer": {
+    "name": "Client Corp",
+    "vat_number": "FR987654321"
+  },
+  "totals": {
+    "net_amount": "1000.00",
+    "tax_amount": "200.00",
+    "payable_amount": "1200.00"
+  },
+  "line_items": [
+    {
+      "description": "Dev Service",
+      "quantity": "1.0",
+      "unit_price": "1000.00",
+      "line_total": "1000.00"
+    }
+  ]
+}
+```
+
+### B. Full Payload (Product)
+**Scenario**: B2B Invoice with address and tax details.
+```json
+{
+  "invoice_number": "FACT-2024-999",
+  "document_type_code": "380",
+  "issue_date": "2024-03-15",
+  "currency": "EUR",
+  "seller": {
+    "name": "Tech Supplies Inc",
+    "address": {
+      "line1": "10 Rue de la Paix",
+      "postcode": "75002",
+      "city": "Paris",
+      "country_code": "FR"
+    },
+    "vat_number": "FR888888888"
+  },
+  "buyer": {
+    "name": "Big Corp",
+    "vat_number": "DE123456789"
+  },
+  "totals": {
+    "net_amount": "500.00",
+    "tax_amount": "100.00",
+    "gross_amount": "600.00",
+    "payable_amount": "600.00"
+  },
+  "line_items": [
+    {
+      "description": "Monitor 4K",
+      "quantity": "2.0",
+      "unit_price": "250.00",
+      "line_total": "500.00"
+    }
+  ]
+}
+```
+
+### C. Error 422 Example
+**Scenario**: Missing required 'seller' field.
+```json
+{
+  "detail": [
+    {
+      "loc": ["body", "metadata", "seller"],
+      "msg": "field required",
+      "type": "value_error.missing"
+    }
+  ]
+}
 ```
 

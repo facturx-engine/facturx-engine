@@ -28,7 +28,7 @@ try {
             [
                 'name'     => 'metadata',
                 'contents' => json_encode([
-                    'invoice_id' => 'PHP-999',
+                    'invoice_number' => 'PHP-999',
                     'seller' => ['name' => 'PHP Solutions'],
                     'totals' => ['net_amount' => 120.50]
                 ])

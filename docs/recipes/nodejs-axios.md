@@ -36,7 +36,7 @@ async function convertToFacturX(pdfPath, metadata) {
 
 // Example usage
 const myMetadata = {
-  invoice_id: "NODE-42",
+  invoice_number: "NODE-42",
   seller: { name: "JS Services" },
   totals: { net_amount: 50.00 }
 };

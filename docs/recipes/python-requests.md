@@ -36,7 +36,7 @@ def generate_invoice(pdf_path, json_metadata):
 # Example Usage
 metadata = """
 {
-    "invoice_id": "INV-2026-001",
+    "invoice_number": "INV-2026-001",
     "seller": { "name": "Python Dev", "vat_id": "FR123456789" },
     "totals": { "net_amount": 100.00, "tax_amount": 20.00 }
 }

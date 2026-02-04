@@ -8,12 +8,14 @@
 
 ## Use Cases
 
+> **The standard for secure e-invoicing.** Generate and Validate Factur-X / ZUGFeRD 2.2 / XRechnung 3.0 files.
+
 * **E-invoicing France 2026 (PDP/PPF)**: Generate compliant invoices for the upcoming French mandate.
 * **EN 16931 Compliance**: Validate files against official **Schematron** rules using the embedded **SaxonC** engine.
 * **International Standards**: Support for **Factur-X**, **ZUGFeRD 2.2**, and **XRechnung 3.0**.
-* **Air-gapped Security**: Full validation and conversion without any internet connection (Privacy First).
+* **Security & Compliance**: Strictly **Air-gapped** / offline execution. No external calls, rules are embedded. Ideal for GDPR and restricted environments.
 
-[REST API Reference](https://facturx-engine.github.io/facturx-engine/ref/api-reference.html) | [Integration Recipes](https://facturx-engine.github.io/facturx-engine/) | [Troubleshooting](https://facturx-engine.github.io/facturx-engine/guides/error-codes.html)
+[REST API Reference](https://facturx-engine.github.io/facturx-engine/ref/api-reference.html) | [OpenAPI Spec (JSON)](docs/openapi.json) | [Integration Recipes](https://facturx-engine.github.io/facturx-engine/) | [Troubleshooting](https://facturx-engine.github.io/facturx-engine/guides/error-codes.html)
 
 ---
 
@@ -62,7 +64,7 @@ curl -X POST "http://localhost:8000/v1/extract" \
 
 ```json
 {
-  "invoice_id": "INV-2024-001",
+  "invoice_number": "INV-2024-001",
   "issue_date": "2024-10-05",
   "seller": { "name": "Acme Corp" },
   "totals": { "net_amount": "1500.00", "tax_amount": "300.00" }
@@ -73,7 +75,7 @@ curl -X POST "http://localhost:8000/v1/extract" \
 
 Protect your accounting system by verifying invoices **before** integration.
 
-The engine uses **SaxonC-HE**, the same technology as **Chorus Pro/PPF**, to run official **EN 16931 Schematron** rules.
+The engine uses **SaxonC-HE**, the same technology as **Chorus Pro / PPF (PDP)**, to run official **EN 16931 Schematron** rules.
 
 * **Community (Teaser)**: Detects if the file is invalid. Returns the first error.
 * **Pro (Official Engine)**: Returns the **full compliance report**. Use this to know exactly why a file would be rejected by the tax authority.
@@ -81,6 +83,15 @@ The engine uses **SaxonC-HE**, the same technology as **Chorus Pro/PPF**, to run
 ```bash
 curl -X POST "http://localhost:8000/v1/validate" -F "file=@invoice_compliant.pdf"
 ```
+
+### 6. File Compatibility
+
+| Endpoint | Input Formats | Output Formats |
+| :--- | :--- | :--- |
+| `/v1/convert` | PDF (v1.4+) + JSON | **Factur-X** (PDF/A-3 + XML) |
+| `/v1/validate` | PDF/A-3, XML (CII/UBL) | JSON Report |
+| `/v1/extract` | Factur-X PDF | JSON Data + XML |
+| `/v1/xml` | JSON | XML (CII) |
 
 ---
 
