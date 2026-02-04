@@ -1,6 +1,6 @@
 # Factur-X Engine
 
-> **The Privacy-First Invoicing Engine.** 100% Air-gapped, Official SaxonC Validation. Generate & Validate Factur-X / ZUGFeRD 2.x without cloud dependencies.
+> **The Privacy-First Invoicing Engine.** 100% Air-gapped, Official SaxonC Validation (Chorus Pro / KoSIT Parity). Generate and Validate Factur-X, ZUGFeRD 2.x, and XRechnung 3.0 without cloud dependencies.
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/facturxengine/facturx-engine)](https://hub.docker.com/r/facturxengine/facturx-engine) [![GitHub](https://img.shields.io/badge/github-repo-181717?logo=github)](https://github.com/facturx-engine/facturx-engine) [![License](https://img.shields.io/badge/license-Community-blue.svg)](https://github.com/facturx-engine/facturx-engine) [![Standard](https://img.shields.io/badge/standard-EN16931-green.svg)](https://fnfe-mpe.org/factur-x/) [![CRA](https://img.shields.io/badge/EU_CRA-Ready-blueviolet)](https://github.com/facturx-engine/facturx-engine/blob/main/docs/cra.md) [![SBOM](https://img.shields.io/badge/SBOM-CycloneDX-informational)](https://github.com/facturx-engine/facturx-engine/actions) [![Signed](https://img.shields.io/badge/Image-Cosign_Signed-success)](https://github.com/sigstore/cosign)
 
@@ -52,10 +52,9 @@ curl -X POST "http://localhost:8000/v1/extract" \
 
 ## Technical Specifications
 
-High-performance compliance engine for **EN 16931**.
-
-* **Native PDF/A-3 Conversion**: Internal engine handles ISO 19005-3 conformance. **No external Ghostscript dependency**.
-* **Standards Compliance**: Validates against **EN 16931**, **ZUGFeRD 2.4**, and **XRechnung 3.0**. Includes Native Schematron Rules (Business Logic) for France (SIRET, VAT) and Germany (Tax ID).
+* **Official SaxonC Validation**: Internal engine provides technical parity with **Chorus Pro (France)** and **KoSIT (Germany)** validation portals.
+* **Mandate Readiness**: Compliant with **France 2026 (PDP/PPF)** and **Germany 2025** electronic invoicing requirements.
+* **Standards Compliance**: Supports **Factur-X**, **ZUGFeRD 2.2**, and **XRechnung 3.0** (CII/UBL). Includes Native Schematron Rules.
 * **Stateless Architecture**: Zero persistence. Input data is processed in-memory and discarded. Ideal for GDPR/Privacy.
 * **Air-Gapped Ready**: 100% Offline execution. No outbound network requests required.
 * **Structured Extraction**: Parses Factur-X XML into standard JSON for ERP integration.
@@ -102,7 +101,7 @@ This **Community** version is production-ready.
 | :--- | :--- | :--- |
 | **License** | FSL 1.1 (Free for non-competing use) | Commercial (SLA & Indemnity) |
 | **Extraction** | **Full Data** | **Full Data** |
-| **Validation** | **Teaser Mode** (1 error) | **Official Engine** (SaxonC / Parity with Chorus Pro) |
+| **Validation** | **Teaser Mode** (1 error) | **Industrial Engine** (SaxonC / Parity with Chorus Pro & KoSIT) |
 | **Metrics** | **Basic** (Ops) | **Full** (Business) |
 | **Support** | Community | Priority / SLA |
 

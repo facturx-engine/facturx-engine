@@ -1,6 +1,6 @@
 # Factur-X Engine
 
-> **The Privacy-First Invoicing Engine.** 100% Air-gapped, Official SaxonC Validation. Generate & Validate Factur-X / ZUGFeRD 2.x without cloud dependencies.
+> **The Privacy-First Invoicing Engine.** 100% Air-gapped, Official SaxonC Validation (Chorus Pro / KoSIT Parity). Generate and Validate Factur-X, ZUGFeRD 2.x, and XRechnung 3.0 without cloud dependencies.
 
 ![Docker Pulls](https://img.shields.io/docker/pulls/facturxengine/facturx-engine) [![GitHub](https://img.shields.io/badge/github-repo-181717?logo=github)](https://github.com/facturx-engine/facturx-engine) ![License](https://img.shields.io/badge/license-Community-blue.svg) ![Standard](https://img.shields.io/badge/standard-EN16931-green.svg) [![CRA](https://img.shields.io/badge/EU_CRA-Ready-blueviolet)](docs/cra.md)
 
@@ -10,10 +10,11 @@
 
 > **The standard for secure e-invoicing.** Generate and Validate Factur-X / ZUGFeRD 2.2 / XRechnung 3.0 files.
 
-* **E-invoicing France 2026 (PDP/PPF)**: Generate compliant invoices for the upcoming French mandate.
-* **EN 16931 Compliance**: Validate files against official **Schematron** rules using the embedded **SaxonC** engine.
-* **International Standards**: Support for **Factur-X**, **ZUGFeRD 2.2**, and **XRechnung 3.0**.
-* **Security & Compliance**: Strictly **Air-gapped** / offline execution. No external calls, rules are embedded. Ideal for GDPR and restricted environments.
+* **France 2026 Mandate (PDP/PPF)**: Generate compliant invoices for the upcoming French electronic invoicing mandate.
+* **Germany 2025 Mandate (B2B)**: Full support for the upcoming German mandate requiring electronic invoices from January 2025.
+* **Official Validation (SaxonC)**: Verify files against EN 16931 Schematron rules using the same engine as official portals (Chorus Pro / KoSIT).
+* **International Standards**: Support for Factur-X, ZUGFeRD 2.2, and XRechnung 3.0 (CII/UBL).
+* **Security & Compliance**: Strictly Air-gapped / offline execution. No external calls, rules are embedded. Designed for GDPR and sovereign environments.
 
 [REST API Reference](https://facturx-engine.github.io/facturx-engine/ref/api-reference.html) | [OpenAPI Spec (JSON)](docs/openapi.json) | [OpenAPI (Raw JSON)](https://raw.githubusercontent.com/facturx-engine/facturx-engine/main/docs/openapi.json) | [Integration Recipes](https://facturx-engine.github.io/facturx-engine/) | [Troubleshooting](https://facturx-engine.github.io/facturx-engine/guides/error-codes.html)
 
@@ -75,10 +76,13 @@ curl -X POST "http://localhost:8000/v1/extract" \
 
 Protect your accounting system by verifying invoices **before** integration.
 
-The engine uses **SaxonC-HE**, the same technology as **Chorus Pro / PPF (PDP)**, to run official **EN 16931 Schematron** rules.
+The engine uses **SaxonC-HE**, ensuring technical parity with state-level platforms such as **Chorus Pro / PPF (France)** and **KoSIT (Germany)**. It executes official **EN 16931 Schematron** business rules.
 
-* **Community (Teaser)**: Detects if the file is invalid. Returns the first error.
-* **Pro (Official Engine)**: Returns the **full compliance report**. Use this to know exactly why a file would be rejected by the tax authority.
+> [!IMPORTANT]
+> **Technical Parity**: By using the official SaxonC engine internally, Factur-X Engine ensures that an invoice passing validation here will be technically accepted by national portals. This eliminates the "validation gap" common with unofficial open-source parsers.
+
+* **Community (Teaser)**: Returns the first validation error found.
+* **Pro (Full Compliance)**: Returns the complete compliance report (JSON). Use this for automated quality gates and error-mapping in ERP systems.
 
 ```bash
 curl -X POST "http://localhost:8000/v1/validate" -F "file=@invoice_compliant.pdf"
