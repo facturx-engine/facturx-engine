@@ -13,7 +13,7 @@
 * **International Standards**: Support for **Factur-X**, **ZUGFeRD 2.2**, and **XRechnung 3.0**.
 * **Air-gapped Security**: Full validation and conversion without any internet connection (Privacy First).
 
-[REST API Reference](docs/openapi.json) | [Integration Recipes](https://facturx-engine.github.io/facturx-engine/) | [Troubleshooting](docs/guides/error-codes.html)
+[REST API Reference](https://facturx-engine.github.io/facturx-engine/ref/api-reference.html) | [Integration Recipes](https://facturx-engine.github.io/facturx-engine/) | [Troubleshooting](https://facturx-engine.github.io/facturx-engine/guides/error-codes.html)
 
 ---
 
