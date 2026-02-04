@@ -22,8 +22,8 @@ Merge a standard PDF with JSON data to create a compliant **Factur-X** (PDF/A-3)
 
 ```bash
 curl -X POST "http://localhost:8000/v1/convert" \
-  -F "pdf=@invoice_raw.pdf" \
-  -F "metadata=$(cat simple_invoice.json)" \
+  -F "pdf=@examples/invoice_raw.pdf" \
+  -F "metadata=$(cat examples/simple_invoice.json)" \
   --output invoice_compliant.pdf
 
 echo "Invoice generated: invoice_compliant.pdf"
@@ -35,7 +35,7 @@ Directly generate the **Cross Industry Invoice (CII)** XML without creating a PD
 
 ```bash
 curl -X POST "http://localhost:8000/v1/xml" \
-  -F "metadata=$(cat simple_invoice.json)" \
+  -F "metadata=$(cat examples/simple_invoice.json)" \
   --output factur-x.xml
 ```
 
