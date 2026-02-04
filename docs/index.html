@@ -4,9 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Factur-X Engine | High-Performance Electronic Invoice API for Docker</title>
+    <title>Factur-X Engine | Python E-Invoicing Middleware | PDF/A-3 & EN 16931</title>
     <meta name="description"
-        content="Factur-X, ZUGFeRD 2.4 and XRechnung 3.0 Docker engine. Air-gapped security, extreme performance, no Java dependencies.">
+        content="Generate and validate Factur-X, ZUGFeRD, and XRechnung invoices in Python. 100% Air-gapped, No Java, High-Performance Docker Middleware.">
     <!-- Canonical URL to consolidate indexing signals -->
     <link rel="canonical" href="https://facturx-engine.github.io/facturx-engine/" />
     <link rel="alternate" hreflang="en" href="https://facturx-engine.github.io/facturx-engine/" />
@@ -28,29 +28,6 @@
     <meta name="twitter:description"
         content="The fastest way to generate EN 16931 compliant invoices. No Java, No Cloud dependencies.">
     <meta name="twitter:image" content="https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png">
-
-    <!-- JSON-LD Schema (Enriched) -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "Factur-X Engine",
-      "operatingSystem": "Docker",
-      "applicationCategory": "BusinessApplication",
-      "url": "https://facturx-engine.github.io/facturx-engine/",
-      "softwareVersion": "1.3",
-      "sameAs": [
-          "https://github.com/facturx-engine/facturx-engine",
-          "https://hub.docker.com/r/facturxengine/facturx-engine"
-      ],
-      "description": "High-performance API for generation and validation of Factur-X and XRechnung electronic invoices.",
-      "offers": { 
-          "@type": "Offer", 
-          "price": "0.00", 
-          "priceCurrency": "EUR" 
-      }
-    }
-    </script>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -164,13 +141,14 @@
                     class="inline-block px-3 py-1 border border-amber-500/30 bg-amber-500/5 text-amber-500 text-[10px] font-mono tracking-widest uppercase mb-8">
                     Status: v1.3 stable // Air-Gapped Ready
                 </div>
-                <h1 class="text-6xl md:text-8xl font-bold text-white tracking-tighter leading-none mb-8">
-                    Compliance <br /> <span class="text-amber-500 italic">Hardened.</span>
+                <h1 class="text-6xl md:text-8xl font-black tracking-tighter text-white uppercase leading-none mb-8">
+                    E-Invoicing <br>
+                    <span class="text-amber-500">Middleware</span>
                 </h1>
-                <p class="text-lg text-slate-400 max-w-xl mb-12 leading-relaxed">
-                    The <strong>Privacy-First</strong> invoicing engine. 100% <strong>Air-gapped</strong>, Official
-                    <strong>SaxonC</strong> Validation.
-                    Zero Cloud dependencies. Your data never leaves your infrastructure.
+                <p class="max-w-2xl mx-auto text-xl md:text-2xl text-slate-400 leading-relaxed font-light mb-12">
+                    The ultra-lightweight **Python core** for <span class="text-white">Factur-X</span>, **ZUGFeRD**, and
+                    **XRechnung**.
+                    Generate compliant PDF/A-3 invoices without the heavy Java footprint.
                 </p>
                 <div class="flex flex-wrap gap-4">
                     <a href="https://github.com/facturx-engine/facturx-engine#quickstart"
@@ -465,6 +443,43 @@
                 nav.classList.add('py-6');
             }
         });
+    </script>
+    <!-- JSON-LD Structured Data for SEO / GEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Factur-X Engine",
+      "operatingSystem": "Docker, Linux, Windows, macOS",
+      "applicationCategory": "DeveloperApplication, BusinessApplication",
+      "description": "High-performance Python middleware for generating and validating Factur-X, ZUGFeRD, and XRechnung e-invoices. 100% Air-gapped, no Java dependencies.",
+      "url": "https://facturx-engine.github.io/facturx-engine/",
+      "codeRepository": "https://github.com/facturx-engine/facturx-engine",
+      "license": "https://github.com/facturx-engine/facturx-engine/blob/main/LICENSE",
+      "programmingLanguage": "Python",
+      "runtimePlatform": "Docker",
+      "keywords": "Factur-X, ZUGFeRD, XRechnung, EN 16931, Python, E-Invoicing, Middleware, SaxonC, PDF/A-3, Chorus Pro, PPF",
+      "offers": {
+        "@type": "AggregateOffer",
+        "lowPrice": "0",
+        "priceCurrency": "EUR",
+        "offerCount": "2",
+        "offers": [
+          {
+            "@type": "Offer",
+            "name": "Community Edition",
+            "price": "0",
+            "priceCurrency": "EUR"
+          },
+          {
+            "@type": "Offer",
+            "name": "Pro Edition",
+            "price": "499",
+            "priceCurrency": "EUR"
+          }
+        ]
+      }
+    }
     </script>
 </body>
 
