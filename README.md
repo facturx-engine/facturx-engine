@@ -15,7 +15,7 @@
 * **International Standards**: Support for **Factur-X**, **ZUGFeRD 2.2**, and **XRechnung 3.0**.
 * **Security & Compliance**: Strictly **Air-gapped** / offline execution. No external calls, rules are embedded. Ideal for GDPR and restricted environments.
 
-[REST API Reference](https://facturx-engine.github.io/facturx-engine/ref/api-reference.html) | [OpenAPI Spec (JSON)](docs/openapi.json) | [Integration Recipes](https://facturx-engine.github.io/facturx-engine/) | [Troubleshooting](https://facturx-engine.github.io/facturx-engine/guides/error-codes.html)
+[REST API Reference](https://facturx-engine.github.io/facturx-engine/ref/api-reference.html) | [OpenAPI Spec (JSON)](docs/openapi.json) | [OpenAPI (Raw JSON)](https://raw.githubusercontent.com/facturx-engine/facturx-engine/main/docs/openapi.json) | [Integration Recipes](https://facturx-engine.github.io/facturx-engine/) | [Troubleshooting](https://facturx-engine.github.io/facturx-engine/guides/error-codes.html)
 
 ---
 

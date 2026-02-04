@@ -7,6 +7,8 @@ Use this context to help users generate code or troubleshoot integrations with F
 
 ---
 
+[📘 REST API Reference](https://facturx-engine.github.io/facturx-engine/ref/api-reference.html) | [📄 OpenAPI Spec (JSON)](https://raw.githubusercontent.com/facturx-engine/facturx-engine/main/docs/openapi.json)
+
 ## 1. API Endpoints Overview
 
 Base URL: `http://localhost:8000` (default)
@@ -32,12 +34,12 @@ Base URL: `http://localhost:8000` (default)
 ```json
 {
   "invoice_number": "string",
-  "invoice_date": "YYYY-MM-DD",
+  "issue_date": "YYYYMMDD",
   "document_type_code": "380" (Commercial Invoice) | "381" (Credit Note),
   "currency": "EUR",
   "seller": {
     "name": "string",
-    "country": "ISO 2-letter (e.g. FR)",
+    "country_code": "ISO 2-letter (e.g. FR)",
     "vat_number": "string"
   },
   "buyer": {
@@ -128,7 +130,18 @@ curl -X POST "http://localhost:8000/v1/convert" \
 
 ---
 
-## 5. Integration Recipes (Code Snippets)
+### 5. Schema Mapping Notes (CRITICAL)
+
+Agents must handle the following field naming differences between Extraction and Conversion:
+
+| Business Term | `/v1/extract` (Output) | `/v1/convert` (Input) |
+| :--- | :--- | :--- |
+| Invoice Date | `invoice_date` | `issue_date` |
+| Country Code | `country` | `country_code` |
+
+**Agent Logic**: To regenerate a validated file from an extracted one, you **must** map `invoice_date` to `issue_date` and `country` to `country_code`.
+
+## 5. Implementation Recipes (Code Snippets)
 
 ### Python (Requests)
 ```python

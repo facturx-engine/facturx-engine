@@ -31,7 +31,6 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
-</url>
   <!-- Tutorials -->
   <url>
     <loc>https://facturx-engine.github.io/facturx-engine/tutorials/python-facturx.html</loc>
