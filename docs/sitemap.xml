@@ -48,4 +48,42 @@
     <lastmod>2026-02-03</lastmod>
     <priority>0.7</priority>
   </url>
+  <!-- Reference Pages -->
+  <url>
+    <loc>https://facturx-engine.github.io/facturx-engine/ref/api-overview.html</loc>
+    <lastmod>2026-02-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://facturx-engine.github.io/facturx-engine/ref/validation.html</loc>
+    <lastmod>2026-02-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://facturx-engine.github.io/facturx-engine/ref/generation.html</loc>
+    <lastmod>2026-02-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://facturx-engine.github.io/facturx-engine/ref/api-reference.html</loc>
+    <lastmod>2026-02-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://facturx-engine.github.io/facturx-engine/ref/automation.html</loc>
+    <lastmod>2026-02-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <!-- Guides -->
+  <url>
+    <loc>https://facturx-engine.github.io/facturx-engine/guides/python-no-java.html</loc>
+    <lastmod>2026-02-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
 </urlset>
