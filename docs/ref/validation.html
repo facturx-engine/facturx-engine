@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validation & Compliance | Factur-X Engine Reference</title>
+    <meta name="description"
+        content="Official EN 16931 Schematron validation with SaxonC. Compliance testing for Chorus Pro, PPF, and ZUGFeRD.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        amber: { 500: '#f59e0b', 600: '#d97706' },
+                        slate: { 950: '#020617' }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+</head>
+
+<body class="bg-slate-950 text-slate-300 font-sans selection:bg-amber-500 selection:text-black leading-relaxed">
+
+    <nav
+        class="fixed top-0 w-full z-50 border-b border-white/5 bg-slate-950/80 backdrop-blur-md h-20 flex items-center">
+        <div class="max-w-7xl mx-auto px-6 w-full flex items-center justify-between">
+            <a href="../" class="flex items-center gap-3">
+                <div
+                    class="w-10 h-10 border-2 border-amber-500 flex items-center justify-center rounded-sm bg-slate-900">
+                    <span class="font-mono font-bold text-amber-500">FX</span>
+                </div>
+                <span class="text-xl font-bold tracking-tighter text-white uppercase">Factur-X <span
+                        class="text-amber-500">Engine</span></span>
+            </a>
+            <div class="flex items-center gap-4">
+                <a href="https://github.com/facturx-engine/facturx-engine"
+                    class="text-slate-400 hover:text-white transition-colors text-sm font-bold uppercase tracking-widest">GitHub</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-40 pb-20">
+        <div class="max-w-4xl mx-auto px-6">
+            <div class="mb-16 border-b border-white/5 pb-10">
+                <div class="text-amber-500 font-mono text-sm tracking-widest uppercase mb-4">Reference / Compliance
+                </div>
+                <h1 class="text-4xl md:text-6xl font-black text-white tracking-tight mb-6 uppercase">Validation
+                    Mechanism</h1>
+                <p class="text-xl text-slate-400 leading-relaxed font-light">
+                    The engine uses **SaxonC-HE 12.x** (Native C/C++ engine) to execute industrial-grade **EN 16931
+                    Schematron** rules.
+                </p>
+            </div>
+
+            <div class="space-y-12">
+                <section>
+                    <h2 class="text-2xl font-bold text-white mb-6 uppercase tracking-tight">Why Schematron?</h2>
+                    <p>
+                        Standard XML Schema (XSD) only validates structure. **Schematron** validates **business logic**:
+                    </p>
+                    <div class="grid md:grid-cols-2 gap-4 mt-6">
+                        <div class="p-4 bg-white/5 border border-white/10 rounded">
+                            <h4 class="text-amber-500 font-bold text-sm mb-2">Math Integrity</h4>
+                            <p class="text-xs">Does Net + Tax = Gross? Are line items calculated correctly?</p>
+                        </div>
+                        <div class="p-4 bg-white/5 border border-white/10 rounded">
+                            <h4 class="text-amber-500 font-bold text-sm mb-2">Conditional Rules</h4>
+                            <p class="text-xs">If VAT category is 'E' (Exempt), is the reason text provided?</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <h2 class="text-2xl font-bold text-white mb-6 uppercase tracking-tight">The "Iso-Prod" Proof</h2>
+                    <p>
+                        Factur-X Engine uses the official `.xsl` compiled rules from **FNFE (France)** and **KoSIT
+                        (Germany)**. When you validate an invoice with the engine, you get the **exact same result** as
+                        if you submitted it to Chorus Pro or the German public portals.
+                    </p>
+                    <div class="p-6 bg-slate-900 border border-amber-500/20 rounded-lg mt-6">
+                        <h4 class="font-bold text-white mb-3 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                            Performance Benchmark
+                        </h4>
+                        <p class="text-sm">A full EN 16931 validation (CII) takes approx <strong>180ms</strong> on a
+                            standard container. Compare this to Java-based libraries which often require 1.5s - 3s due
+                            to JVM startup and class loading.</p>
+                    </div>
+                </section>
+
+                <section>
+                    <h2 class="text-2xl font-bold text-white mb-6 uppercase tracking-tight">Error Reporting</h2>
+                    <p>The API `/v1/validate` returns a structured JSON report.</p>
+                    <div class="bg-black border border-white/10 rounded-lg p-6 mt-6">
+                        <pre class="font-mono text-xs text-slate-300"><code>{
+  "valid": false,
+  "profile_detected": "EN16931",
+  "errors": [
+    {
+      "rule_id": "BR-CO-13",
+      "message": "The sum of Invoice line net amounts must equal the Invoice total net amount",
+      "path": "//*[local-name()='SpecifiedTradeSettlementHeaderMonetarySummation']",
+      "severity": "CRITICAL"
+    }
+  ],
+  "engine": "SaxonC-HE 12.1"
+}</code></pre>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <footer class="py-12 border-t border-white/5 bg-slate-900">
+        <div class="max-w-7xl mx-auto px-6 text-center text-slate-600 font-mono text-xs uppercase tracking-widest">
+            &copy; 2026 Factur-X Engine. All rights reserved.
+        </div>
+    </footer>
+
+</body>
+
+</html>

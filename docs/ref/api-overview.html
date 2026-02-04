@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Overview & Architecture | Factur-X Engine Reference</title>
+    <meta name="description"
+        content="Technical overview of Factur-X Engine API: capabilities, performance metrics, and compliance standards (EN 16931).">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        amber: { 500: '#f59e0b', 600: '#d97706' },
+                        slate: { 950: '#020617' }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+</head>
+
+<body class="bg-slate-950 text-slate-300 font-sans selection:bg-amber-500 selection:text-black leading-relaxed">
+
+    <nav
+        class="fixed top-0 w-full z-50 border-b border-white/5 bg-slate-950/80 backdrop-blur-md h-20 flex items-center">
+        <div class="max-w-7xl mx-auto px-6 w-full flex items-center justify-between">
+            <a href="../" class="flex items-center gap-3">
+                <div
+                    class="w-10 h-10 border-2 border-amber-500 flex items-center justify-center rounded-sm bg-slate-900">
+                    <span class="font-mono font-bold text-amber-500">FX</span>
+                </div>
+                <span class="text-xl font-bold tracking-tighter text-white uppercase">Factur-X <span
+                        class="text-amber-500">Engine</span></span>
+            </a>
+            <div class="flex items-center gap-4">
+                <a href="https://github.com/facturx-engine/facturx-engine"
+                    class="text-slate-400 hover:text-white transition-colors text-sm font-bold uppercase tracking-widest">GitHub</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-40 pb-20">
+        <div class="max-w-4xl mx-auto px-6">
+            <div class="mb-16 border-b border-white/5 pb-10">
+                <div class="text-amber-500 font-mono text-sm tracking-widest uppercase mb-4">Reference / Architecture
+                </div>
+                <h1 class="text-4xl md:text-6xl font-black text-white tracking-tight mb-6 uppercase">API Overview</h1>
+                <p class="text-xl text-slate-400 leading-relaxed font-light">
+                    Factur-X Engine is a high-performance **Python middleware** designed to act as a compliance gate for
+                    electronic invoicing.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-10 mb-20">
+                <div class="space-y-4">
+                    <div class="text-white font-bold uppercase tracking-tighter text-lg">Capabilities</div>
+                    <ul class="space-y-2 text-sm text-slate-400 border-l border-amber-500/30 pl-4">
+                        <li>PDF/A-3 Hybrid Generation</li>
+                        <li>EN 16931 Schematron Validation</li>
+                        <li>JSON to CII XML Conversion</li>
+                        <li>Semantic Meta-data Extraction</li>
+                    </ul>
+                </div>
+                <div class="space-y-4">
+                    <div class="text-white font-bold uppercase tracking-tighter text-lg">Guarantees</div>
+                    <ul class="space-y-2 text-sm text-slate-400 border-l border-amber-500/30 pl-4">
+                        <li>100% Air-Gapped (No Telemetry)</li>
+                        <li>Sovereign Infrastructure Friendly</li>
+                        <li>Low Memory Footprint (~128MB)</li>
+                        <li>High Throughput (Native C/C++ XSLT)</li>
+                    </ul>
+                </div>
+                <div class="space-y-4">
+                    <div class="text-white font-bold uppercase tracking-tighter text-lg">Constraints</div>
+                    <ul class="space-y-2 text-sm text-slate-400 border-l border-amber-500/30 pl-4">
+                        <li>Requires Docker environment</li>
+                        <li>Input PDF must be standard PDF</li>
+                        <li>Commercial license for Full Report</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="prose prose-invert max-w-none space-y-12">
+                <section>
+                    <h2 class="text-2xl font-bold text-white mb-6 uppercase tracking-tight">System Requirements</h2>
+                    <p>
+                        The engine is optimized for containerized deployments. It focuses on stability and minimal
+                        resource consumption.
+                    </p>
+                    <div class="bg-slate-900 border border-white/5 rounded-lg overflow-hidden mt-6">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-black text-amber-500 uppercase tracking-widest text-[10px]">
+                                <tr>
+                                    <th class="p-4">Resource</th>
+                                    <th class="p-4">Recommended</th>
+                                    <th class="p-4">Minimum</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-white/5">
+                                <tr>
+                                    <td class="p-4 font-mono text-white">CPU</td>
+                                    <td class="p-4">1.0 vCPU</td>
+                                    <td class="p-4">0.1 vCPU</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-4 font-mono text-white">RAM</td>
+                                    <td class="p-4">512 MB</td>
+                                    <td class="p-4">128 MB</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-4 font-mono text-white">Latency</td>
+                                    <td class="p-4">&lt; 200ms</td>
+                                    <td class="p-4">Depends on PDF size</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section>
+                    <h2 class="text-2xl font-bold text-white mb-6 uppercase tracking-tight">Compliance & Standards</h2>
+                    <p>
+                        Factur-X Engine follows the **semantic data model** of EN 16931. It supports the following
+                        profiles:
+                    </p>
+                    <ul class="grid grid-cols-2 gap-4 mt-6">
+                        <li class="p-4 bg-white/5 rounded border border-white/10">
+                            <strong class="text-white block mb-1">MINIMUM / BASIC WL</strong>
+                            <span class="text-xs text-slate-500 uppercase">Simplified tax summary</span>
+                        </li>
+                        <li class="p-4 bg-white/5 rounded border border-white/10">
+                            <strong class="text-white block mb-1">BASIC / COMFORT</strong>
+                            <span class="text-xs text-slate-500 uppercase">Full business document</span>
+                        </li>
+                        <li class="p-4 bg-white/5 rounded border border-white/10">
+                            <strong class="text-white block mb-1">EXTENDED</strong>
+                            <span class="text-xs text-slate-500 uppercase">Complex taxation & structures</span>
+                        </li>
+                        <li class="p-4 bg-white/5 rounded border border-white/10">
+                            <strong class="text-white block mb-1">XRECHNUNG 3.0</strong>
+                            <span class="text-xs text-slate-500 uppercase">Pure XML standard (Germany)</span>
+                        </li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2 class="text-2xl font-bold text-white mb-6 uppercase tracking-tight">Security Footprint</h2>
+                    <p>
+                        Designed for zero-trust and highly regulated environments (Banking, Government, Health).
+                    </p>
+                    <div class="space-y-4 mt-6">
+                        <div class="p-6 bg-amber-500/5 border border-amber-500/20 rounded-lg">
+                            <h4 class="font-bold text-amber-500 mb-2">SBOM & SLSA</h4>
+                            <p class="text-sm">Every image is shipped with a <strong>CycloneDX SBOM</strong>. We use
+                                Cosign for image signing. The software is scanned daily against CVEs.</p>
+                        </div>
+                        <div class="p-6 bg-slate-900 border border-white/5 rounded-lg">
+                            <h4 class="font-bold text-white mb-2">No Remote Calls</h4>
+                            <p class="text-sm">Unlike cloud-only validators, Factur-X Engine contains all XSD and
+                                Schematron rules locally. It does not phone home to validate schemas.</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <footer class="py-12 border-t border-white/5 bg-slate-900">
+        <div class="max-w-7xl mx-auto px-6 text-center text-slate-600 font-mono text-xs uppercase tracking-widest">
+            &copy; 2026 Factur-X Engine. All rights reserved.
+        </div>
+    </footer>
+
+</body>
+
+</html>

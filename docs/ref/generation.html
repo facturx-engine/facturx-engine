@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hybrid Generation & PDF/A-3 | Factur-X Engine Reference</title>
+    <meta name="description"
+        content="Technical details on generating Factur-X PDF/A-3 files. How XML embedding and XMP metadata work in hybrid invoicing.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        amber: { 500: '#f59e0b', 600: '#d97706' },
+                        slate: { 950: '#020617' }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+</head>
+
+<body class="bg-slate-950 text-slate-300 font-sans selection:bg-amber-500 selection:text-black leading-relaxed">
+
+    <nav
+        class="fixed top-0 w-full z-50 border-b border-white/5 bg-slate-950/80 backdrop-blur-md h-20 flex items-center">
+        <div class="max-w-7xl mx-auto px-6 w-full flex items-center justify-between">
+            <a href="../" class="flex items-center gap-3">
+                <div
+                    class="w-10 h-10 border-2 border-amber-500 flex items-center justify-center rounded-sm bg-slate-900">
+                    <span class="font-mono font-bold text-amber-500">FX</span>
+                </div>
+                <span class="text-xl font-bold tracking-tighter text-white uppercase">Factur-X <span
+                        class="text-amber-500">Engine</span></span>
+            </a>
+            <div class="flex items-center gap-4">
+                <a href="https://github.com/facturx-engine/facturx-engine"
+                    class="text-slate-400 hover:text-white transition-colors text-sm font-bold uppercase tracking-widest">GitHub</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-40 pb-20">
+        <div class="max-w-4xl mx-auto px-6">
+            <div class="mb-16 border-b border-white/5 pb-10">
+                <div class="text-amber-500 font-mono text-sm tracking-widest uppercase mb-4">Reference / Generation
+                </div>
+                <h1 class="text-4xl md:text-6xl font-black text-white tracking-tight mb-6 uppercase">Hybrid PDF
+                    Generation</h1>
+                <p class="text-xl text-slate-400 leading-relaxed font-light">
+                    How Factur-X Engine creates compliant **PDF/A-3** files with embedded **Cross Industry Invoice
+                    (CII)** XML.
+                </p>
+            </div>
+
+            <div class="space-y-12">
+                <section>
+                    <h2 class="text-2xl font-bold text-white mb-6 uppercase tracking-tight">PDF/A-3 ISO Standard</h2>
+                    <p>
+                        Factur-X is a hybrid format. It is a standard PDF (visual representation) that contains an XML
+                        file (structured data). To be compliant, it must follow **ISO 19005-3 (PDF/A-3)**.
+                    </p>
+                    <div class="mt-8 space-y-6">
+                        <div class="flex items-start gap-6">
+                            <div
+                                class="w-12 h-12 rounded bg-amber-500/10 flex-shrink-0 flex items-center justify-center font-bold text-amber-500">
+                                1</div>
+                            <div>
+                                <h4 class="text-white font-bold mb-1">XMP Metadata Injection</h4>
+                                <p class="text-sm text-slate-500">The engine injects a specific Factur-X XMP extension
+                                    schema into the PDF metadata, identifying the file as a compliant invoice and
+                                    specifying its profile (MINIMUM, BASIC, COMFORT, or EXTENDED).</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-6">
+                            <div
+                                class="w-12 h-12 rounded bg-amber-500/10 flex-shrink-0 flex items-center justify-center font-bold text-amber-500">
+                                2</div>
+                            <div>
+                                <h4 class="text-white font-bold mb-1">File Attachment (factur-x.xml)</h4>
+                                <p class="text-sm text-slate-500">The structured XML is attached as a "Related File"
+                                    (Relationship: Source). The engine ensures the attachment name is strictly
+                                    <code>factur-x.xml</code> as required by the standard.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="bg-white/5 border border-white/10 rounded-xl p-8">
+                    <h2 class="text-xl font-bold text-white mb-4 uppercase tracking-tight">The "Under the Hood" Process
+                    </h2>
+                    <div class="grid md:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <p class="text-sm leading-relaxed">
+                                When you call `/v1/convert`, the engine performs a **zero-copy-ready** stream
+                                transformation. It parses your PDF, reconciles it with the generated XML, and rebuilds
+                                the XMP packet without re-rendering the whole document. This preserves high-quality
+                                typography and interactive elements of the original PDF.
+                            </p>
+                        </div>
+                        <div class="font-mono text-[10px] bg-black p-4 rounded text-slate-500 border border-white/5">
+                            # Workflow Detail<br>
+                            - Validate JSON Metadata<br>
+                            - Transform JSON to CII XML (Jinja2)<br>
+                            - Inject ZUGFeRD XMP Extension<br>
+                            - Attach factur-x.xml (AFRelationship)<br>
+                            - Final compliance check
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <footer class="py-12 border-t border-white/5 bg-slate-900">
+        <div class="max-w-7xl mx-auto px-6 text-center text-slate-600 font-mono text-xs uppercase tracking-widest">
+            &copy; 2026 Factur-X Engine. All rights reserved.
+        </div>
+    </footer>
+
+</body>
+
+</html>
