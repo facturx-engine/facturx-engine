@@ -1,0 +1,188 @@
+# Factur-X Engine API Reference for LLMs
+
+## Context for LLMs
+Factur-X Engine is a high-performance, air-gapped Python middleware for generating and validating Factur-X (ZUGFeRD 2.2) and XRechnung e-invoices. It is designed to be easily integrated into any stack (Python, Node.js, PHP, Go) via a REST API.
+
+Use this context to help users generate code or troubleshoot integrations with Factur-X Engine.
+
+---
+
+## 1. API Endpoints Overview
+
+Base URL: `http://localhost:8000` (default)
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| **POST** | `/v1/convert` | Generates a Factur-X PDF (PDF/A-3) from a standard PDF + JSON metadata. |
+| **POST** | `/v1/validate` | Validates an existing PDF or XML file against EN 16931 Schematron rules. |
+| **POST** | `/v1/extract` | Extracts Factur-X XML from a PDF and returns structured JSON data. |
+| **POST** | `/v1/xml` | Generates raw CII XML from JSON metadata (Headless mode). |
+
+---
+
+## 2. Detailed Usage & Payloads
+
+### A. Generating an Invoice (`/v1/convert`)
+
+**Request:** `multipart/form-data`
+- `pdf`: The original PDF invoice file (binary).
+- `metadata`: JSON string containing invoice details.
+
+**Metadata JSON Schema:**
+```json
+{
+  "invoice_number": "string",
+  "invoice_date": "YYYY-MM-DD",
+  "document_type_code": "380" (Commercial Invoice) | "381" (Credit Note),
+  "currency": "EUR",
+  "seller": {
+    "name": "string",
+    "country": "ISO 2-letter (e.g. FR)",
+    "vat_number": "string"
+  },
+  "buyer": {
+    "name": "string"
+  },
+  "line_items": [
+    {
+      "description": "string",
+      "quantity": "float as string",
+      "unit_price": "float as string",
+      "line_total": "float as string"
+    }
+  ],
+  "totals": {
+    "net_amount": "float as string",
+    "tax_amount": "float as string",
+    "gross_amount": "float as string",
+    "payable_amount": "float as string"
+  }
+}
+```
+
+**Example Curl:**
+```bash
+curl -X POST "http://localhost:8000/v1/convert" \
+  -F "pdf=@invoice.pdf" \
+  -F "metadata={\"invoice_number\": \"INV-001\", \"seller\": {\"name\": \"MyCorp\"}, \"totals\": {\"payable_amount\": \"120.00\"}}" \
+  --output invoice_fx.pdf
+```
+
+### B. Validating an Invoice (`/v1/validate`)
+
+**Request:** `multipart/form-data`
+- `file`: The PDF or XML file to validate.
+
+**Response (JSON):**
+```json
+{
+  "valid": boolean,
+  "format": "factur-x" | "zugferd" | "order-x" | null,
+  "flavor": "minimum" | "basic" | "basic-wl" | "en16931" | "extended",
+  "errors": [
+    "Error description 1",
+    "Error description 2"
+  ]
+}
+```
+
+### C. Extracting Data (`/v1/extract`)
+
+**Request:** `multipart/form-data`
+- `file`: The PDF file containing the Factur-X XML.
+
+**Response (JSON):**
+```json
+{
+  "format_detected": "factur-x",
+  "profile_detected": "en16931",
+  "xml_extracted": true,
+  "invoice_json": {
+    // Same structure as Metadata JSON Schema above
+    "invoice_number": "...",
+    "totals": { ... }
+  },
+  "errors": []
+}
+```
+
+---
+
+## 3. Key Concepts & Terminology
+
+- **Factur-X / ZUGFeRD**: A hybrid e-invoice format combining a human-readable PDF/A-3 and a machine-readable XML file.
+- **EN 16931**: The European standard for electronic invoicing.
+- **Profiles (Flavors)**:
+    - `MINIMUM`: Just payload valid.
+    - `BASIC`: Essential tax info.
+    - `EN16931`: Fully compliant for public sector (B2G) and B2B.
+- **Air-gapped**: The engine runs offline with no external calls. All validation rules (Schematron) are embedded.
+
+## 4. Troubleshooting (Common Errors)
+
+- **422 Validation Error**: The input JSON metadata was invalid or missing required fields.
+- **400 Invalid Input**: The uploaded file was not a valid PDF or XML.
+- **Validation Report Errors**:
+  - `BR-CO-10`: "Sum of Invoice line net amount" must equal "Sum of Invoice line net amount" in totals.
+  - `BR-S-08`: VAT breakdown missing or incorrect.
+
+---
+
+## 5. Integration Recipes (Code Snippets)
+
+### Python (Requests)
+```python
+import requests
+
+def generate_invoice(pdf_path, json_metadata):
+    url = "http://localhost:8000/v1/convert"
+    files = {'pdf': open(pdf_path, 'rb')}
+    data = {'metadata': json_metadata}
+    response = requests.post(url, files=files, data=data)
+    
+    if response.status_code == 200:
+        with open("factur-x-invoice.pdf", "wb") as f:
+            f.write(response.content)
+        print("Success: Generated factur-x-invoice.pdf")
+    else:
+        print(f"Error: {response.status_code}\n{response.text}")
+```
+
+### Node.js (Axios)
+```javascript
+const axios = require('axios');
+const FormData = require('form-data');
+const fs = require('fs');
+
+async function convertToFacturX(pdfPath, metadata) {
+  const form = new FormData();
+  form.append('pdf', fs.createReadStream(pdfPath));
+  form.append('metadata', JSON.stringify(metadata));
+
+  try {
+    const response = await axios.post('http://localhost:8000/v1/convert', form, {
+      headers: { ...form.getHeaders() },
+      responseType: 'arraybuffer',
+    });
+    fs.writeFileSync('output-factur-x.pdf', response.data);
+  } catch (error) {
+    console.error('API Error:', error.message);
+  }
+}
+```
+
+### PHP (Guzzle)
+```php
+<?php
+use GuzzleHttp\Client;
+$client = new Client();
+$response = $client->post('http://localhost:8000/v1/convert', [
+    'multipart' => [
+        ['name' => 'pdf', 'contents' => fopen('input.pdf', 'r')],
+        ['name' => 'metadata', 'contents' => json_encode(['invoice_id' => '123'])]
+    ]
+]);
+file_put_contents('factur-x-final.pdf', $response->getBody());
+?>
+```
+

@@ -1,8 +1,19 @@
-# Factur-X Engine "License Gated Edition"
+# Factur-X Engine
 
 > **The Privacy-First Invoicing Engine.** 100% Air-gapped, Official SaxonC Validation. Generate & Validate Factur-X / ZUGFeRD 2.x without cloud dependencies.
 
 ![Docker Pulls](https://img.shields.io/docker/pulls/facturxengine/facturx-engine) [![GitHub](https://img.shields.io/badge/github-repo-181717?logo=github)](https://github.com/facturx-engine/facturx-engine) ![License](https://img.shields.io/badge/license-Community-blue.svg) ![Standard](https://img.shields.io/badge/standard-EN16931-green.svg) [![CRA](https://img.shields.io/badge/EU_CRA-Ready-blueviolet)](docs/cra.md)
+
+---
+
+## Use Cases
+
+* **E-invoicing France 2026 (PDP/PPF)**: Generate compliant invoices for the upcoming French mandate.
+* **EN 16931 Compliance**: Validate files against official **Schematron** rules using the embedded **SaxonC** engine.
+* **International Standards**: Support for **Factur-X**, **ZUGFeRD 2.2**, and **XRechnung 3.0**.
+* **Air-gapped Security**: Full validation and conversion without any internet connection (Privacy First).
+
+[📘 REST API Reference](docs/openapi.json) | [🚀 Integration Recipes](https://facturx-engine.github.io/facturx-engine/) | [🛠 Troubleshooting](docs/guides/error-codes.html)
 
 ---
 

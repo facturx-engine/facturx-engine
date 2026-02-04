@@ -14,6 +14,7 @@
 - [Python Tutorial](https://facturx-engine.github.io/facturx-engine/tutorials/python-facturx.html)
 - [Node.js Tutorial](https://facturx-engine.github.io/facturx-engine/tutorials/nodejs-facturx.html)
 - [PHP Tutorial](https://facturx-engine.github.io/facturx-engine/tutorials/php-facturx.html)
+- [Full Context for LLMs](llms-full.txt)
 
 ## Integration
 The engine exposes a REST API on port 8000.
