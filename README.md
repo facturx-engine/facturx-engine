@@ -40,6 +40,13 @@ curl -X POST "http://localhost:8000/v1/convert" \
   -F "pdf=@examples/invoice_raw.pdf" \
   -F "metadata=$(cat examples/simple_invoice.json)" \
   --output invoice_compliant.pdf
+
+# Windows PowerShell
+$metadata = Get-Content examples\simple_invoice.json -Raw
+curl.exe -X POST "http://localhost:8000/v1/convert" `
+  -F "pdf=@examples/invoice_raw.pdf" `
+  -F "metadata=$metadata" `
+  --output invoice_compliant.pdf
 ```
 
 ### 3. Generate Raw XML (Headless / API-First)
@@ -47,8 +54,15 @@ curl -X POST "http://localhost:8000/v1/convert" \
 Directly generate the **Cross Industry Invoice (CII)** XML without creating a PDF. Ideal for backend integrations where you only need the structured data.
 
 ```bash
+# Linux/macOS
 curl -X POST "http://localhost:8000/v1/xml" \
   -F "metadata=$(cat examples/simple_invoice.json)" \
+  --output factur-x.xml
+
+# Windows PowerShell
+$metadata = Get-Content examples\simple_invoice.json -Raw
+curl.exe -X POST "http://localhost:8000/v1/xml" `
+  -F "metadata=$metadata" `
   --output factur-x.xml
 ```
 
@@ -130,6 +144,8 @@ The container is configurable via environment variables:
 | `PORT` | API Listening Port (Default: 8000) |
 | `LICENSE_KEY` | Pro License Key (Base64) |
 | `WORKERS` | Number of Gunicorn Workers |
+
+**CORS Note**: CORS is enabled by default (`CORS_ORIGINS=*`). Headers appear on POST/OPTIONS responses but may not be visible in simple GET requests.
 
 ---
 

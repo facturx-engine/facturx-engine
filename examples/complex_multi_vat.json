@@ -1,41 +1,89 @@
 {
     "invoice_number": "INV-2024-COMPLEX-001",
-    "issue_date": "2024-01-17",
+    "issue_date": "20240117",
+    "buyer_reference": "PO-MULTI-VAT-2024",
     "seller": {
         "name": "Mega Store Corp",
-        "country_code": "FR",
-        "vat_number": "FR123456789"
+        "address": {
+            "line1": "50 Commerce Avenue",
+            "city": "Paris",
+            "postcode": "75008",
+            "country_code": "FR"
+        },
+        "vat_number": "FR123456789",
+        "iban": "FR7630001007941234567890185",
+        "bic": "BDFEFRPP"
     },
     "buyer": {
-        "name": "Client Import-Export",
-        "country_code": "DE",
+        "name": "Client Import-Export GmbH",
+        "address": {
+            "line1": "100 Business Street",
+            "city": "Berlin",
+            "postcode": "10115",
+            "country_code": "DE"
+        },
         "vat_number": "DE987654321"
     },
-    "line_items": [
+    "lines": [
         {
-            "name": "Standard Goods (20%)",
+            "line_id": "1",
+            "name": "Standard Goods (TVA 20%)",
             "quantity": 10.0,
-            "unit_price": 50.00,
-            "tax_rate": 20.0
+            "unit_code": "C62",
+            "net_price": 50.00,
+            "net_total": 500.00,
+            "vat_rate": 20.0,
+            "vat_category": "S"
         },
         {
-            "name": "Food Items (5.5%)",
+            "line_id": "2",
+            "name": "Food Items (TVA 5.5%)",
             "quantity": 100.0,
-            "unit_price": 2.00,
-            "tax_rate": 5.5
+            "unit_code": "C62",
+            "net_price": 2.00,
+            "net_total": 200.00,
+            "vat_rate": 5.5,
+            "vat_category": "S"
         },
         {
-            "name": "Exempt Service (0%)",
-            "quantity": 1.0,
-            "unit_price": 100.00,
-            "tax_rate": 0.0
+            "line_id": "3",
+            "name": "Consulting Services (TVA 10%)",
+            "quantity": 5.0,
+            "unit_code": "C62",
+            "net_price": 20.00,
+            "net_total": 100.00,
+            "vat_rate": 10.0,
+            "vat_category": "S"
+        }
+    ],
+    "tax_details": [
+        {
+            "calculated_amount": "100.00",
+            "basis_amount": "500.00",
+            "rate": "20.00",
+            "category_code": "S"
+        },
+        {
+            "calculated_amount": "11.00",
+            "basis_amount": "200.00",
+            "rate": "5.50",
+            "category_code": "S"
+        },
+        {
+            "calculated_amount": "10.00",
+            "basis_amount": "100.00",
+            "rate": "10.00",
+            "category_code": "S"
         }
     ],
     "amounts": {
         "tax_basis_total": "800.00",
-        "tax_total": "111.00",
-        "grand_total": "911.00",
-        "due_payable": "911.00"
+        "tax_total": "121.00",
+        "grand_total": "921.00",
+        "due_payable": "921.00"
     },
+    "due_date": "20240216",
+    "payment_terms": "Payment within 30 days",
+    "currency_code": "EUR",
     "profile": "en16931"
 }
