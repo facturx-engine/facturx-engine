@@ -54,9 +54,9 @@ class HybridValidator:
         # 1. XSD Validation via lxml
         if self.xsd_path and os.path.exists(self.xsd_path):
             try:
-                # Security: Load XSD with strict parser
-                schema_doc = etree.parse(self.xsd_path)
-                schema = etree.XMLSchema(schema_doc)
+                # Security: Load XSD directly from file path to ensure relative imports resolve correctly
+                # etree.XMLSchema(file=path) handles base_url properly for nested imports
+                schema = etree.XMLSchema(file=self.xsd_path)
                 
                 # Parse XML to validate
                 parser = etree.XMLParser(resolve_entities=False, no_network=True)
