@@ -255,6 +255,10 @@
                 <div class="bg-black p-4 rounded border border-white/10 font-mono text-xs text-slate-300">
                     $ docker run -p 8000:8000 facturxengine/facturx-engine
                 </div>
+                <p class="text-[10px] text-slate-500 italic mt-2">
+                    Note for Windows users: Use <span class="text-amber-500">curl.exe</span> instead of the native
+                    PowerShell curl alias to support multipart files.
+                </p>
             </div>
 
             <div class="space-y-4">
@@ -395,7 +399,7 @@
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-px bg-white/5 border border-white/5">
                 <div
                     class="bg-slate-950 p-12 flex flex-col items-center text-center group hover:bg-amber-500/5 transition-colors">
-                <span class="text-amber-500 font-mono text-sm mb-4">v1.08</span>
+                    <span class="text-amber-500 font-mono text-sm mb-4">v1.08</span>
                     <span class="text-xl font-bold text-white">Factur-X</span>
                 </div>
                 <div

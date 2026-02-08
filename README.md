@@ -71,7 +71,12 @@ curl.exe -X POST "http://localhost:8000/v1/xml" `
 The Community Edition extracts **full financial and identity data**. No masking, no obfuscation.
 
 ```bash
+# Linux/macOS
 curl -X POST "http://localhost:8000/v1/extract" \
+  -F "file=@invoice_compliant.pdf"
+
+# Windows PowerShell
+curl.exe -X POST "http://localhost:8000/v1/extract" `
   -F "file=@invoice_compliant.pdf"
 ```
 
@@ -99,7 +104,11 @@ The engine uses **SaxonC-HE**, ensuring technical parity with state-level platfo
 * **Pro (Full Compliance)**: Returns the complete compliance report (JSON). Use this for automated quality gates and error-mapping in ERP systems.
 
 ```bash
+# Linux/macOS
 curl -X POST "http://localhost:8000/v1/validate" -F "file=@invoice_compliant.pdf"
+
+# Windows PowerShell
+curl.exe -X POST "http://localhost:8000/v1/validate" -F "file=@invoice_compliant.pdf"
 ```
 
 ### 6. File Compatibility
