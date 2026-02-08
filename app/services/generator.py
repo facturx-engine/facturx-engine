@@ -45,6 +45,7 @@ class GeneratorService:
             context = metadata.model_dump(exclude_none=True)
             
             xml_content = template.render(**context)
+            logger.debug(f"Generated XML content:\n{xml_content}")
             logger.info(f"Generated XML for invoice {metadata.invoice_number}")
             return xml_content
             

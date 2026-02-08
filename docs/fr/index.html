@@ -39,7 +39,6 @@
       "applicationCategory": "BusinessApplication",
       "url": "https://facturx-engine.github.io/facturx-engine/fr/",
       "inLanguage": "fr",
-      "softwareVersion": "1.3",
       "sameAs": [
           "https://github.com/facturx-engine/facturx-engine",
           "https://hub.docker.com/r/facturxengine/facturx-engine"
@@ -161,17 +160,34 @@
     <section class="relative pt-48 pb-32 overflow-hidden">
         <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-20 items-center">
             <div class="relative z-20">
-                <div
-                    class="inline-block px-3 py-1 border border-amber-500/30 bg-amber-500/5 text-amber-500 text-[10px] font-mono tracking-widest uppercase mb-8">
-                    Status: v1.3 stable // Prêt Réforme 2026
+                <!-- NEW BADGES -->
+                <div class="flex flex-wrap gap-4 mb-8">
+                    <div
+                        class="inline-flex items-center px-3 py-1 rounded-full border border-sky-500/30 bg-sky-500/10 text-sky-400 text-xs font-bold tracking-wide">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Propulsé par SaxonC (Compatible Chorus Pro)
+                    </div>
+                    <div
+                        class="inline-flex items-center px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs font-bold tracking-wide">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                            </path>
+                        </svg>
+                        Privacy First (Sans Cloud)
+                    </div>
                 </div>
-                <h1 class="text-6xl md:text-8xl font-bold text-white tracking-tighter leading-none mb-8">
-                    Conformité. <br /> <span class="text-amber-500 italic">Souveraine.</span>
+
+                <h1 class="text-5xl md:text-7xl font-black tracking-tighter text-white uppercase leading-none mb-8">
+                    Facturation <br>
+                    <span class="text-amber-500">Électronique</span>
                 </h1>
-                <p class="text-lg text-slate-400 max-w-xl mb-12 leading-relaxed">
-                    Le moteur de facturation <strong>Privacy-First</strong>. 100% <strong>Déconnecté</strong>,
-                    Validation <strong>Officielle SaxonC</strong>.
-                    Aucune dépendance Cloud. Vos données ne quittent jamais votre infrastructure.
+                <p class="max-w-2xl text-xl md:text-2xl text-slate-400 leading-relaxed font-light mb-12">
+                    Le moteur de validation <span class="text-white">SaxonC</span> officiel pour Factur-X.
+                    Conformité France 2026 sans dépendance Cloud.
                 </p>
                 <div class="flex flex-wrap gap-4">
                     <a href="https://github.com/facturx-engine/facturx-engine#quickstart"
@@ -193,26 +209,27 @@
                         <div class="w-2 h-2 rounded-full bg-amber-500/50"></div>
                         <div class="w-2 h-2 rounded-full bg-green-500/50"></div>
                         <span class="text-[10px] font-mono text-slate-500 ml-4 italic">root@engine:~# curl -X POST
-                            /v1/convert</span>
+                            /v1/serialize</span>
                     </div>
                     <div class="p-6 font-mono text-sm space-y-3">
-                        <div class="text-amber-500">Envoi payload...</div>
+                        <div class="text-amber-500">Transformation JSON...</div>
                         <div class="text-slate-400">
                             {<br />
-                            &nbsp;&nbsp;"profile": "BASIC",<br />
-                            &nbsp;&nbsp;"xml": "base64_data...",<br />
-                            &nbsp;&nbsp;"validate": true<br />
+                            &nbsp;&nbsp;"invoice_number": "F2024-001",<br />
+                            &nbsp;&nbsp;"totals": { "net": 1500.00 },<br />
+                            &nbsp;&nbsp;"compliance": "EN16931"<br />
                             }
                         </div>
                         <div class="flex items-center gap-2 text-green-500">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M5 13l4 4L19 7"></path>
+                                    d="M5 13l4 4L19 7">
+                                </path>
                             </svg>
                             200 OK
                         </div>
-                        <div class="text-slate-500 text-xs">Temps: 142ms</div>
-                        <div class="text-slate-500 text-xs">Standard: EN 16931 Vérifié</div>
+                        <div class="text-slate-500 text-xs">Temps: 42ms</div>
+                        <div class="text-slate-500 text-xs">Mode: Business-Ready</div>
                     </div>
                 </div>
             </div>
@@ -253,8 +270,28 @@
                 </p>
             </div>
 
+            <div class="space-y-4">
+                <h3 class="text-2xl font-bold text-white">4. Sérialisation Business-Ready (JSON)</h3>
+                <p class="text-slate-400 leading-relaxed">
+                    Arrêtez de parser des arbres XML complexes. L'<strong>Édition Pro</strong> transforme
+                    Factur-X/ZUGFeRD/CII en un objet JSON plat et normalisé. Optimisé pour l'insertion directe en base
+                    de données ou l'affichage UI.
+                </p>
+            </div>
+
+            <div class="space-y-4">
+                <h3 class="text-2xl font-bold text-white">5. Diagnostics Avancés (Angles Morts)</h3>
+                <p class="text-slate-400 leading-relaxed">
+                    Allez au-delà de la validation standard. L'<strong>Édition Pro</strong> détecte proactivement les
+                    "tueurs silencieux" de factures : incohérences SIRET/TVA, totaux négatifs avec mauvais types, et
+                    caractères interdits. C'est un audit préventif avant l'envoi aux plateformes.
+                </p>
+            </div>
+
         </div>
     </section>
+
+
 
     <!-- Specs Grid -->
     <section id="security" class="py-32 border-y border-white/5 relative bg-slate-950/50">
@@ -305,6 +342,63 @@
         </div>
     </section>
 
+
+    <!-- DORA / BANKING SECTION -->
+    <section class="container mx-auto px-6 py-24 border-t border-white/5">
+        <div class="max-w-4xl mx-auto">
+            <div class="flex items-center gap-4 mb-8">
+                <div
+                    class="px-3 py-1 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded font-mono text-xs uppercase tracking-widest">
+                    Entreprise & Confidentialité
+                </div>
+                <h2 class="text-3xl font-bold text-white">Confidentialité & Conformité Ready</h2>
+            </div>
+
+            <p class="text-xl text-slate-300 leading-relaxed mb-12">
+                Que ce soit pour la minimisation des données <strong>RGPD</strong> ou la résilience opérationnelle
+                <strong>DORA</strong>, Factur-X Engine est architecturé pour garder vos données financières sûres et
+                souveraines.
+            </p>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <div
+                    class="p-8 bg-slate-900 border border-white/5 rounded-sm hover:border-amber-500/30 transition-all group">
+                    <div
+                        class="w-12 h-12 bg-amber-500/10 rounded-full flex items-center justify-center mb-6 group-hover:bg-amber-500/20 transition-colors">
+                        <svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Zéro Dépendance Tiers</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Éliminez le risque systémique. Contrairement aux API SaaS, le moteur tourne entièrement sur
+                        votre infrastructure. Si nous disparaissons, votre facturation continue. Vous possédez le
+                        runtime.
+                    </p>
+                </div>
+
+                <div
+                    class="p-8 bg-slate-900 border border-white/5 rounded-sm hover:border-emerald-500/30 transition-all group">
+                    <div
+                        class="w-12 h-12 bg-emerald-500/10 rounded-full flex items-center justify-center mb-6 group-hover:bg-emerald-500/20 transition-colors">
+                        <svg class="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Souveraineté des Données (Air-Gapped)</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Aucune donnée financière ne quitte votre réseau. Le conteneur ne nécessite aucun accès internet
+                        sortant. Simplifie la cartographie RGPD et DORA.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- FAQ / GEO Section -->
     <section id="faq" class="py-24 border-b border-white/5 bg-slate-950">
         <div class="max-w-4xl mx-auto px-6">
@@ -337,7 +431,8 @@
                     <p class="text-slate-400">Oui. Le moteur produit des fichiers strictement conformes à la syntaxe
                         <strong>EN
                             16931</strong> mandatée par le PPF et les candidats PDP. Il supporte tous les profils
-                        requis.</p>
+                        requis.
+                    </p>
                 </div>
                 <div class="space-y-2">
                     <h4 class="text-lg font-bold text-amber-500">Quels profils sont supportés ?</h4>

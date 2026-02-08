@@ -163,13 +163,11 @@
         </ram:PostalTradeAddress>
       </ram:ShipToTradeParty>
       {% endif %}
-      {% if delivery_date %}
       <ram:ActualDeliverySupplyChainEvent>
         <ram:OccurrenceDateTime>
-          <udt:DateTimeString format="102">{{ delivery_date }}</udt:DateTimeString>
+          <udt:DateTimeString format="102">{{ delivery_date | default(issue_date) }}</udt:DateTimeString>
         </ram:OccurrenceDateTime>
       </ram:ActualDeliverySupplyChainEvent>
-      {% endif %}
     </ram:ApplicableHeaderTradeDelivery>
     <ram:ApplicableHeaderTradeSettlement>
       {% if creditor_reference %}<ram:CreditorReferenceID>{{ creditor_reference }}</ram:CreditorReferenceID>{% endif %}

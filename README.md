@@ -3,6 +3,8 @@
 > **The Privacy-First Invoicing Engine.** 100% Air-gapped, Official SaxonC Validation (Chorus Pro / KoSIT Parity). Generate and Validate Factur-X, ZUGFeRD 2.x, and XRechnung 3.0 without cloud dependencies.
 
 ![Docker Pulls](https://img.shields.io/docker/pulls/facturxengine/facturx-engine) [![GitHub](https://img.shields.io/badge/github-repo-181717?logo=github)](https://github.com/facturx-engine/facturx-engine) ![License](https://img.shields.io/badge/license-Community-blue.svg) ![Standard](https://img.shields.io/badge/standard-EN16931-green.svg) [![CRA](https://img.shields.io/badge/EU_CRA-Ready-blueviolet)](docs/cra.md)
+![Privacy First](https://img.shields.io/badge/Privacy-Air_Gapped-success?logo=shield-dog) ![SaxonC](https://img.shields.io/badge/Powered_By-SaxonC_HE-blue)
+![Image Size](https://img.shields.io/docker/image-size/facturxengine/facturx-engine/latest) ![Compliance](https://img.shields.io/badge/Compliance-Factur--X%20%2F%20ZUGFeRD-blue) ![Security](https://img.shields.io/badge/Security-SBOM%20Available-success)
 
 ---
 
@@ -10,6 +12,9 @@
 
 > **The standard for secure e-invoicing.** Generate and Validate Factur-X / ZUGFeRD 2.2 / XRechnung 3.0 files.
 
+* **Community Edition (Free & Unlimited)**: Full validation (XSD + Official Schematron) and Factur-X generation. **No quotas, no external calls.** Ideal for Dev, Test, and CI/CD.
+* **Pro Edition**: **Smart Diagnostics** (Translates cryptic `BR-CO-10` errors into human instructions), **Business-Ready Extraction** (Flat JSON for ERPs), and **Advanced "Angles Morts" Detection** (SIRET/VAT mismatch, Auto-Avoir).
+* **Trial Mode**: All Pro features are automatically unlocked when using the provided [reference files](tests/corpus/valid/).
 * **France 2026 Mandate (PDP/PPF)**: Generate compliant invoices for the upcoming French electronic invoicing mandate.
 * **Germany 2025 Mandate (B2B)**: Full support for the upcoming German mandate requiring electronic invoices from January 2025.
 * **Official Validation (SaxonC)**: Verify files against EN 16931 Schematron rules using the same engine as official portals (Chorus Pro / KoSIT).
@@ -17,6 +22,18 @@
 * **Security & Compliance**: Strictly Air-gapped / offline execution. No external calls, rules are embedded. Designed for GDPR and sovereign environments.
 
 [REST API Reference](https://facturx-engine.github.io/facturx-engine/ref/api-reference.html) | [OpenAPI Spec (JSON)](docs/openapi.json) | [OpenAPI (Raw JSON)](https://raw.githubusercontent.com/facturx-engine/facturx-engine/main/docs/openapi.json) | [Integration Recipes](https://facturx-engine.github.io/facturx-engine/) | [Troubleshooting](https://facturx-engine.github.io/facturx-engine/guides/error-codes.html)
+
+---
+
+## Compliance & Privacy (GDPR / DORA)
+
+**Target: Enterprise, SaaS, and Regulated Industries.**
+
+In a landscape of data breaches and strict regulations, Factur-X Engine offers a "Privacy-First" architecture:
+
+* **Zero Third-Party Dependency**: Runs **entirely on your infrastructure**. You own the runtime.
+* **Data Sovereignty (GDPR)**: 100% **Air-Gapped**. No financial data ever leaves your secure network.
+* **Operational Resilience (DORA)**: In case of global internet outage, your ability to issue invoices remains intact.
 
 ---
 
@@ -71,13 +88,32 @@ curl.exe -X POST "http://localhost:8000/v1/xml" `
 The Community Edition extracts **full financial and identity data**. No masking, no obfuscation.
 
 ```bash
-# Linux/macOS
+# Transform a Supplier Invoice (PDF) into Actionable JSON
 curl -X POST "http://localhost:8000/v1/extract" \
-  -F "file=@invoice_compliant.pdf"
+  -F "file=@supplier_invoice.pdf"
+```
 
-# Windows PowerShell
-curl.exe -X POST "http://localhost:8000/v1/extract" `
-  -F "file=@invoice_compliant.pdf"
+**Response Preview (Business-Ready):**
+
+```json
+{
+  "invoice_number": "INV-2024-001",
+  "issue_date": "2024-10-05",
+  "seller": { 
+      "name": "Acme Corp",
+      "siret": "12345678900012",
+      "vat_number": "FR12345678901"
+  },
+  "totals": { 
+      "net_amount": 1500.00, 
+      "tax_amount": 300.00,
+      "total_amount": 1800.00
+  },
+  "payment": {
+      "iban": "FR76...",
+      "due_date": "2024-11-05"
+  }
+}
 ```
 
 **Response Preview:**
@@ -119,6 +155,7 @@ curl.exe -X POST "http://localhost:8000/v1/validate" -F "file=@invoice_compliant
 | `/v1/validate` | PDF/A-3, XML (CII/UBL) | JSON Report |
 | `/v1/extract` | Factur-X PDF | JSON Data + XML |
 | `/v1/xml` | JSON | XML (CII) |
+| `/v1/serialize` | PDF, XML | Business-Ready JSON |
 
 ---
 
@@ -164,22 +201,15 @@ This **Community** version is production-ready. The code is Open Core (transpare
 
 | Feature | Community Edition | Pro / Enterprise Edition |
 | :--- | :--- | :--- |
-| **License** | FSL 1.1 (Free for non-competing use) | Commercial (SLA & Indemnity) |
-| **Extraction** | **Full Data** | **Full Data** |
-| **Validation** | **Teaser Mode** (1 error) | **Official Engine** (SaxonC / Parity with Chorus Pro) |
+| **License** | FSL 1.1 (Free for non-competing use) | Commercial (SLA & Priority) |
+| **Extraction** | **Full Data** | **Business-Ready JSON** (Flattened/Typed) |
+| **Validation** | **Full EN 16931 rules** | **Smart Diagnostics** (Human Suggestions) |
 | **Metrics** | **Basic** (Ops) | **Full** (Business) |
 | **Support** | Community | Priority / SLA |
 
-### Pricing & Licenses
+### Try Pro Features for Free
 
-**1. For Internal Use (SME / Bank / Corporate)**
-**Standard License (499 € / year)**: Unlimited usage for your own company.
-
-**2. For OEM & Integrators (SaaS / ERP)**
-**OEM Growth (2 490 € / year)**: Commercial Redistribution. Standard Liability Terms.
-**OEM Scale (Contact Us)**: Enterprise Redistribution. **Includes Legal Indemnification & Insurance**.
-
-> **Perpetual Fallback**: You keep the version you bought forever. The subscription covers updates, security patches & warranty.
+To test **Smart Diagnostics** without a license key, upload one of our official reference files from the `tests/corpus/valid/` directory. The engine will recognize these files (via MD5 hash) and unlock all Pro features автоматически.
 
 **[Get Pro License](https://facturx-engine.lemonsqueezy.com)**
 

@@ -3,6 +3,13 @@ Factur-X API - Main Application Entry Point
 # Triggering security scan to check GitHub Actions health
 """
 import logging
+import multiprocessing
+import os
+
+# For Windows multiprocessing support (spawn)
+if os.name == 'nt':
+    multiprocessing.freeze_support()
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse

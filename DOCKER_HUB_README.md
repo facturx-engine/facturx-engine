@@ -2,9 +2,18 @@
 
 > **The Privacy-First Invoicing Engine.** 100% Air-gapped, Official SaxonC Validation (Chorus Pro / KoSIT Parity). Generate and Validate Factur-X, ZUGFeRD 2.x, and XRechnung 3.0 without cloud dependencies.
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/facturxengine/facturx-engine)](https://hub.docker.com/r/facturxengine/facturx-engine) [![GitHub](https://img.shields.io/badge/github-repo-181717?logo=github)](https://github.com/facturx-engine/facturx-engine) [![License](https://img.shields.io/badge/license-Community-blue.svg)](https://github.com/facturx-engine/facturx-engine) [![Standard](https://img.shields.io/badge/standard-EN16931-green.svg)](https://fnfe-mpe.org/factur-x/) [![CRA](https://img.shields.io/badge/EU_CRA-Ready-blueviolet)](https://github.com/facturx-engine/facturx-engine/blob/main/docs/cra.md) [![SBOM](https://img.shields.io/badge/SBOM-CycloneDX-informational)](https://github.com/facturx-engine/facturx-engine/actions) [![Signed](https://img.shields.io/badge/Image-Cosign_Signed-success)](https://github.com/sigstore/cosign)
+[![Docker Pulls](https://img.shields.io/docker/pulls/facturxengine/facturx-engine)](https://hub.docker.com/r/facturxengine/facturx-engine) [![GitHub](https://img.shields.io/badge/github-repo-181717?logo=github)](https://github.com/facturx-engine/facturx-engine) ![License](https://img.shields.io/badge/license-Community-blue.svg) ![Standard](https://img.shields.io/badge/standard-EN16931-green.svg) [![CRA](https://img.shields.io/badge/EU_CRA-Ready-blueviolet)](https://github.com/facturx-engine/facturx-engine/blob/main/docs/cra.md)
+![Privacy First](https://img.shields.io/badge/Privacy-Air_Gapped-success?logo=shield-dog) ![SaxonC](https://img.shields.io/badge/Powered_By-SaxonC_HE-blue)
+![Image Size](https://img.shields.io/docker/image-size/facturxengine/facturx-engine/latest) ![Compliance](https://img.shields.io/badge/Compliance-Factur--X%20%2F%20ZUGFeRD-blue) ![Security](https://img.shields.io/badge/Security-SBOM%20Available-success)
 
 ---
+
+## Use Cases
+
+> **The standard for secure e-invoicing.** Generate and Validate Factur-X / ZUGFeRD 2.2 / XRechnung 3.0 files.
+
+* **Community Edition (Free & Unlimited)**: Full validation (XSD + Official SaxonC/Schematron) and Factur-X generation. **No quotas, no external calls.** Ideal for Dev, Test, and CI/CD.
+* **Pro Edition**: **Smart Diagnostics** (Translates cryptic `BR-CO-10` errors into human instructions), **Business-Ready Extraction** (Flat JSON for ERPs), and **Advanced "Angles Morts" Detection** (SIRET/VAT mismatch, Auto-Avoir).
 
 ## Quickstart
 
@@ -42,8 +51,41 @@ curl -X POST "http://localhost:8000/v1/xml" \
 ### 4. Extract to JSON (Open Core)
 
 ```bash
+# Transform a Supplier Invoice (PDF) into Actionable JSON
 curl -X POST "http://localhost:8000/v1/extract" \
-  -F "pdf=@invoice_compliant.pdf"
+  -F "file=@supplier_invoice.pdf"
+```
+
+**Response Preview (Business-Ready):**
+
+```json
+{
+  "invoice_number": "INV-2024-001",
+  "issue_date": "2024-10-05",
+  "seller": { 
+      "name": "Acme Corp",
+      "siret": "12345678900012",
+      "vat_number": "FR12345678901"
+  },
+  "totals": { 
+      "net_amount": 1500.00, 
+      "tax_amount": 300.00,
+      "total_amount": 1800.00
+  },
+  "payment": {
+      "iban": "FR76...",
+      "due_date": "2024-11-05"
+  }
+}
+```
+
+### 5. Serialize to Business-Ready JSON (Pro)
+
+Transform XML/PDF into a clean, flattened JSON format for ERP integration.
+
+```bash
+curl -X POST "http://localhost:8000/v1/serialize" \
+  -F "file=@invoice_compliant.pdf"
 ```
 
 **[Swagger UI Documentation](http://localhost:8000/docs)** : <http://localhost:8000/docs>
@@ -57,7 +99,19 @@ curl -X POST "http://localhost:8000/v1/extract" \
 * **Standards Compliance**: Supports **Factur-X**, **ZUGFeRD 2.2**, and **XRechnung 3.0** (CII/UBL). Includes Native Schematron Rules.
 * **Stateless Architecture**: Zero persistence. Input data is processed in-memory and discarded. Ideal for GDPR/Privacy.
 * **Air-Gapped Ready**: 100% Offline execution. No outbound network requests required.
-* **Structured Extraction**: Parses Factur-X XML into standard JSON for ERP integration.
+* **Structural Extraction**: Parses Factur-X XML into standard JSON for ERP integration.
+
+---
+
+## Compliance & Privacy (GDPR / DORA)
+
+**Target: Enterprise, SaaS, and Regulated Industries.**
+
+In a landscape of data breaches and strict regulations, Factur-X Engine offers a "Privacy-First" architecture:
+
+* **Zero Third-Party Dependency**: Runs **entirely on your infrastructure**. You own the runtime.
+* **Data Sovereignty (GDPR)**: 100% **Air-Gapped**. No financial data ever leaves your secure network.
+* **Operational Resilience (DORA)**: In case of global internet outage, your ability to issue invoices remains intact.
 
 ---
 
@@ -99,9 +153,9 @@ This **Community** version is production-ready.
 
 | Feature | Community Edition | Pro / Enterprise Edition |
 | :--- | :--- | :--- |
-| **License** | FSL 1.1 (Free for non-competing use) | Commercial (SLA & Indemnity) |
-| **Extraction** | **Full Data** | **Full Data** |
-| **Validation** | **Teaser Mode** (1 error) | **Industrial Engine** (SaxonC / Parity with Chorus Pro & KoSIT) |
+| **License** | FSL 1.1 (Free for non-competing use) | Commercial (SLA & Priority) |
+| **Extraction** | **Full Data** | **Business-Ready JSON** (Flattened/Typed) |
+| **Validation** | **Full EN 16931 rules** | **Smart Diagnostics** (Human Suggestions) |
 | **Metrics** | **Basic** (Ops) | **Full** (Business) |
 | **Support** | Community | Priority / SLA |
 

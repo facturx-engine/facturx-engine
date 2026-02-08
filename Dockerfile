@@ -6,6 +6,11 @@ FROM python:3.11-slim-bookworm
 
 LABEL maintainer="Factur-X Engine"
 LABEL description="Self-hosted Factur-X API with EN16931 validation"
+LABEL org.opencontainers.image.title="Factur-X Engine"
+LABEL org.opencontainers.image.description="The Privacy-First Invoicing Engine (100% Air-gapped)"
+LABEL org.opencontainers.image.vendor="Factur-X Engine"
+LABEL org.opencontainers.image.version="1.4.1"
+LABEL org.opencontainers.image.licenses="FSL-1.1"
 
 WORKDIR /app
 
@@ -23,9 +28,6 @@ RUN pip install --no-cache-dir --upgrade pip && \
 COPY app/ app/
 
 # Application code includes hybrid_validation_service.py
-
-# Copy Factur-X 1.08 / ZUGFeRD 2.4 assets (XSD + Schematron)
-COPY docs/2025_12_04_FNFE_SCHEMATRONS_FR_CTC_V1.2.0/_Factur-X_XSD_et_Schematrons_V1.08/ docs/2025_12_04_FNFE_SCHEMATRONS_FR_CTC_V1.2.0/_Factur-X_XSD_et_Schematrons_V1.08/
 
 # License attribution
 COPY LICENSE_SAXON .
