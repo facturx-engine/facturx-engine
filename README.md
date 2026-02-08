@@ -209,7 +209,17 @@ This **Community** version is production-ready. The code is Open Core (transpare
 
 ### Try Pro Features for Free
 
-To test **Smart Diagnostics** without a license key, upload one of our official reference files from the `tests/corpus/valid/` directory. The engine will recognize these files (via MD5 hash) and unlock all Pro features автоматически.
+Upload one of our official reference files to unlock **all Pro features** without a license:
+
+**For Smart Diagnostics:**
+
+* Use files from `tests/corpus/invalid/` to see human-readable error explanations instead of cryptic rule IDs
+
+**For Business-Ready Serialization:**
+
+* Use files from `tests/corpus/valid/` to extract structured JSON from compliant invoices
+
+The engine recognizes these files via MD5 hash and automatically enables Trial Mode.
 
 **[Get Pro License](https://facturx-engine.lemonsqueezy.com)**
 
