@@ -24,11 +24,8 @@ COPY app/ app/
 
 # Application code includes hybrid_validation_service.py
 
-# Copy EN16931 Schematron XSLT rules (official EU validation)
-COPY docs/2025_12_04_FNFE_SCHEMATRONS_FR_CTC_V1.2.0/_EN16931_Schematrons_V1.3.15_CII_ET_UBL/_XSLT/ docs/2025_12_04_FNFE_SCHEMATRONS_FR_CTC_V1.2.0/_EN16931_Schematrons_V1.3.15_CII_ET_UBL/_XSLT/
-
-# Copy XSD schemas
-COPY docs/2025_12_04_FNFE_SCHEMATRONS_FR_CTC_V1.2.0/_CII_D22B_XSD/ docs/2025_12_04_FNFE_SCHEMATRONS_FR_CTC_V1.2.0/_CII_D22B_XSD/
+# Copy Factur-X 1.08 / ZUGFeRD 2.4 assets (XSD + Schematron)
+COPY docs/2025_12_04_FNFE_SCHEMATRONS_FR_CTC_V1.2.0/_Factur-X_XSD_et_Schematrons_V1.08/ docs/2025_12_04_FNFE_SCHEMATRONS_FR_CTC_V1.2.0/_Factur-X_XSD_et_Schematrons_V1.08/
 
 # License attribution
 COPY LICENSE_SAXON .
