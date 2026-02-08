@@ -25,9 +25,9 @@ logger = logging.getLogger(__name__)
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 DOCS_ROOT = PROJECT_ROOT / "docs" / "2025_12_04_FNFE_SCHEMATRONS_FR_CTC_V1.2.0"
 
-# Validation artifacts (relative to project)
-XSD_PATH = DOCS_ROOT / "_CII_D22B_XSD" / "CrossIndustryInvoice_100pD22B.xsd"
-XSLT_PATH = DOCS_ROOT / "_EN16931_Schematrons_V1.3.15_CII_ET_UBL" / "_XSLT" / "EN16931-CII-validation.xslt"
+# Validation artifacts - Factur-X 1.08 / ZUGFeRD 2.4 (January 2026)
+XSD_PATH = DOCS_ROOT / "_Factur-X_XSD_et_Schematrons_V1.08" / "3. Factur-X_1.08_EN16931" / "Factur-X_1.08_EN16931.xsd"
+XSLT_PATH = DOCS_ROOT / "_Factur-X_XSD_et_Schematrons_V1.08" / "3. Factur-X_1.08_EN16931" / "_XSLT_EN16931" / "FACTUR-X_EN16931.xslt"
 
 # ProcessPool configuration
 _executor: Optional[ProcessPoolExecutor] = None
