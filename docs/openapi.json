@@ -185,6 +185,130 @@
         }
       }
     },
+    "/v1/xml": {
+      "post": {
+        "tags": [
+          "factur-x"
+        ],
+        "summary": "Generate XML Only",
+        "description": "Generate Cross Industry Invoice (CII) XML from JSON metadata without creating a PDF.\n\nIdeal for headless/API-first workflows where only structured XML is needed:\n- Backend integrations\n- Microservice architectures\n- Data transformation pipelines\n\nUse cases:\n- Generate XML for external validation\n- Create structured data for B2B platforms\n- Prepare invoice data for custom PDF renderers",
+        "operationId": "generate_xml_v1_xml_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_generate_xml_v1_xml_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "XML successfully generated",
+            "content": {
+              "application/xml": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/serialize": {
+      "post": {
+        "tags": [
+          "factur-x-pro"
+        ],
+        "summary": "Serialize to Business JSON",
+        "description": "Transform Factur-X PDF or XML into business-ready flat JSON (Pro Edition).\n\nDesigned for direct ERP/database integration:\n- Flattened structure (no deep nesting)\n- Typed fields (amounts as numbers, not strings)\n- Normalized data ready for SQL INSERT\n\nUse cases:\n- Automated invoice processing\n- Direct database insertion\n- ERP system integration\n- Business intelligence pipelines\n\nNote: Requires Pro license or use reference files from tests/corpus/valid/ for Trial Mode.",
+        "operationId": "serialize_facturx_v1_serialize_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_serialize_facturx_v1_serialize_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SerializationResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/diagnostics": {
       "get": {
         "tags": [
@@ -287,6 +411,35 @@
           "file"
         ],
         "title": "Body_extract_facturx_v1_extract_post"
+      },
+      "Body_generate_xml_v1_xml_post": {
+        "properties": {
+          "metadata": {
+            "type": "string",
+            "title": "Metadata",
+            "description": "Invoice metadata as JSON"
+          }
+        },
+        "type": "object",
+        "required": [
+          "metadata"
+        ],
+        "title": "Body_generate_xml_v1_xml_post"
+      },
+      "Body_serialize_facturx_v1_serialize_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "title": "File",
+            "description": "Factur-X PDF or XML file to serialize"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_serialize_facturx_v1_serialize_post"
       },
       "Body_validate_facturx_v1_validate_post": {
         "properties": {
@@ -759,6 +912,53 @@
         ],
         "title": "RuntimeConfig",
         "description": "Runtime configuration."
+      },
+      "SerializationResult": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "description": "Whether serialization succeeded"
+          },
+          "invoice_data": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invoice Data",
+            "description": "Business-ready flattened JSON data"
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata",
+            "description": "Additional metadata (format, profile detected)"
+          },
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/ErrorDetail"
+            },
+            "type": "array",
+            "title": "Errors",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "title": "SerializationResult",
+        "description": "Serialization result with flattened business data."
       },
       "Seller": {
         "properties": {
