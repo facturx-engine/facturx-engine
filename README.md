@@ -1,6 +1,6 @@
 # Factur-X Engine
 
-> **The Privacy-First Invoicing Engine.** 100% Air-gapped, Official SaxonC Validation (Chorus Pro / KoSIT Parity). Generate and Validate Factur-X, ZUGFeRD 2.x, and XRechnung 3.0 without cloud dependencies.
+> **The Privacy-First Invoicing Engine.** 100% Air-gapped, Official SaxonC Validation (Chorus Pro / KoSIT Parity). Generate and Validate Factur-X, ZUGFeRD 2.x, and XRechnung without cloud dependencies.
 
 ![Docker Pulls](https://img.shields.io/docker/pulls/facturxengine/facturx-engine) [![GitHub](https://img.shields.io/badge/github-repo-181717?logo=github)](https://github.com/facturx-engine/facturx-engine) ![License](https://img.shields.io/badge/license-Community-blue.svg) ![Standard](https://img.shields.io/badge/standard-EN16931-green.svg) ![Privacy First](https://img.shields.io/badge/Privacy-Air_Gapped-success?logo=shield-dog) ![SaxonC](https://img.shields.io/badge/Powered_By-SaxonC_HE-blue)
 
@@ -11,6 +11,11 @@
 - **Air-Gapped by Design**: 100% offline execution. No outbound network calls. GDPR/DORA compliant.
 - **Official SaxonC Validation**: Technical parity with **Chorus Pro (France)** and **KoSIT (Germany)** portals.
 - **Mandate Ready**: Compliant with **France 2026 (PDP/PPF)** and **Germany 2025** electronic invoicing requirements.
+
+### Architecture Decisions (Performance vs Strictness)
+
+- **Native PDF/A-3 Generation**: We prioritize real-time performance (< 200ms). PDF/A-3 compliance is ensured by high-quality libraries (PyPDF/factur-x) rather than heavyweight, slow Java-based validators like VeraPDF.
+- **Air-Gap Updates**: To guarantee stability in secure environments (Banking, Defense), we do not use auto-updates. Compliance rule updates are delivered via immutable Docker images, giving you full control over the validation logic version.
 
 ---
 
@@ -76,6 +81,12 @@ The engine recognizes these files via MD5 hash and automatically enables Trial M
 | `PORT` | API Listening Port | `8000` |
 | `LICENSE_KEY` | Pro License Key (Base64) | - |
 | `WORKERS` | Number of Gunicorn Workers | `1` |
+
+---
+
+## Roadmap
+
+- **v2.0 (Planned)**: Full E-Reporting Support (Flux 10) and Lifecycle Management (Flux 11) for direct PDP integration.
 
 ---
 

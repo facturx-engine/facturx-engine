@@ -5,7 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.4.1] - 2026-02-08
+## [1.4.2] - 2026-02-10
+
+### Fixed
+
+- **BOM Management**: Added `utf-8-sig` decoding in `HybridValidator` to support official FNFE/Factur-X 1.08 examples containing a UTF-8 Byte Order Mark.
+- **API Robustness**: Aligned conversion and extraction metadata with strict EN 16931 rules (added mandatory payment terms/due dates).
+
+### Changed
+
+- **Internal Harmonization**: Centralized version metadata in `app/version.py` (Single Source of Truth).
+- **Quality Gate**: Hardened the generator's internal validation to catch compliance errors before PDF delivery.
+
+## [1.4.1] - 2026-02-09
+
+### Changed
+
+- **Harmonized Versioning**: Unified version to 1.4.1 across all assets.
+- **Startup Integrity**: Implementation of a "Fail Fast" check for critical XSD schemas.
+- **Documentation**: Added strategic "Architecture Decisions" section and v2.0 Roadmap.
+
+## [1.4.0] - 2026-02-08
 
 ### Added - **Angles Morts** & Resilience Edition
 

@@ -1,9 +1,8 @@
-# Global Product Constants
-# Change these values to rebrand the entire application
+from app.version import __version__ as PRODUCT_VERSION
 
 PRODUCT_NAME = "Factur-X Engine" 
 PRODUCT_SLUG = "factur-x-engine"
-PRODUCT_VERSION = "1.3.7"
+
 
 # Community Edition Branding
 COMMUNITY_EDITION_NAME = f"{PRODUCT_NAME} (Community)"

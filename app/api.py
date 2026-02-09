@@ -190,8 +190,8 @@ def validate_facturx(
     
     Returns a validation report with detected format, flavor, and any errors.
     
-    **Pro Edition**: Full compliance report with all errors detailed.
-    **Community Edition (Teaser)**: Shows first error + count of hidden errors.
+    **Pro Edition**: Smart Diagnostics with actionable human-readable fixes.
+    **Community Edition**: Full raw validation report (Standard EN16931 error codes).
     """
     import time
     import os

@@ -91,7 +91,10 @@ class HybridValidator:
                     executable = xsltproc.compile_stylesheet(stylesheet_file=self.xslt_path)
                     
                     # Run transformation
-                    input_node = proc.parse_xml(xml_text=xml_content.decode('utf-8'))
+                    # Use utf-8-sig to automatically strip BOM if present (Common in official FNFE examples)
+                    xml_text = xml_content.decode('utf-8-sig')
+                    input_node = proc.parse_xml(xml_text=xml_text)
+
                     svrl_result = executable.transform_to_string(xdm_node=input_node)
                     
                     # Parse SVRL (Schematron Validation Report Language)
