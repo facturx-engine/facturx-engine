@@ -14,12 +14,9 @@ from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from app.api import router
 from app.diagnostics import router as diagnostics_router
-from app.version import __version__
 
 # Configure logging
 import json
@@ -57,7 +54,7 @@ logger = logging.getLogger(__name__)
 import os
 
 from fastapi.responses import RedirectResponse
-from app.constants import PRODUCT_NAME, PRODUCT_VERSION, COMMUNITY_EDITION_NAME, PRO_EDITION_NAME
+from app.constants import PRODUCT_NAME, PRODUCT_VERSION
 
 # Create FastAPI application
 app = FastAPI(
@@ -120,7 +117,6 @@ async def shutdown_event():
     logger.info("Shutting down API...")
 
 from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.requests import Request
 from starlette.responses import Response
 
 # SECURITY: DoS Protection via Max Upload Size (20MB)

@@ -5,10 +5,9 @@ Pro edition adds advanced validation and compliance features.
 """
 import logging
 from io import BytesIO
-from typing import Dict, Any, List
+from typing import Dict, Any
 from lxml import etree
 from facturx import get_xml_from_pdf, get_level, get_flavor
-import hashlib
 
 logger = logging.getLogger(__name__)
 
@@ -87,7 +86,8 @@ class ExtractionService:
                   'udt': 'urn:un:unece:uncefact:data:standard:UnqualifiedDataType:15'}
 
         def xpath_first(el, paths):
-            if isinstance(paths, str): paths = [paths]
+            if isinstance(paths, str):
+                paths = [paths]
             for p in paths:
                 res = el.xpath(p, namespaces=ns)
                 if res:
@@ -131,18 +131,16 @@ class ExtractionService:
                  })
 
         total_net = 0.0
-        has_lines = len(items) > 0
         
         for item in items[:10]: # Max 10 lines
             # Name: Partial (Identity Protection)
             raw_name = xpath_first(item, './/ram:SpecifiedTradeProduct/ram:Name') or "Item"
-            name = (raw_name[:15] + "...") if len(raw_name) > 15 else raw_name
             
             # Qty: Real
             raw_qty = xpath_first(item, './/ram:BilledQuantity')
             try:
                 qty = float(raw_qty) if raw_qty else 1.0
-            except:
+            except Exception:
                 qty = 1.0
             
             # Unit Price: REAL (Unlocked for Developer Experience)
@@ -153,7 +151,7 @@ class ExtractionService:
             ])
             try:
                 unit_price = float(raw_price) if raw_price else 0.0
-            except:
+            except Exception:
                 unit_price = 0.0
             
             # Line Total: REAL
@@ -163,7 +161,7 @@ class ExtractionService:
             ])
             try:
                 line_total = float(raw_line_total) if raw_line_total else (qty * unit_price)
-            except:
+            except Exception:
                 line_total = qty * unit_price
             total_net += line_total
             
@@ -174,7 +172,7 @@ class ExtractionService:
             ])
             try:
                 vat_rate = float(raw_vat) if raw_vat else 0.0
-            except:
+            except Exception:
                 vat_rate = 0.0
             
             line_items.append({
@@ -208,19 +206,19 @@ class ExtractionService:
         
         try:
             total_net_real = float(raw_net) if raw_net else total_net
-        except:
+        except Exception:
             total_net_real = total_net
         try:
             tax_total = float(raw_tax) if raw_tax else 0.0
-        except:
+        except Exception:
             tax_total = 0.0
         try:
             gross_total = float(raw_gross) if raw_gross else (total_net_real + tax_total)
-        except:
+        except Exception:
             gross_total = total_net_real + tax_total
         try:
             payable_amount = float(raw_payable) if raw_payable else gross_total
-        except:
+        except Exception:
             payable_amount = gross_total
 
         # 3. Extract REAL seller/buyer (Open Core Reset - no masking in Community)

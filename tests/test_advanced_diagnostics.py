@@ -1,5 +1,4 @@
 import unittest
-from decimal import Decimal
 from app.services.smart_diagnostics import SmartDiagnosticsEngine
 
 class TestAdvancedDiagnostics(unittest.TestCase):

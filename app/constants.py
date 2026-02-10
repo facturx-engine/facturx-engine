@@ -1,4 +1,3 @@
-from app.version import __version__ as PRODUCT_VERSION
 
 PRODUCT_NAME = "Factur-X Engine" 
 PRODUCT_SLUG = "factur-x-engine"

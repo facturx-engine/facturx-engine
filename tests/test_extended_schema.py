@@ -3,10 +3,8 @@ import xml.etree.ElementTree as ET
 from fastapi.testclient import TestClient
 from reportlab.pdfgen import canvas
 from io import BytesIO
-import pytest
 
 from app.main import app
-from app.schemas.validation import InvoiceMetadata
 
 client = TestClient(app)
 

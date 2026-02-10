@@ -76,12 +76,12 @@ def generate_support_bundle():
             if env_example.exists():
                 zf.write(env_example, "env_example.txt")
                 print("  ✓ Configuration template collected")
-        except:
+        except Exception:
             pass
     
     print(f"\n✓ Support bundle created: {bundle_name}")
     print(f"  Size: {os.path.getsize(bundle_name) / 1024:.1f} KB")
-    print(f"\nSend this file to support for assistance.")
+    print("\nSend this file to support for assistance.")
     
     return bundle_name
 

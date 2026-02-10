@@ -12,7 +12,7 @@ import logging
 import os
 from io import BytesIO
 from pathlib import Path
-from typing import Tuple, List, Optional, Dict, Any
+from typing import Optional, Dict, Any
 from concurrent.futures import ProcessPoolExecutor, TimeoutError as FuturesTimeoutError
 import asyncio
 
@@ -57,10 +57,9 @@ def _run_hybrid_validation(xml_content: bytes, xsd_path: str, xslt_path: str) ->
     2. Prevent GIL contention
     3. Allow process recycling on memory issues
     """
-    import sys
     import os
     
-    from app.services.hybrid_validator import HybridValidator, ValidationResult
+    from app.services.hybrid_validator import HybridValidator
     
     try:
         validator = HybridValidator(

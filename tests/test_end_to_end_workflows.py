@@ -3,7 +3,6 @@ from fastapi.testclient import TestClient
 import os
 from unittest.mock import patch
 from app.main import app
-import hashlib
 
 class TestEndToEndWorkflows(unittest.TestCase):
     def setUp(self):

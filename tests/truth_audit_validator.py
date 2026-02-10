@@ -1,5 +1,4 @@
 
-import pytest
 from app.services.validator import ValidationService
 
 def test_validator_rejects_corrupt_xml():

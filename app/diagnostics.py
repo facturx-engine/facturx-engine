@@ -87,13 +87,13 @@ async def get_diagnostics():
     try:
         import lxml
         lxml_version = lxml.etree.__version__
-    except:
+    except Exception:
         lxml_version = "unknown"
     
     try:
         import fastapi
         fastapi_version = fastapi.__version__
-    except:
+    except Exception:
         fastapi_version = "unknown"
     
     dependencies = [

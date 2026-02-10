@@ -4,14 +4,13 @@ Transitions from XML (CII/UBL) to a normalized, high-precision JSON format.
 Pro Feature: Supports UBL, CII, and automatic field translation.
 """
 import logging
-from typing import Dict, Any, List, Optional
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal
 from datetime import datetime, date
 from lxml import etree
 
 from app.schemas.integration import (
     BusinessReadyInvoice, PartySchema, AddressSchema, 
-    LineItemSchema, TaxBreakdownSchema
+    LineItemSchema
 )
 
 logger = logging.getLogger(__name__)
@@ -169,7 +168,8 @@ class BusinessReadySerializer:
         """Mask sensitive data for trial users."""
         
         def mask_string(s: str) -> str:
-            if not s or len(s) < 3: return "***"
+            if not s or len(s) < 3:
+                return "***"
             return s[:2] + "*" * (len(s) - 2)
 
         # Mask Seller/Buyer

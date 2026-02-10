@@ -1,11 +1,9 @@
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 from fastapi import UploadFile
 from io import BytesIO
-import hashlib
 
 from app.api import validate_facturx
-from app.services.trial_service import DEMO_WHITELIST
 
 class TestTrialMode(unittest.TestCase):
     @patch('app.license.is_licensed', return_value=False) # No license

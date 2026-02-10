@@ -64,7 +64,7 @@ def request(method: str, url: str, data: Dict = None, files: Dict[str, Tuple[str
                 for field, (filename, content) in files.items():
                     body.extend(f'--{boundary}\r\n'.encode())
                     body.extend(f'Content-Disposition: form-data; name="{field}"; filename="{filename}"\r\n'.encode())
-                    body.extend(f'Content-Type: application/pdf\r\n\r\n'.encode())
+                    body.extend('Content-Type: application/pdf\r\n\r\n'.encode())
                     body.extend(content)
                     body.extend(b'\r\n')
             
@@ -83,14 +83,14 @@ def request(method: str, url: str, data: Dict = None, files: Dict[str, Tuple[str
             # Try parsing JSON
             try:
                 return status, json.loads(content)
-            except:
+            except Exception:
                 return status, content
                 
     except urllib.error.HTTPError as e:
         content = e.read()
         try:
             return e.code, json.loads(content)
-        except:
+        except Exception:
             return e.code, content.decode()
     except Exception as e:
         return 0, str(e)
@@ -165,7 +165,7 @@ def run_tests(base_url: str):
              Colors.print(f"  ✅ OK - Received {len(res_pdf)} bytes of PDF/A-3", Colors.OKGREEN)
              generated_pdf = res_pdf
         else:
-             Colors.print(f"  ❌ FAILED: Not a valid PDF", Colors.FAIL)
+             Colors.print("  ❌ FAILED: Not a valid PDF", Colors.FAIL)
              sys.exit(1)
     else:
         Colors.print(f"  ❌ FAILED: {status} - {res_pdf}", Colors.FAIL)

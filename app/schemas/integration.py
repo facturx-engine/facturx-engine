@@ -3,7 +3,7 @@ Business-Ready JSON schemas for Factur-X/ZUGFeRD Extraction.
 Designed for ERP integration and automated accounting.
 """
 from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict
 from decimal import Decimal
 from datetime import date
 

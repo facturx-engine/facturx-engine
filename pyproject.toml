@@ -1,0 +1,28 @@
+[tool.ruff]
+# Target Python version
+target-version = "py311"
+
+# Exclude common directories
+exclude = [
+    ".git",
+    "__pycache__",
+    "docs",
+    "tests/corpus",
+]
+
+[tool.ruff.lint]
+# Enable default rules (E, F, W)
+select = ["E", "F", "W"]
+
+# Rules to ignore globally
+ignore = [
+    "E402", # Module level import not at top (intentional in app/main.py and app/license.py)
+    "E501", # Line too long (not enforced in this project)
+    "W291", # Trailing whitespace (cosmetic)
+    "W293", # Blank line contains whitespace (cosmetic)
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Ignore unused imports in __init__.py files (common in Odoo/packages)
+"**/__init__.py" = ["F401"]
+"integrations/odoo/**" = ["F401"]
