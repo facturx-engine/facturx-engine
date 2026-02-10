@@ -215,10 +215,14 @@ async def sitemap():
 
 if __name__ == "__main__":
     import uvicorn
+    # Security Fix: Disable reload by default in production
+    reload_enabled = os.getenv("UVICORN_RELOAD", "false").lower() == "true"
+    port = int(os.getenv("PORT", "8000"))
+
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
-        port=8000,
-        reload=True,
+        port=port,
+        reload=reload_enabled,
         log_level="info"
     )
