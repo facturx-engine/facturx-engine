@@ -1,4 +1,5 @@
 import unittest
+import html
 from app.services.smart_diagnostics import SmartDiagnosticsEngine
 
 class TestSmartDiagnosticsProactive(unittest.TestCase):
@@ -6,37 +7,44 @@ class TestSmartDiagnosticsProactive(unittest.TestCase):
         self.engine = SmartDiagnosticsEngine()
 
     def _get_xml(self, vat_id=None, country_id=None, type_code=None, grand_total=None, invoice_id=None):
-        """Helper to generate XML for testing proactive scan."""
+        """Helper to generate XML for testing proactive scan using robust string template."""
         rsm_ns = "urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100"
         ram_ns = "urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100"
+
+        # Escape values for XML
+        evat_id = html.escape(vat_id) if vat_id is not None else None
+        ecountry_id = html.escape(country_id) if country_id is not None else None
+        etype_code = html.escape(type_code) if type_code is not None else None
+        egrand_total = html.escape(grand_total) if grand_total is not None else None
+        einvoice_id = html.escape(invoice_id) if invoice_id is not None else None
 
         xml = f'<?xml version="1.0" encoding="UTF-8"?>\n'
         xml += f'<rsm:CrossIndustryInvoice xmlns:rsm="{rsm_ns}" xmlns:ram="{ram_ns}">\n'
 
-        if type_code is not None or invoice_id is not None:
+        if etype_code is not None or einvoice_id is not None:
             xml += '  <rsm:ExchangedDocument>\n'
-            if invoice_id is not None:
-                xml += f'    <ram:ID>{invoice_id}</ram:ID>\n'
-            if type_code is not None:
-                xml += f'    <ram:TypeCode>{type_code}</ram:TypeCode>\n'
+            if einvoice_id is not None:
+                xml += f'    <ram:ID>{einvoice_id}</ram:ID>\n'
+            if etype_code is not None:
+                xml += f'    <ram:TypeCode>{etype_code}</ram:TypeCode>\n'
             xml += '  </rsm:ExchangedDocument>\n'
 
         xml += '  <rsm:SupplyChainTradeTransaction>\n'
 
-        if vat_id is not None or country_id is not None:
+        if evat_id is not None or ecountry_id is not None:
             xml += '    <ram:ApplicableHeaderTradeAgreement>\n'
             xml += '      <ram:SellerTradeParty>\n'
-            if country_id is not None:
-                xml += f'        <ram:PostalTradeAddress><ram:CountryID>{country_id}</ram:CountryID></ram:PostalTradeAddress>\n'
-            if vat_id is not None:
-                xml += f'        <ram:SpecifiedTaxRegistration><ram:ID schemeID="VA">{vat_id}</ram:ID></ram:SpecifiedTaxRegistration>\n'
+            if ecountry_id is not None:
+                xml += f'        <ram:PostalTradeAddress><ram:CountryID>{ecountry_id}</ram:CountryID></ram:PostalTradeAddress>\n'
+            if evat_id is not None:
+                xml += f'        <ram:SpecifiedTaxRegistration><ram:ID schemeID="VA">{evat_id}</ram:ID></ram:SpecifiedTaxRegistration>\n'
             xml += '      </ram:SellerTradeParty>\n'
             xml += '    </ram:ApplicableHeaderTradeAgreement>\n'
 
-        if grand_total is not None:
+        if egrand_total is not None:
             xml += '    <ram:ApplicableHeaderTradeSettlement>\n'
             xml += '      <ram:SpecifiedTradeSettlementHeaderMonetarySummation>\n'
-            xml += f'        <ram:GrandTotalAmount>{grand_total}</ram:GrandTotalAmount>\n'
+            xml += f'        <ram:GrandTotalAmount>{egrand_total}</ram:GrandTotalAmount>\n'
             xml += '      </ram:SpecifiedTradeSettlementHeaderMonetarySummation>\n'
             xml += '    </ram:ApplicableHeaderTradeSettlement>\n'
 
@@ -80,8 +88,6 @@ class TestSmartDiagnosticsProactive(unittest.TestCase):
         """VAT or Country ID are empty - should NOT trigger diagnostic."""
         xml = self._get_xml(vat_id="", country_id="")
         diagnostics = self.engine.analyze([], xml_content=xml)
-        # Note: if both are empty strings, startswith("") is true, so no diagnostic.
-        # This matches current implementation.
         ids = [d.rule_id for d in diagnostics]
         self.assertNotIn("BR-CO-09-EXT", ids)
 
@@ -130,7 +136,7 @@ class TestSmartDiagnosticsProactive(unittest.TestCase):
                 xml = self._get_xml(invoice_id=f"INV{char}123")
                 diagnostics = self.engine.analyze([], xml_content=xml)
                 ids = [d.rule_id for d in diagnostics]
-                self.assertIn("BT-1-FORMAT", ids)
+                self.assertIn("BT-1-FORMAT", ids, f"Failed for character: {char}")
 
     def test_invoice_id_allowed_chars(self):
         """Invoice ID with allowed characters (A-Z, 0-9, /, -, _) - should NOT trigger."""
