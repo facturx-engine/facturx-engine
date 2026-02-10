@@ -438,7 +438,7 @@ def serialize_facturx(
             try:
                 if is_licensed():
                     is_pro = True
-            except:
+            except Exception:
                 pass
 
         # Extract XML if it's a PDF
