@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.3] - 2026-02-10
+
+### Added
+
+- **CI Strengthening**: Integrated `Ruff` for strict linting and static analysis in the CI pipeline.
+- **Docker Build Verification**: Added automated steps to build and verify the Docker image stability.
+
+### Fixed
+
+- **Code Quality Overhaul**: Resolved over 20 critical linting errors including bare except statements, unused variables, and import issues.
+- **Test Corpus Integrity**: Corrected the classification of test files (moved valid files mistakenly placed in `invalid/`).
+- **Import Handling**: Fixed `PRODUCT_VERSION` import errors by correctly referencing `app.version.__version__`.
+- **Trial Mode Reliability**: Verified and confirmed that Trial Mode is robust to file organization changes (content-hash based).
+
 ## [1.4.2] - 2026-02-10
 
 ### Fixed
