@@ -90,10 +90,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           name: Release ${{ github.ref_name }}
-          body: |
-            ### Changes in ${{ github.ref_name }}
-            - BUG FIX: Issue #6 (Compliance). Fixed XSD sequence error in `/v1/convert`.
-            - General compliance and CI/CD hardening.
+          generate_release_notes: true
           files: |
             sbom.cyclonedx.json
           draft: false
