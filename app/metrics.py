@@ -3,6 +3,7 @@ Prometheus-style Metrics for Factur-X Engine.
 Lightweight observability without external dependencies.
 """
 import time
+from collections import deque
 from threading import Lock
 from typing import Dict
 
@@ -33,8 +34,8 @@ class MetricsCollector:
         self._gauges: Dict[str, float] = {
             "active_requests": 0,
         }
-        self._histograms: Dict[str, list] = {
-            "request_duration_seconds": [],
+        self._histograms: Dict[str, deque] = {
+            "request_duration_seconds": deque(maxlen=1000),
         }
         
         # === PRO-TIER BUSINESS METRICS ===
@@ -81,10 +82,8 @@ class MetricsCollector:
         """Record an observation in a histogram."""
         with self._lock:
             if histogram in self._histograms:
-                # Keep last 1000 observations
+                # Keep last 1000 observations (enforced by deque maxlen)
                 self._histograms[histogram].append(value)
-                if len(self._histograms[histogram]) > 1000:
-                    self._histograms[histogram] = self._histograms[histogram][-1000:]
     
     # === PRO-TIER METHODS ===
     
