@@ -18,7 +18,7 @@ class TestSmartDiagnosticsProactive(unittest.TestCase):
         egrand_total = html.escape(grand_total) if grand_total is not None else None
         einvoice_id = html.escape(invoice_id) if invoice_id is not None else None
 
-        xml = f'<?xml version="1.0" encoding="UTF-8"?>\n'
+        xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
         xml += f'<rsm:CrossIndustryInvoice xmlns:rsm="{rsm_ns}" xmlns:ram="{ram_ns}">\n'
 
         if etype_code is not None or einvoice_id is not None:
