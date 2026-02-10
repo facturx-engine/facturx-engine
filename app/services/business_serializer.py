@@ -10,7 +10,7 @@ from lxml import etree
 
 from app.schemas.integration import (
     BusinessReadyInvoice, PartySchema, AddressSchema, 
-    LineItemSchema
+    LineItemSchema, TaxBreakdownSchema
 )
 
 logger = logging.getLogger(__name__)
@@ -109,6 +109,14 @@ class BusinessReadySerializer:
         if not summation_nodes:
             raise ValueError("Invalid CII: Missing MonetarySummation (mandatory)")
         summation_node = summation_nodes[0]
+
+        # Tax Breakdown
+        tax_breakdown = []
+        for tax_node in root.xpath('//ram:ApplicableHeaderTradeSettlement/ram:ApplicableTradeTax', namespaces=ns):
+            try:
+                tax_breakdown.append(BusinessReadySerializer._parse_cii_tax_breakdown(tax_node))
+            except (IndexError, KeyError, ValueError) as e:
+                logger.warning(f"Skipping malformed tax breakdown: {e}")
         
         return BusinessReadyInvoice(
             invoice_number=inv_id or "UNKNOWN",
@@ -117,7 +125,7 @@ class BusinessReadySerializer:
             seller=seller,
             buyer=buyer,
             line_items=line_items,
-            tax_breakdown=[], # TODO: Implement tax breakdown
+            tax_breakdown=tax_breakdown,
             total_net_amount=Decimal(xpath_first(summation_node, 'ram:TaxBasisTotalAmount') or "0"),
             total_tax_amount=Decimal(xpath_first(summation_node, 'ram:TaxTotalAmount') or "0"),
             total_gross_amount=Decimal(xpath_first(summation_node, 'ram:GrandTotalAmount') or "0"),
@@ -155,6 +163,16 @@ class BusinessReadySerializer:
             net_price=price,
             line_total=total,
             vat_rate=Decimal(node.xpath('.//ram:ApplicableTradeTax/ram:RateApplicablePercent/text()', namespaces=ns)[0] or "0")
+        )
+
+    @staticmethod
+    def _parse_cii_tax_breakdown(node: etree._Element) -> TaxBreakdownSchema:
+        ns = BusinessReadySerializer.NS_CII
+        return TaxBreakdownSchema(
+            category=node.xpath('ram:CategoryCode/text()', namespaces=ns)[0] if node.xpath('ram:CategoryCode', namespaces=ns) else "S",
+            rate=Decimal(node.xpath('ram:RateApplicablePercent/text()', namespaces=ns)[0] or "0"),
+            basis_amount=Decimal(node.xpath('ram:BasisAmount/text()', namespaces=ns)[0] or "0"),
+            tax_amount=Decimal(node.xpath('ram:CalculatedAmount/text()', namespaces=ns)[0] or "0")
         )
 
     @staticmethod
