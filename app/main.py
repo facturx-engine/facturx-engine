@@ -54,13 +54,14 @@ logger = logging.getLogger(__name__)
 import os
 
 from fastapi.responses import RedirectResponse
-from app.constants import PRODUCT_NAME, PRODUCT_VERSION
+from app.constants import PRODUCT_NAME
+from app.version import __version__
 
 # Create FastAPI application
 app = FastAPI(
     title=PRODUCT_NAME,
     description="Production-ready REST API for Factur-X (ZUGFeRD 2.4) conversions and data extraction.",
-    version=PRODUCT_VERSION,
+    version=__version__,
     docs_url="/docs",
     redoc_url="/redoc"
 )
@@ -173,7 +174,7 @@ async def health_check():
     return {
         "status": "healthy",
         "service": "factur-x-api",
-        "version": PRODUCT_VERSION
+        "version": __version__
     }
 
 @app.get("/metrics", tags=["observability"], include_in_schema=True)
