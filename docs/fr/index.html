@@ -29,25 +29,41 @@
         content="La façon la plus rapide de générer des factures conformes PDP / Réforme 2026.">
     <meta name="twitter:image" content="https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png">
 
-    <!-- JSON-LD Schema (Enriched) -->
+    <!-- JSON-LD Structured Data for SEO / GEO -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
       "name": "Factur-X Engine",
-      "operatingSystem": "Docker",
-      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Docker, Linux, Windows, macOS",
+      "applicationCategory": "DeveloperApplication, BusinessApplication",
+      "description": "API haute performance pour la génération et validation de factures électroniques Factur-X (Réforme 2026). Infrastructure souveraine, sans Cloud.",
       "url": "https://facturx-engine.github.io/facturx-engine/fr/",
-      "inLanguage": "fr",
-      "sameAs": [
-          "https://github.com/facturx-engine/facturx-engine",
-          "https://hub.docker.com/r/facturxengine/facturx-engine"
-      ],
-      "description": "API haute performance pour la génération et validation de factures électroniques Factur-X (Réforme 2026).",
-      "offers": { 
-          "@type": "Offer", 
-          "price": "0.00", 
-          "priceCurrency": "EUR" 
+      "softwareVersion": "1.4.3",
+      "codeRepository": "https://github.com/facturx-engine/facturx-engine",
+      "license": "https://github.com/facturx-engine/facturx-engine/blob/main/LICENSE",
+      "programmingLanguage": "Python",
+      "runtimePlatform": "Docker",
+      "keywords": "Factur-X, ZUGFeRD, Facture Électronique, PDP, PPF, Réforme 2026, Python, API, Middleware, SaxonC, PDF/A-3, Chorus Pro, KoSIT",
+      "offers": {
+        "@type": "AggregateOffer",
+        "lowPrice": "0",
+        "priceCurrency": "EUR",
+        "offerCount": "2",
+        "offers": [
+          {
+            "@type": "Offer",
+            "name": "Community Edition",
+            "price": "0",
+            "priceCurrency": "EUR"
+          },
+          {
+            "@type": "Offer",
+            "name": "Pro Edition",
+            "price": "490",
+            "priceCurrency": "EUR"
+          }
+        ]
       }
     }
     </script>
@@ -271,6 +287,7 @@
     <!-- Search Intent Content (SEO) -->
     <section class="py-24 bg-slate-900 border-b border-white/5" id="api">
         <div class="max-w-4xl mx-auto px-6 space-y-16">
+            <h2 class="sr-only">Fonctionnalités & Intégration</h2>
 
             <div class="space-y-4">
                 <h3 class="text-2xl font-bold text-white">Générez Factur-X PDF/A-3 + XML</h3>
