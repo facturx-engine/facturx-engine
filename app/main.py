@@ -10,13 +10,13 @@ import os
 if os.name == 'nt':
     multiprocessing.freeze_support()
 
-from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.templating import Jinja2Templates
 from app.api import router
 from app.diagnostics import router as diagnostics_router
+from app.config import TEMPLATES_DIR, XSD_PATH
 
 # Configure logging
 import json
@@ -67,7 +67,7 @@ app = FastAPI(
 )
 
 # Configuration for Templating (Only for XML generation)
-templates = Jinja2Templates(directory="app/templates")
+templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 
 # Switch to on_event which is more robust for logging in some versions
@@ -77,9 +77,8 @@ async def startup_event():
     logger.info(f"Initializing {PRODUCT_NAME}...")
     
     # 1. INTEGRITY CHECK: Critical Schemas
-    # Use absolute path relative to this file to be robust against CWD changes
-    base_dir = Path(__file__).parent
-    schema_path = base_dir / "resources" / "schemas" / "Factur-X_1.08_EN16931.xsd"
+    # Use centralized path from config
+    schema_path = XSD_PATH
     
     if not schema_path.exists():
         logger.critical(f"🚨 FATAL: Validation schema missing at {schema_path}")

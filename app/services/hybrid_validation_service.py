@@ -11,23 +11,18 @@ to isolate SaxonC-HE and prevent memory issues.
 import logging
 import os
 from io import BytesIO
-from pathlib import Path
 from typing import Optional, Dict, Any
 from concurrent.futures import ProcessPoolExecutor, TimeoutError as FuturesTimeoutError
 import asyncio
 
 from facturx import get_xml_from_pdf, get_level, get_flavor
 from lxml import etree
+from app.config import XSD_PATH, XSLT_PATH
 
 logger = logging.getLogger(__name__)
 
 # Path configuration
-PROJECT_ROOT = Path(__file__).parent.parent.parent
 # Validation artifacts - Factur-X 1.08 / ZUGFeRD 2.4 (January 2026)
-# Relocated to app/resources/schemas to avoid Windows MAX_PATH (260 chars) issues
-SCHEMA_ROOT = PROJECT_ROOT / "app" / "resources" / "schemas"
-XSD_PATH = SCHEMA_ROOT / "Factur-X_1.08_EN16931.xsd"
-XSLT_PATH = SCHEMA_ROOT / "_XSLT_EN16931" / "FACTUR-X_EN16931.xslt"
 
 # ProcessPool configuration
 _executor: Optional[ProcessPoolExecutor] = None

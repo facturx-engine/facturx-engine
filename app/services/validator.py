@@ -1,9 +1,9 @@
 import logging
 from io import BytesIO
-from pathlib import Path
 from typing import Tuple, Optional, List
 from facturx import get_xml_from_pdf, xml_check_xsd, get_level, get_flavor
 from lxml import etree
+from app.config import SCHEMATRON_DIR
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ class ValidationService:
     )
 
     # Assets Path
-    _SCHEMATRON_DIR = Path(__file__).parent.parent / "assets" / "schematron"
+    _SCHEMATRON_DIR = SCHEMATRON_DIR
     
     # Pre-compiled XSLT validator (Singleton)
     _CORE_VALIDATOR: Optional[etree.XSLT] = None

@@ -2,18 +2,17 @@
 Factur-X PDF generation service using Jinja2 templating and factur-x library.
 """
 import logging
-from pathlib import Path
 from jinja2 import FileSystemLoader, select_autoescape
 from jinja2.sandbox import SandboxedEnvironment # SECURITY: Prevents SSTI/RCE
 from facturx import generate_from_binary
 from app.schemas.validation import InvoiceMetadata
+from app.config import TEMPLATES_DIR
 
 logger = logging.getLogger(__name__)
 
 # Load Jinja2 environment (Sandboxed)
-TEMPLATE_DIR = Path(__file__).parent.parent / "templates"
 jinja_env = SandboxedEnvironment(
-    loader=FileSystemLoader(TEMPLATE_DIR),
+    loader=FileSystemLoader(TEMPLATES_DIR),
     autoescape=select_autoescape(['xml']),
     trim_blocks=True,
     lstrip_blocks=True
