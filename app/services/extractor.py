@@ -5,7 +5,7 @@ Pro edition adds advanced validation and compliance features.
 """
 import logging
 from io import BytesIO
-from typing import Dict, Any
+from typing import Dict, Any, List, Optional, Union
 from lxml import etree
 from facturx import get_xml_from_pdf, get_level, get_flavor
 
@@ -74,7 +74,7 @@ class ExtractionService:
             return result
 
     @staticmethod
-    def _parse_demo_invoice(xml_root, flavor, filename):
+    def _parse_demo_invoice(xml_root: etree._Element, flavor: str, filename: str) -> Dict[str, Any]:
         # Namespaces
         if flavor in ('factur-x', 'facturx'):
             ns = {'rsm': 'urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100',
@@ -85,7 +85,7 @@ class ExtractionService:
                   'ram': 'urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:12',
                   'udt': 'urn:un:unece:uncefact:data:standard:UnqualifiedDataType:15'}
 
-        def xpath_first(el, paths):
+        def xpath_first(el: etree._Element, paths: Union[str, List[str]]) -> Optional[str]:
             if isinstance(paths, str):
                 paths = [paths]
             for p in paths:
