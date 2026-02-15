@@ -45,6 +45,14 @@ class SmartDiagnosticsEngine:
     # Technical tolerance for financial calculations (Chorus Pro allows up to 0.02)
     ROUNDING_TOLERANCE = Decimal("0.05")
     
+    # Secure XML Parser to prevent XXE and DoS
+    _SECURE_PARSER = etree.XMLParser(
+        recover=True,           # Allow recovering from minor syntax errors
+        resolve_entities=False, # Security: Disable external entity resolution
+        no_network=True,        # Security: Disable network access
+        huge_tree=False         # Security: Prevent billion laughs attack
+    )
+
     def __init__(self):
         self._rules: List[DiagnosticRule] = []
         self._register_builtin_rules()
@@ -165,8 +173,7 @@ class SmartDiagnosticsEngine:
         """Detect errors directly from XML (SIRET, Negative totals, etc.)."""
         diagnostics = []
         try:
-            parser = etree.XMLParser(recover=True, no_network=True)
-            root = etree.fromstring(xml_content, parser=parser)
+            root = etree.fromstring(xml_content, parser=self._SECURE_PARSER)
             
             # Simple namespaces for CII
             ns = {
@@ -242,7 +249,7 @@ class SmartDiagnosticsEngine:
         
         if xml_content:
             try:
-                root = etree.fromstring(xml_content)
+                root = etree.fromstring(xml_content, parser=self._SECURE_PARSER)
                 declared = self._get_cii_value(root, '//ram:SpecifiedTradeSettlementHeaderMonetarySummation/ram:TaxTotalAmount')
                 explanation += f" (Declared Total: {declared}€)."
             except (etree.XMLSyntaxError, ValueError):
@@ -277,7 +284,7 @@ class SmartDiagnosticsEngine:
         delta_info = ""
         if xml_content:
             try:
-                root = etree.fromstring(xml_content)
+                root = etree.fromstring(xml_content, parser=self._SECURE_PARSER)
                 ht = self._get_cii_value(root, '//ram:TaxBasisTotalAmount')
                 tva = self._get_cii_value(root, '//ram:TaxTotalAmount')
                 ttc = self._get_cii_value(root, '//ram:GrandTotalAmount')
