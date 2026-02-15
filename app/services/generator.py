@@ -91,7 +91,8 @@ class GeneratorService:
             # AUTOMATIC VALIDATION (Quality Gate)
             # Ensure we never deliver a broken or non-compliant file
             from app.services.hybrid_validation_service import HybridValidationService
-            validation_res = HybridValidationService.validate(result_bytes, "generated_check.pdf")
+            # OPTIMIZATION: Validate raw XML bytes directly to avoid expensive PDF extraction
+            validation_res = HybridValidationService.validate(xml_bytes, "generated_check.xml")
             
             if not validation_res["is_valid"]:
                 errors = validation_res.get("errors", [])
