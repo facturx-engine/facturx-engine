@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.4] - 2026-02-17
+
+### Added
+
+- **CI Pipeline**: Full CI workflow with Ruff linting, pytest, and Docker build verification on all branches and PRs.
+- **Ruff Configuration**: Added `pyproject.toml` with project-wide linting rules and per-file ignores.
+
+### Fixed
+
+- **Security**: Fixed XXE vulnerability in Smart Diagnostics engine (Jules PR).
+- **Performance**: Optimized `HybridValidator` process pool and metrics collector locking (Jules PRs).
+- **Stability**: Fixed unsafe list access in `BusinessSerializer` (Jules PR).
+- **Code Quality**: Added type hints to extractor service, refactored brittle path handling (Jules PRs).
+- **Testing**: Added XML endpoint tests, license logic tests, Smart Diagnostics proactive scan tests, validator error humanization tests (Jules PRs).
+- **Diagnostics**: Fixed `facturx` version attribute access using safe `getattr` pattern.
+
+### Changed
+
+- **Branch Hygiene**: Consolidated all `release/v1.4.4` changes into `main`. Cleaned up 19 stale branches.
+
 ## [1.4.3] - 2026-02-10
 
 ### Added
