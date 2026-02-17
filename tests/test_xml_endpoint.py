@@ -1,0 +1,131 @@
+"""
+Tests for the /v1/xml endpoint — raw XML generation without PDF wrapper.
+"""
+import pytest
+import json
+from fastapi.testclient import TestClient
+
+from app.main import app
+
+
+@pytest.fixture
+def client():
+    return TestClient(app)
+
+
+def valid_metadata():
+    """Return minimal valid invoice metadata for XML generation."""
+    return {
+        "invoice_number": "XML-TEST-001",
+        "issue_date": "20260217",
+        "seller": {
+            "name": "XML Test Seller",
+            "address": {
+                "line1": "1 Test Street",
+                "postcode": "75001",
+                "city": "Paris",
+                "country_code": "FR"
+            },
+            "vat_number": "FR12345678901"
+        },
+        "buyer": {
+            "name": "XML Test Buyer",
+            "address": {
+                "line1": "2 Buyer Road",
+                "postcode": "69001",
+                "city": "Lyon",
+                "country_code": "FR"
+            }
+        },
+        "lines": [
+            {
+                "line_id": "1",
+                "name": "Consulting Service",
+                "quantity": 2.0,
+                "net_price": 250.0,
+                "net_total": 500.0,
+                "vat_rate": 20.0,
+                "vat_category": "S"
+            }
+        ],
+        "tax_details": [
+            {
+                "calculated_amount": "100.00",
+                "basis_amount": "500.00",
+                "rate": "20.00",
+                "category_code": "S"
+            }
+        ],
+        "amounts": {
+            "tax_basis_total": "500.00",
+            "tax_total": "100.00",
+            "grand_total": "600.00",
+            "due_payable": "600.00"
+        },
+        "currency_code": "EUR",
+        "profile": "en16931",
+        "payment_terms": "Net 30 days"
+    }
+
+
+def test_xml_generation_success(client):
+    """Test that /v1/xml returns valid CII XML for valid metadata."""
+    metadata = valid_metadata()
+
+    response = client.post(
+        "/v1/xml",
+        data={"metadata": json.dumps(metadata)}
+    )
+
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("application/xml")
+
+    # Verify it's actual XML
+    content = response.content.decode("utf-8")
+    assert content.startswith("<?xml") or content.startswith("<rsm:")
+    assert "CrossIndustryInvoice" in content
+    assert "XML-TEST-001" in content
+
+
+def test_xml_generation_has_correct_filename(client):
+    """Test that the Content-Disposition header uses the invoice number."""
+    metadata = valid_metadata()
+
+    response = client.post(
+        "/v1/xml",
+        data={"metadata": json.dumps(metadata)}
+    )
+
+    assert response.status_code == 200
+    disposition = response.headers.get("content-disposition", "")
+    assert "facturx_XML-TEST-001.xml" in disposition
+
+
+def test_xml_generation_invalid_json(client):
+    """Test that /v1/xml returns 400 for malformed JSON."""
+    response = client.post(
+        "/v1/xml",
+        data={"metadata": "{not valid json}"}
+    )
+
+    assert response.status_code == 400
+    data = response.json()
+    assert data["detail"]["error"] == "INVALID_JSON"
+
+
+def test_xml_generation_missing_fields(client):
+    """Test that /v1/xml returns 400 when required fields are missing."""
+    incomplete = {"invoice_number": "INCOMPLETE-001"}
+
+    response = client.post(
+        "/v1/xml",
+        data={"metadata": json.dumps(incomplete)}
+    )
+
+    assert response.status_code == 400
+    data = response.json()
+    assert data["detail"]["error"] == "INVALID_METADATA"
+
+
+if __name__ == "__main__":
+    pytest.main([__file__, "-v", "-s"])

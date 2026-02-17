@@ -1,10 +1,17 @@
 import unittest
+import asyncio
 from unittest.mock import patch
 from fastapi import UploadFile
 from io import BytesIO
 from decimal import Decimal
 
 from app.api import serialize_facturx
+
+
+def run_async(coro):
+    """Helper to run an async coroutine in tests."""
+    return asyncio.get_event_loop().run_until_complete(coro)
+
 
 class TestSerialization(unittest.TestCase):
     @patch('app.license.is_licensed', return_value=False)
@@ -37,7 +44,7 @@ class TestSerialization(unittest.TestCase):
             
             dummy_file = UploadFile(filename="test.xml", file=BytesIO(xml_content))
             
-            response = serialize_facturx(file=dummy_file)
+            response = run_async(serialize_facturx(file=dummy_file))
             
             self.assertTrue(response.success)
             self.assertEqual(response.invoice.invoice_number, "INV-123")
@@ -71,7 +78,7 @@ class TestSerialization(unittest.TestCase):
             
             dummy_file = UploadFile(filename="private.xml", file=BytesIO(xml_content))
             
-            response = serialize_facturx(file=dummy_file)
+            response = run_async(serialize_facturx(file=dummy_file))
             
             self.assertTrue(response.success)
             self.assertTrue(response.invoice.is_obfuscated)

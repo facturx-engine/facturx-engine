@@ -16,7 +16,8 @@ from typing import Optional, Dict, Any
 from concurrent.futures import ProcessPoolExecutor, TimeoutError as FuturesTimeoutError
 import asyncio
 
-from facturx import get_xml_from_pdf, get_level, get_flavor
+from facturx import get_level, get_flavor
+from app.services.pdf_utils import get_xml_from_pdf
 from lxml import etree
 
 logger = logging.getLogger(__name__)

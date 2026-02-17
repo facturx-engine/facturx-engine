@@ -26,7 +26,7 @@ router = APIRouter(prefix="/v1", tags=["factur-x"])
                  400: {"model": ErrorResponse, "description": "Invalid input"},
                  500: {"model": ErrorResponse, "description": "Server error"}
              })
-def convert_to_facturx(
+async def convert_to_facturx(
     pdf: UploadFile = File(..., description="Original PDF invoice"),
     metadata: str = Form(..., description="Invoice metadata as JSON")
 ):
@@ -113,7 +113,7 @@ def convert_to_facturx(
                  400: {"model": ErrorResponse, "description": "Invalid input"},
                  500: {"model": ErrorResponse, "description": "Server error"}
              })
-def generate_facturx_xml(
+async def generate_facturx_xml(
     metadata: str = Form(..., description="Invoice metadata as JSON")
 ):
     """
@@ -127,6 +127,7 @@ def generate_facturx_xml(
     start_time = time.time()
     metrics.inc("requests_total")
     metrics.inc("requests_xml")
+    metrics.inc_gauge("active_requests")
     
     try:
         # Parse and validate metadata
@@ -173,6 +174,7 @@ def generate_facturx_xml(
             detail={"error": "INTERNAL_ERROR", "message": "An unexpected error occurred"}
         )
     finally:
+        metrics.dec_gauge("active_requests")
         metrics.observe("request_duration_seconds", time.time() - start_time)
 
 
@@ -182,7 +184,7 @@ def generate_facturx_xml(
                  400: {"model": ErrorResponse, "description": "Invalid input"},
                  500: {"model": ErrorResponse, "description": "Server error"}
              })
-def validate_facturx(
+async def validate_facturx(
     file: UploadFile = File(..., description="Factur-X PDF or XML file to validate")
 ):
     """
@@ -299,8 +301,7 @@ def validate_facturx(
                 format=result.get("format_detected"),
                 flavor=result.get("profile_detected"),
                 errors=error_messages,
-                validation_mode="open_community",
-                trial_notice="Trial Mode: Reference file recognized. Pro features unlocked." if is_trial else None
+                validation_mode="open_community"
             )
         
     except HTTPException:
@@ -324,7 +325,7 @@ def validate_facturx(
                  400: {"model": ErrorResponse, "description": "Invalid input"},
                  500: {"model": ErrorResponse, "description": "Server error"}
              })
-def extract_facturx(
+async def extract_facturx(
     file: UploadFile = File(..., description="Factur-X PDF file to extract data from")
 ):
     """
@@ -392,7 +393,7 @@ def extract_facturx(
                  400: {"model": ErrorResponse, "description": "Invalid input"},
                  500: {"model": ErrorResponse, "description": "Server error"}
              })
-def serialize_facturx(
+async def serialize_facturx(
     file: UploadFile = File(..., description="Factur-X PDF or XML file to serialize")
 ):
     """
@@ -444,7 +445,7 @@ def serialize_facturx(
         # Extract XML if it's a PDF
         xml_data = None
         if file.filename.lower().endswith('.pdf'):
-            from facturx import get_xml_from_pdf
+            from app.services.pdf_utils import get_xml_from_pdf
             try:
                 # get_xml_from_pdf returns (filename, xml_content)
                 _, xml_data = get_xml_from_pdf(file_content)

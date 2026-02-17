@@ -1,9 +1,16 @@
 import unittest
+import asyncio
 from unittest.mock import patch
 from fastapi import UploadFile
 from io import BytesIO
 
 from app.api import validate_facturx
+
+
+def run_async(coro):
+    """Helper to run an async coroutine in tests."""
+    return asyncio.get_event_loop().run_until_complete(coro)
+
 
 class TestSmartDiagnostics(unittest.TestCase):
     @patch.dict('os.environ', {'LICENSE_KEY': 'test_license_key'})
@@ -29,8 +36,8 @@ class TestSmartDiagnostics(unittest.TestCase):
         # Create a dummy file
         dummy_file = UploadFile(filename="invoice.pdf", file=BytesIO(b"%PDF-1.4..."))
         
-        # Call the API endpoint logic directly
-        response = validate_facturx(file=dummy_file)
+        # Call the async API endpoint logic directly
+        response = run_async(validate_facturx(file=dummy_file))
         
         # Assertions
         print(f"Response Type: {type(response).__name__}")

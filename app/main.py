@@ -1,6 +1,5 @@
 """
 Factur-X API - Main Application Entry Point
-# Triggering security scan to check GitHub Actions health
 """
 import logging
 import multiprocessing
@@ -14,7 +13,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.templating import Jinja2Templates
+
 from app.api import router
 from app.diagnostics import router as diagnostics_router
 
@@ -51,8 +50,6 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-import os
-
 from fastapi.responses import RedirectResponse
 from app.constants import PRODUCT_NAME
 from app.version import __version__
@@ -66,8 +63,7 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# Configuration for Templating (Only for XML generation)
-templates = Jinja2Templates(directory="app/templates")
+
 
 
 # Switch to on_event which is more robust for logging in some versions
@@ -115,6 +111,8 @@ async def startup_event():
 
 @app.on_event("shutdown")
 async def shutdown_event():
+    from app.services.hybrid_validation_service import shutdown_executor
+    shutdown_executor()
     logger.info("Shutting down API...")
 
 from starlette.middleware.base import BaseHTTPMiddleware

@@ -7,7 +7,8 @@ import logging
 from io import BytesIO
 from typing import Dict, Any
 from lxml import etree
-from facturx import get_xml_from_pdf, get_level, get_flavor
+from facturx import get_level, get_flavor
+from app.services.pdf_utils import get_xml_from_pdf
 
 logger = logging.getLogger(__name__)
 
@@ -270,13 +271,7 @@ class ExtractionService:
                 "payable_amount": f"{payable_amount:.2f}"
             },
             
-            "tax_breakdown": [
-                {
-                    "vat_rate": "REAL",  # TODO: Extract real breakdown
-                    "tax_amount": f"{tax_total:.2f}",
-                    "taxable_amount": f"{total_net_real:.2f}"
-                }
-            ],
+            "tax_breakdown": ExtractionService._parse_tax_breakdown(xml_root, xpath_first, ns),
             
             "line_items": line_items,
             
@@ -288,3 +283,33 @@ class ExtractionService:
         }
         
         return data
+
+    @staticmethod
+    def _parse_tax_breakdown(xml_root, xpath_first, ns):
+        """Parse ApplicableTradeTax elements into structured tax breakdown."""
+        tax_nodes = xml_root.xpath(
+            '//ram:ApplicableHeaderTradeSettlement/ram:ApplicableTradeTax',
+            namespaces=ns
+        )
+        if not tax_nodes:
+            # Fallback for older ZUGFeRD 1.x structure
+            tax_nodes = xml_root.xpath('//ram:ApplicableTradeTax', namespaces=ns)
+
+        breakdown = []
+        for node in tax_nodes:
+            category = xpath_first(node, 'ram:CategoryCode') or "S"
+            rate = xpath_first(node, 'ram:RateApplicablePercent') or "0.00"
+            basis = xpath_first(node, 'ram:BasisAmount') or "0.00"
+            amount = xpath_first(node, 'ram:CalculatedAmount') or "0.00"
+
+            try:
+                breakdown.append({
+                    "category": category,
+                    "vat_rate": f"{float(rate):.2f}",
+                    "basis_amount": f"{float(basis):.2f}",
+                    "tax_amount": f"{float(amount):.2f}"
+                })
+            except (ValueError, TypeError) as e:
+                logger.warning(f"Skipping malformed tax entry: {e}")
+
+        return breakdown

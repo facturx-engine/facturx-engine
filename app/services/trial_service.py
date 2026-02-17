@@ -26,12 +26,3 @@ def is_trial_file(file_content: bytes) -> bool:
     
     file_hash = hashlib.md5(file_content).hexdigest()
     return file_hash in DEMO_WHITELIST
-
-def get_trial_file_info(file_content: bytes) -> dict:
-    """Return info about why this file is allowed (for UI/API notices)."""
-    if is_trial_file(file_content):
-        return {
-            "is_trial": True,
-            "message": "Trial Mode: This reference file has unlocked Pro features for demonstration."
-        }
-    return {"is_trial": False}

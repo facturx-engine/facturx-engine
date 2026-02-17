@@ -10,7 +10,7 @@ from lxml import etree
 
 from app.schemas.integration import (
     BusinessReadyInvoice, PartySchema, AddressSchema, 
-    LineItemSchema
+    LineItemSchema, TaxBreakdownSchema
 )
 
 logger = logging.getLogger(__name__)
@@ -117,7 +117,7 @@ class BusinessReadySerializer:
             seller=seller,
             buyer=buyer,
             line_items=line_items,
-            tax_breakdown=[], # TODO: Implement tax breakdown
+            tax_breakdown=BusinessReadySerializer._parse_cii_tax_breakdown(root),
             total_net_amount=Decimal(xpath_first(summation_node, 'ram:TaxBasisTotalAmount') or "0"),
             total_tax_amount=Decimal(xpath_first(summation_node, 'ram:TaxTotalAmount') or "0"),
             total_gross_amount=Decimal(xpath_first(summation_node, 'ram:GrandTotalAmount') or "0"),
@@ -158,10 +158,40 @@ class BusinessReadySerializer:
         )
 
     @staticmethod
+    def _parse_cii_tax_breakdown(root: etree._Element) -> list:
+        """Parse ApplicableTradeTax elements into TaxBreakdownSchema list."""
+        ns = BusinessReadySerializer.NS_CII
+
+        def xpath_text(el, path):
+            res = el.xpath(path + '/text()', namespaces=ns)
+            return res[0] if res else None
+
+        tax_nodes = root.xpath(
+            '//ram:ApplicableHeaderTradeSettlement/ram:ApplicableTradeTax',
+            namespaces=ns
+        )
+        if not tax_nodes:
+            tax_nodes = root.xpath('//ram:ApplicableTradeTax', namespaces=ns)
+
+        breakdown = []
+        for node in tax_nodes:
+            try:
+                breakdown.append(TaxBreakdownSchema(
+                    category=xpath_text(node, 'ram:CategoryCode') or "S",
+                    rate=Decimal(xpath_text(node, 'ram:RateApplicablePercent') or "0"),
+                    basis_amount=Decimal(xpath_text(node, 'ram:BasisAmount') or "0"),
+                    tax_amount=Decimal(xpath_text(node, 'ram:CalculatedAmount') or "0"),
+                ))
+            except Exception as e:
+                logger.warning(f"Skipping malformed tax entry: {e}")
+
+        return breakdown
+
+    @staticmethod
     def _parse_ubl(root: etree._Element) -> BusinessReadyInvoice:
         """Placeholder for UBL parsing logic (XRechnung)."""
         # In a real implementation, this would mimic _parse_cii with UBL namespaces and paths
-        raise NotImplementedError("UBL Support is slated for v1.4.1 (Enterprise Early Access)")
+        raise NotImplementedError("UBL serialization is not yet supported. Only CII (Factur-X/ZUGFeRD) is currently available.")
 
     @staticmethod
     def _obfuscate(invoice: BusinessReadyInvoice) -> BusinessReadyInvoice:

@@ -1,9 +1,16 @@
 import unittest
+import asyncio
 from unittest.mock import patch
 from fastapi import UploadFile
 from io import BytesIO
 
 from app.api import validate_facturx
+
+
+def run_async(coro):
+    """Helper to run an async coroutine in tests."""
+    return asyncio.get_event_loop().run_until_complete(coro)
+
 
 class TestTrialMode(unittest.TestCase):
     @patch('app.license.is_licensed', return_value=False) # No license
@@ -11,14 +18,6 @@ class TestTrialMode(unittest.TestCase):
     @patch('app.metrics.metrics')
     def test_trial_file_unlocks_pro_features(self, mock_metrics, mock_hybrid_service, mock_is_licensed):
         """A whitelisted trial file should unlock Pro features without a license."""
-        
-        # 1. Use a hash from the whitelist
-        # We need to simulate the content that produces one of these hashes
-        # Facture_FR_MINIMUM.pdf hash: a0db0603cea39130ce4fd5ad56c2f5a1
-        # Since we use MD5, we can't easily reverse it, but we can MOCK `is_trial_file` 
-        # OR just use a known file content if we had one.
-        # Let's mock `is_trial_file` for simplicity in the unit test, 
-        # as we've already verified the hashes match the files in the corpus.
         
         with patch('app.services.trial_service.is_trial_file', return_value=True):
             # Simulate a validation result
@@ -33,8 +32,8 @@ class TestTrialMode(unittest.TestCase):
             # Create a dummy file
             dummy_file = UploadFile(filename="demo_invoice.pdf", file=BytesIO(b"dummy content"))
             
-            # Call the API
-            response = validate_facturx(file=dummy_file)
+            # Call the async API
+            response = run_async(validate_facturx(file=dummy_file))
             
             # Assertions
             print(f"Validation Mode: {response.validation_mode}")
@@ -62,7 +61,7 @@ class TestTrialMode(unittest.TestCase):
             
             dummy_file = UploadFile(filename="my_invoice.pdf", file=BytesIO(b"my private content"))
             
-            response = validate_facturx(file=dummy_file)
+            response = run_async(validate_facturx(file=dummy_file))
             
             print(f"Validation Mode: {response.validation_mode}")
             self.assertEqual(response.validation_mode, "open_community")
