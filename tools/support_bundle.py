@@ -81,7 +81,7 @@ def generate_support_bundle():
     
     print(f"\n✓ Support bundle created: {bundle_name}")
     print(f"  Size: {os.path.getsize(bundle_name) / 1024:.1f} KB")
-    print(f"\nSend this file to support for assistance.")
+    print("\nSend this file to support for assistance.")
     
     return bundle_name
 

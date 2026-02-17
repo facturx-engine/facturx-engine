@@ -5,10 +5,9 @@ Pro edition adds advanced validation and compliance features.
 """
 import logging
 from io import BytesIO
-from typing import Dict, Any, List
+from typing import Dict, Any
 from lxml import etree
 from facturx import get_xml_from_pdf, get_level, get_flavor
-import hashlib
 
 logger = logging.getLogger(__name__)
 

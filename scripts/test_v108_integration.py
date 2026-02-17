@@ -12,7 +12,6 @@ import sys
 if sys_path not in sys.path:
     sys.path.append(sys_path)
 
-from app.services.hybrid_validation_service import HybridValidationService
 
 async def main():
     print("--- INTEGRATED v1.08 VALIDATION TEST ---")
@@ -28,7 +27,6 @@ async def main():
     # we'll use a pre-generated XML if it exists, or just try to validate the schemas.
     
     print("Verifying schema paths in HybridValidationService...")
-    from app.services.hybrid_validation_service import XSD_PATH as ORIG_XSD, XSLT_PATH as ORIG_XSLT
     
     # OVERRIDE WITH TEMP PATHS (SANS ESPACES)
     XSD_PATH = Path("docs/v108_temp/Factur-X_1.08_EN16931.xsd").absolute()

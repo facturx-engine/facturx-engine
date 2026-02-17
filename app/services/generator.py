@@ -2,7 +2,6 @@
 Factur-X PDF generation service using Jinja2 templating and factur-x library.
 """
 import logging
-from io import BytesIO
 from pathlib import Path
 from jinja2 import FileSystemLoader, select_autoescape
 from jinja2.sandbox import SandboxedEnvironment # SECURITY: Prevents SSTI/RCE
