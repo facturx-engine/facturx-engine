@@ -81,19 +81,19 @@ async def get_diagnostics():
     try:
         import facturx
         facturx_version = facturx.VERSION
-    except Exception:
+    except ImportError:
         facturx_version = "unknown"
     
     try:
         import lxml
         lxml_version = lxml.etree.__version__
-    except Exception:
+    except ImportError:
         lxml_version = "unknown"
     
     try:
         import fastapi
         fastapi_version = fastapi.__version__
-    except Exception:
+    except ImportError:
         fastapi_version = "unknown"
     
     dependencies = [
