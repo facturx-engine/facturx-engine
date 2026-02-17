@@ -80,7 +80,7 @@ async def get_diagnostics():
     # Get dependency versions
     try:
         import facturx
-        facturx_version = facturx.VERSION
+        facturx_version = getattr(facturx, "__version__", getattr(facturx, "VERSION", "unknown"))
     except ImportError:
         facturx_version = "unknown"
     
