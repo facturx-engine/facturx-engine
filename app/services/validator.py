@@ -132,7 +132,6 @@ class ValidationService:
         # Ensure validators are loaded
         ValidationService._initialize_schematrons()
         
-        errors = []
         detected_format = None
         detected_flavor = None
         

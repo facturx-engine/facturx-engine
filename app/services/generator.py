@@ -2,7 +2,6 @@
 Factur-X PDF generation service using Jinja2 templating and factur-x library.
 """
 import logging
-from io import BytesIO
 from pathlib import Path
 from jinja2 import FileSystemLoader, select_autoescape
 from jinja2.sandbox import SandboxedEnvironment # SECURITY: Prevents SSTI/RCE
@@ -45,6 +44,7 @@ class GeneratorService:
             context = metadata.model_dump(exclude_none=True)
             
             xml_content = template.render(**context)
+            logger.debug(f"Generated XML content:\n{xml_content}")
             logger.info(f"Generated XML for invoice {metadata.invoice_number}")
             return xml_content
             
@@ -91,7 +91,8 @@ class GeneratorService:
             # AUTOMATIC VALIDATION (Quality Gate)
             # Ensure we never deliver a broken or non-compliant file
             from app.services.hybrid_validation_service import HybridValidationService
-            validation_res = HybridValidationService.validate(result_bytes, "generated_check.pdf")
+            # OPTIMIZATION: Validate raw XML bytes directly to avoid expensive PDF extraction
+            validation_res = HybridValidationService.validate(xml_bytes, "generated_check.xml")
             
             if not validation_res["is_valid"]:
                 errors = validation_res.get("errors", [])

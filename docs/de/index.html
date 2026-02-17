@@ -39,7 +39,6 @@
       "applicationCategory": "BusinessApplication",
       "url": "https://facturx-engine.github.io/facturx-engine/de/",
       "inLanguage": "de",
-      "softwareVersion": "1.3",
       "sameAs": [
           "https://github.com/facturx-engine/facturx-engine",
           "https://hub.docker.com/r/facturxengine/facturx-engine"
@@ -161,17 +160,35 @@
     <section class="relative pt-48 pb-32 overflow-hidden">
         <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-20 items-center">
             <div class="relative z-20">
-                <div
-                    class="inline-block px-3 py-1 border border-amber-500/30 bg-amber-500/5 text-amber-500 text-[10px] font-mono tracking-widest uppercase mb-8">
-                    Status: v1.3 stable // ZUGFeRD 2.4 Ready
+                <!-- NEW BADGES -->
+                <div class="flex flex-wrap gap-4 mb-8">
+                    <div
+                        class="inline-flex items-center px-3 py-1 rounded-full border border-sky-500/30 bg-sky-500/10 text-sky-400 text-xs font-bold tracking-wide">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Powered by SaxonC (KoSIT Ready)
+                    </div>
+                    <div
+                        class="inline-flex items-center px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs font-bold tracking-wide">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                            </path>
+                        </svg>
+                        Privacy First (Ohne Cloud)
+                    </div>
                 </div>
-                <h1 class="text-6xl md:text-8xl font-bold text-white tracking-tighter leading-none mb-8">
-                    E-Rechnung. <br /> <span class="text-amber-500 italic">Abgesichert.</span>
+
+                <h1 class="text-6xl md:text-8xl font-black tracking-tighter text-white uppercase leading-none mb-8">
+                    E-Rechnung <br>
+                    <span class="text-amber-500">Middleware</span>
                 </h1>
-                <p class="text-lg text-slate-400 max-w-xl mb-12 leading-relaxed">
-                    Die <strong>Privacy-First</strong> E-Rechnungs-Engine. 100% <strong>Air-gapped</strong>, Offizielle
-                    <strong>SaxonC</strong> Validierung.
-                    Keine Cloud-Abhängigkeiten. Ihre Daten verlassen niemals Ihre Infrastruktur.
+                <p class="max-w-2xl text-xl md:text-2xl text-slate-400 leading-relaxed font-light mb-12">
+                    Die E-Rechnungs-Engine für Deutschland.
+                    Offizielle <span class="text-white">SaxonC</span> Validierung (XRechnung 3.0/ZUGFeRD 2.3).
+                    100% Air-gapped.
                 </p>
                 <div class="flex flex-wrap gap-4">
                     <a href="https://github.com/facturx-engine/facturx-engine#quickstart"
@@ -193,27 +210,60 @@
                         <div class="w-2 h-2 rounded-full bg-amber-500/50"></div>
                         <div class="w-2 h-2 rounded-full bg-green-500/50"></div>
                         <span class="text-[10px] font-mono text-slate-500 ml-4 italic">root@engine:~# curl -X POST
-                            /v1/convert</span>
+                            /v1/serialize</span>
                     </div>
                     <div class="p-6 font-mono text-sm space-y-3">
-                        <div class="text-amber-500">Sende Payload...</div>
+                        <div class="text-amber-500">JSON Transformation...</div>
                         <div class="text-slate-400">
                             {<br />
-                            &nbsp;&nbsp;"profile": "BASIC",<br />
-                            &nbsp;&nbsp;"xml": "base64_data...",<br />
-                            &nbsp;&nbsp;"validate": true<br />
+                            &nbsp;&nbsp;"invoice_number": "R2024-001",<br />
+                            &nbsp;&nbsp;"totals": { "net": 1500.00 },<br />
+                            &nbsp;&nbsp;"compliance": "EN16931"<br />
                             }
                         </div>
                         <div class="flex items-center gap-2 text-green-500">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M5 13l4 4L19 7"></path>
+                                    d="M5 13l4 4L19 7">
+                                </path>
                             </svg>
                             200 OK
                         </div>
-                        <div class="text-slate-500 text-xs">Zeit: 142ms</div>
-                        <div class="text-slate-500 text-xs">Standard: EN 16931 Verifiziert</div>
+                        <div class="text-slate-500 text-xs">Zeit: 42ms</div>
+                        <div class="text-slate-500 text-xs">Modus: Business-Ready</div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Integration Recipes (DE) -->
+    <section class="py-24 bg-slate-950 border-b border-white/5">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="space-y-6">
+                <div class="flex items-center gap-4 mb-8">
+                    <h3 class="text-2xl font-bold text-white">Integrationsrezepte</h3>
+                    <div class="h-px bg-white/10 flex-grow"></div>
+                </div>
+                <div class="grid md:grid-cols-3 gap-4">
+                    <a href="../tutorials/python-facturx.html"
+                        class="group block p-6 bg-black border border-white/10 rounded hover:border-amber-500 transition-colors">
+                        <div class="text-amber-500 font-mono text-xs mb-2">PYTHON</div>
+                        <div class="text-white font-bold mb-2 group-hover:text-amber-500">Requests</div>
+                        <p class="text-xs text-slate-500">Integrationsleitfaden für FastAPI, Django, Flask.</p>
+                    </a>
+                    <a href="../tutorials/nodejs-facturx.html"
+                        class="group block p-6 bg-black border border-white/10 rounded hover:border-amber-500 transition-colors">
+                        <div class="text-amber-500 font-mono text-xs mb-2">NODE.JS</div>
+                        <div class="text-white font-bold mb-2 group-hover:text-amber-500">Axios</div>
+                        <p class="text-xs text-slate-500">Leitfaden für NestJS, Express, Serverless.</p>
+                    </a>
+                    <a href="../tutorials/php-facturx.html"
+                        class="group block p-6 bg-black border border-white/10 rounded hover:border-amber-500 transition-colors">
+                        <div class="text-amber-500 font-mono text-xs mb-2">PHP</div>
+                        <div class="text-white font-bold mb-2 group-hover:text-amber-500">Guzzle</div>
+                        <p class="text-xs text-slate-500">Leitfaden für Symfony, Laravel, WordPress.</p>
+                    </a>
                 </div>
             </div>
         </div>
@@ -246,6 +296,24 @@
             </div>
 
             <div class="space-y-4">
+                <h3 class="text-2xl font-bold text-white">4. Business-Ready Serialisierung (JSON)</h3>
+                <p class="text-slate-400 leading-relaxed">
+                    Stoppen Sie das Parsen komplexer XML-Bäume. Die <strong>Pro Edition</strong> transformiert
+                    Factur-X/ZUGFeRD/CII in ein flaches, typisiertes JSON-Objekt. Optimiert für die direkte
+                    DB-Speicherung oder UI-Anzeige.
+                </p>
+            </div>
+
+            <div class="space-y-4">
+                <h3 class="text-2xl font-bold text-white">5. Erweiterte Diagnose (Smarte Validierung)</h3>
+                <p class="text-slate-400 leading-relaxed">
+                    Gehen Sie über die Standardvalidierung hinaus. Die <strong>Pro Edition</strong> erkennt proaktiv
+                    "Rechnungskiller": USt-IdNr/Steuer-Inkonsistenzen, negative Summen mit falschem Typ und verbotene
+                    Zeichen. Ein präventives Audit vor dem Versand.
+                </p>
+            </div>
+
+            <div class="space-y-4">
                 <h3 class="text-2xl font-bold text-white">Self-Hosted Docker Middleware</h3>
                 <p class="text-slate-400 leading-relaxed">
                     Entwickelt für die Integration in ERP- und Buchhaltungssoftware. Stellen Sie es als Microservice in
@@ -257,6 +325,8 @@
 
         </div>
     </section>
+
+
 
     <!-- Specs Grid -->
     <section id="security" class="py-32 border-y border-white/5 relative bg-slate-950/50">
@@ -304,6 +374,91 @@
                     <p class="text-sm text-slate-500 leading-relaxed">Abgestimmt auf die E-Rechnungspflicht (B2B).
                         Generieren Sie Dateien,
                         die strikt konform mit XRechnung und ZUGFeRD 2.x sind.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- DORA / BANKING SECTION -->
+    <section class="container mx-auto px-6 py-24 border-t border-white/5">
+        <div class="max-w-4xl mx-auto">
+            <div class="flex items-center gap-4 mb-8">
+                <div
+                    class="px-3 py-1 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded font-mono text-xs uppercase tracking-widest">
+                    Enterprise & Datenschutz
+                </div>
+                <h2 class="text-3xl font-bold text-white">Datenschutz & Compliance Ready</h2>
+            </div>
+
+            <p class="text-xl text-slate-300 leading-relaxed mb-12">
+                Ob für <strong>DSGVO</strong> Datenminimierung oder <strong>DORA</strong> operative Resilienz, Factur-X
+                Engine ist so konzipiert, dass Ihre Finanzdaten sicher und souverän bleiben.
+            </p>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <div
+                    class="p-8 bg-slate-900 border border-white/5 rounded-sm hover:border-amber-500/30 transition-all group">
+                    <div
+                        class="w-12 h-12 bg-amber-500/10 rounded-full flex items-center justify-center mb-6 group-hover:bg-amber-500/20 transition-colors">
+                        <svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Keine Drittanbieter-Abhängigkeit</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Eliminieren Sie systemische Risiken. Anders als bei SaaS-APIs läuft die Engine vollständig auf
+                        Ihrer Infrastruktur. Wenn wir verschwinden, funktioniert Ihre Rechnungsstellung weiter. Sie
+                        besitzen die Runtime.
+                    </p>
+                </div>
+
+                <div
+                    class="p-8 bg-slate-900 border border-white/5 rounded-sm hover:border-emerald-500/30 transition-all group">
+                    <div
+                        class="w-12 h-12 bg-emerald-500/10 rounded-full flex items-center justify-center mb-6 group-hover:bg-emerald-500/20 transition-colors">
+                        <svg class="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Datensouveränität (Air-Gapped)</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Keine Finanzdaten verlassen jemals Ihr Netzwerk. Der Container benötigt keinen ausgehenden
+                        Internetzugriff. Vereinfacht DSGVO und DORA Datenmapping.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Compliance Norms (DE) -->
+    <section id="compliance" class="py-32">
+        <div class="max-w-7xl mx-auto px-6">
+            <h2 class="text-3xl font-bold text-white mb-16 text-center">Unterstützte Standards</h2>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-px bg-white/5 border border-white/5">
+                <div
+                    class="bg-slate-950 p-12 flex flex-col items-center text-center group hover:bg-amber-500/5 transition-colors">
+                    <span class="text-amber-500 font-mono text-sm mb-4">v1.08</span>
+                    <span class="text-xl font-bold text-white">Factur-X</span>
+                </div>
+                <div
+                    class="bg-slate-950 p-12 flex flex-col items-center text-center group hover:bg-amber-500/5 transition-colors">
+                    <span class="text-amber-500 font-mono text-sm mb-4">v2.4</span>
+                    <span class="text-xl font-bold text-white">ZUGFeRD</span>
+                </div>
+                <div
+                    class="bg-slate-950 p-12 flex flex-col items-center text-center group hover:bg-amber-500/5 transition-colors">
+                    <span class="text-amber-500 font-mono text-sm mb-4">v3.0</span>
+                    <span class="text-xl font-bold text-white">XRechnung</span>
+                </div>
+                <div
+                    class="bg-slate-950 p-12 flex flex-col items-center text-center group hover:bg-amber-500/5 transition-colors">
+                    <span class="text-amber-500 font-mono text-sm mb-4">Core</span>
+                    <span class="text-xl font-bold text-white">EN 16931</span>
                 </div>
             </div>
         </div>

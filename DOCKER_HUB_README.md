@@ -2,147 +2,78 @@
 
 > **The Privacy-First Invoicing Engine.** 100% Air-gapped, Official SaxonC Validation (Chorus Pro / KoSIT Parity). Generate and Validate Factur-X, ZUGFeRD 2.x, and XRechnung 3.0 without cloud dependencies.
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/facturxengine/facturx-engine)](https://hub.docker.com/r/facturxengine/facturx-engine) [![GitHub](https://img.shields.io/badge/github-repo-181717?logo=github)](https://github.com/facturx-engine/facturx-engine) [![License](https://img.shields.io/badge/license-Community-blue.svg)](https://github.com/facturx-engine/facturx-engine) [![Standard](https://img.shields.io/badge/standard-EN16931-green.svg)](https://fnfe-mpe.org/factur-x/) [![CRA](https://img.shields.io/badge/EU_CRA-Ready-blueviolet)](https://github.com/facturx-engine/facturx-engine/blob/main/docs/cra.md) [![SBOM](https://img.shields.io/badge/SBOM-CycloneDX-informational)](https://github.com/facturx-engine/facturx-engine/actions) [![Signed](https://img.shields.io/badge/Image-Cosign_Signed-success)](https://github.com/sigstore/cosign)
+[![Docker Pulls](https://img.shields.io/docker/pulls/facturxengine/facturx-engine)](https://hub.docker.com/r/facturxengine/facturx-engine) [![GitHub](https://img.shields.io/badge/github-repo-181717?logo=github)](https://github.com/facturx-engine/facturx-engine) ![License](https://img.shields.io/badge/license-Community-blue.svg) ![Privacy First](https://img.shields.io/badge/Privacy-Air_Gapped-success?logo=shield-dog) ![SaxonC](https://img.shields.io/badge/Powered_By-SaxonC_HE-blue)
+
+---
+
+## Why Factur-X Engine?
+
+- **Air-Gapped by Design**: 100% offline execution. No outbound network calls. GDPR/DORA compliant.
+- **Official SaxonC Validation**: Technical parity with **Chorus Pro (France)** and **KoSIT (Germany)** portals.
+- **Mandate Ready**: Compliant with **France 2026 (PDP/PPF)** and **Germany 2025** electronic invoicing requirements.
 
 ---
 
 ## Quickstart
 
-Runs immediately on any Docker host. No Python/Java dependencies.
-
-### 1. Start the Engine (API)
-
 ```bash
+# Start the engine
 docker run -d -p 8000:8000 --name facturx-engine facturxengine/facturx-engine:latest
-```
 
-### 2. Generate Factur-X (PDF + XML)
-
-Merge a standard PDF with JSON data to create a compliant **Factur-X** (PDF/A-3) invoice.
-
-```bash
+# Generate compliant Factur-X invoice
 curl -X POST "http://localhost:8000/v1/convert" \
   -F "pdf=@examples/invoice_raw.pdf" \
   -F "metadata=$(cat examples/simple_invoice.json)" \
   --output invoice_compliant.pdf
-
-echo "Invoice generated: invoice_compliant.pdf"
 ```
 
-### 3. Generate Raw XML (Headless / API-First)
-
-Directly generate the **Cross Industry Invoice (CII)** XML without creating a PDF. Ideal for backend integrations where you only need the structured data.
-
-```bash
-curl -X POST "http://localhost:8000/v1/xml" \
-  -F "metadata=$(cat examples/simple_invoice.json)" \
-  --output factur-x.xml
-```
-
-### 4. Extract to JSON (Open Core)
-
-```bash
-curl -X POST "http://localhost:8000/v1/extract" \
-  -F "pdf=@invoice_compliant.pdf"
-```
-
-**[Swagger UI Documentation](http://localhost:8000/docs)** : <http://localhost:8000/docs>
+**[Full API Documentation](http://localhost:8000/docs)** (Swagger UI available after starting container)
 
 ---
 
-## Technical Specifications
+## Documentation
 
-* **Official SaxonC Validation**: Internal engine provides technical parity with **Chorus Pro (France)** and **KoSIT (Germany)** validation portals.
-* **Mandate Readiness**: Compliant with **France 2026 (PDP/PPF)** and **Germany 2025** electronic invoicing requirements.
-* **Standards Compliance**: Supports **Factur-X**, **ZUGFeRD 2.2**, and **XRechnung 3.0** (CII/UBL). Includes Native Schematron Rules.
-* **Stateless Architecture**: Zero persistence. Input data is processed in-memory and discarded. Ideal for GDPR/Privacy.
-* **Air-Gapped Ready**: 100% Offline execution. No outbound network requests required.
-* **Structured Extraction**: Parses Factur-X XML into standard JSON for ERP integration.
-
----
-
-## Use Cases & Integrations
-
-The Docker architecture makes the tool agnostic to your programming language.
-**[View Full Integration Guide (Python, Node, PHP, C#, Java)](https://github.com/facturx-engine/facturx-engine/blob/main/docs/INTEGRATION.md)**
-
-### PHP (Symfony / Laravel)
->
-> "Delegate PDF/A complexity to a dedicated microservice instead of overloading your PHP runtime with heavy system dependencies."
-
-### Python (FastAPI / Django)
->
-> "Use the Docker image to avoid library conflicts (lxml, reportlab) and ensure an iso-prod environment."
-
-### Node.js / Go / .NET
->
-> "Integrate e-invoicing via simple standard HTTP calls."
-
----
-
-## Configuration
-
-The container is configurable via environment variables:
-
-| Variable | Description | Default |
-| :--- | :--- | :--- |
-| `PORT` | API Listening Port | `8000` |
-| `LICENSE_KEY` | Pro License Key | |
-| `WORKERS` | Number of Gunicorn Workers | `1` |
-| `LOG_LEVEL` | Log Level (info, debug) | `info` |
+**[API Reference](https://facturx-engine.github.io/facturx-engine/ref/api-reference.html)** - All endpoints & parameters  
+**[Integration Guides](https://facturx-engine.github.io/facturx-engine/#api)** - Python, Node.js, PHP recipes  
+**[Troubleshooting](https://facturx-engine.github.io/facturx-engine/guides/error-codes.html)** - Error codes & solutions
 
 ---
 
 ## Community vs Pro
 
-This **Community** version is production-ready.
+| Feature | Community Edition | Pro Edition | OEM Edition | Enterprise |
+| :--- | :--- | :--- | :--- | :--- |
+| **Usage** | Internal Use | Internal Use | **Redistribution** | High Volume |
+| **Extraction** | Full Data | **Business JSON** | **Business JSON** | Custom |
+| **Validation** | EN 16931 Rules | **Smart Diagnostics** | **Smart Diagnostics** | Custom Rules |
+| **Support** | Community | **Priority** | **SLA** | Dedicated |
 
-| Feature | Community Edition | Pro / Enterprise Edition |
+### Try Pro for Free
+
+Upload files from `tests/corpus/` to unlock Pro features in Trial Mode (no license required).
+
+**[Get Pro License](https://facturx-engine.lemonsqueezy.com)**
+
+---
+
+## Configuration
+
+| Variable | Description | Default |
 | :--- | :--- | :--- |
-| **License** | FSL 1.1 (Free for non-competing use) | Commercial (SLA & Indemnity) |
-| **Extraction** | **Full Data** | **Full Data** |
-| **Validation** | **Teaser Mode** (1 error) | **Industrial Engine** (SaxonC / Parity with Chorus Pro & KoSIT) |
-| **Metrics** | **Basic** (Ops) | **Full** (Business) |
-| **Support** | Community | Priority / SLA |
-
-### Pricing & Licenses
-
-#### 1. For Internal Use (SME / Bank / Corporate)
-
-* **Standard License**: Unlimited usage for your own company.
-
-#### 2. For OEM & Integrators (SaaS / ERP)
-
-* **OEM Growth**: Commercial Redistribution. Standard Liability Terms.
-* **OEM Scale (Contact Only)**: Enterprise Redistribution. **Includes Legal Indemnification & Insurance**.
-
-> **Perpetual Fallback**: You keep the version you bought forever. The subscription covers updates, security patches & warranty.
-
-**[View Pricing & Licenses](https://facturx-engine.lemonsqueezy.com)**
+| `PORT` | API Listening Port | `8000` |
+| `LICENSE_KEY` | Pro License Key | - |
+| `WORKERS` | Gunicorn Workers | `1` |
 
 ---
 
-## Legal Disclaimer & Limitation of Liability
+## Legal
 
-> **IMPORTANT**: This software is a technical tool for data formatting. It does not replace professional tax advice.
+**Vendor**: Factur-X Engine (Paris, France) | **License**: FSL 1.1 / Commercial  
+**Compliance**: EU Cyber Resilience Act (CRA) Ready | **Security**: SBOM included
 
-**1. Verification Responsibility**
-Factur-X Engine generates files according to technical standards (EN 16931). The user retains full responsibility for the fiscal accuracy, completeness, and veracity of the invoice data (VAT rates, mandatory mentions, exemptions).
-
-**2. No Guarantee of Acceptance**
-While we strive for technical compliance with official Schematron rules, the acceptance of an invoice by a platform (Chorus Pro, PPF, OZG-RE) depends on business rules and external factors beyond our control.
-
-**3. Limitation of Liability**
-**THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.** Use of the Community Edition is at your own risk.
-For Commercial Licenses (Pro/Enterprise), liability is strictly limited to the technical availability terms defined in the Service Level Agreement (SLA). **We expressly exclude liability for indirect damages, including fiscal penalties or rejected invoices.**
+> This software is a technical tool. Users retain full responsibility for fiscal accuracy. [Full legal disclaimer](https://github.com/facturx-engine/facturx-engine).
 
 ---
-
-## Legal & Compliance
-
-* **Vendor**: Factur-X Engine (Paris, France).
-* **Compliance**: Designed to respect the EU **Cyber Resilience Act (CRA)**.
-* **Security**: Image scanned (Trivy), SBOM available.
 
 *Maintained by the Factur-X Engine Team.*
 <!-- CI Verified -->

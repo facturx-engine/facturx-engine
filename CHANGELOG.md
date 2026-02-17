@@ -5,6 +5,63 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.3] - 2026-02-10
+
+### Added
+
+- **CI Strengthening**: Integrated `Ruff` for strict linting and static analysis in the CI pipeline.
+- **Docker Build Verification**: Added automated steps to build and verify the Docker image stability.
+
+### Fixed
+
+- **Code Quality Overhaul**: Resolved over 20 critical linting errors including bare except statements, unused variables, and import issues.
+- **Test Corpus Integrity**: Corrected the classification of test files (moved valid files mistakenly placed in `invalid/`).
+- **Import Handling**: Fixed `PRODUCT_VERSION` import errors by correctly referencing `app.version.__version__`.
+- **Trial Mode Reliability**: Verified and confirmed that Trial Mode is robust to file organization changes (content-hash based).
+
+## [1.4.2] - 2026-02-10
+
+### Fixed
+
+- **BOM Management**: Added `utf-8-sig` decoding in `HybridValidator` to support official FNFE/Factur-X 1.08 examples containing a UTF-8 Byte Order Mark.
+- **API Robustness**: Aligned conversion and extraction metadata with strict EN 16931 rules (added mandatory payment terms/due dates).
+
+### Changed
+
+- **Internal Harmonization**: Centralized version metadata in `app/version.py` (Single Source of Truth).
+- **Quality Gate**: Hardened the generator's internal validation to catch compliance errors before PDF delivery.
+
+## [1.4.1] - 2026-02-09
+
+### Changed
+
+- **Harmonized Versioning**: Unified version to 1.4.1 across all assets.
+- **Startup Integrity**: Implementation of a "Fail Fast" check for critical XSD schemas.
+- **Documentation**: Added strategic "Architecture Decisions" section and v2.0 Roadmap.
+
+## [1.4.0] - 2026-02-08
+
+### Added - **Angles Morts** & Resilience Edition
+
+#### Advanced Diagnostics (Pro)
+
+- **Prophylactic Rules ("Angles Morts")**:
+  - `BR-CO-09-EXT`: Cross-check between Seller Country and VAT Intra prefix (e.g. FR vs DE).
+  - `BT-3-CONTEXT`: Detection of "Auto-Avoir" (Negative Total with Invoice Type 380).
+  - `BT-1-FORMAT`: Validation of Invoice Number characters to prevent rejection by Chorus Pro.
+- **Financial Resilience**:
+  - Added `ROUNDING_TOLERANCE` (0.05€) for tax calculation rules (BR-CO-10, 13, 14).
+  - Technical rounding errors are now downgraded to Warnings instead of blocking Errors.
+
+#### Fixed
+
+- **FastAPI Schema**: Fixed a critical bug where Pro diagnostics were silently stripped from the API response (`response_model` Union fix).
+- **Trial Mode**: Fixed regression in Community mode tests when a trial file was present.
+- **Validation Infrastructure**: Fixed XSD validation failures on Windows due to path length limitations by relocating and shortening schema filenames.
+- **XML Generation**: Fixed Schematron rule `PEPPOL-EN16931-R008` (empty elements) by ensuring mandatory delivery fields always have content (fallback to invoice date).
+- **Localization**: Standardized diagnostic titles and explanations to English to ensure consistency across all deployments and test stability.
+- **Multiprocessing**: Fixed "spawn" bootstrapping errors on Windows for the validation process pool.
+
 ## [1.3.3] - 2026-01-30
 
 ### Added

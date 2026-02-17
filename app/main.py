@@ -3,14 +3,20 @@ Factur-X API - Main Application Entry Point
 # Triggering security scan to check GitHub Actions health
 """
 import logging
+import multiprocessing
+import os
+
+# For Windows multiprocessing support (spawn)
+if os.name == 'nt':
+    multiprocessing.freeze_support()
+
+from pathlib import Path
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from app.api import router
 from app.diagnostics import router as diagnostics_router
-from app.version import __version__
 
 # Configure logging
 import json
@@ -48,13 +54,14 @@ logger = logging.getLogger(__name__)
 import os
 
 from fastapi.responses import RedirectResponse
-from app.constants import PRODUCT_NAME, PRODUCT_VERSION, COMMUNITY_EDITION_NAME, PRO_EDITION_NAME
+from app.constants import PRODUCT_NAME
+from app.version import __version__
 
 # Create FastAPI application
 app = FastAPI(
     title=PRODUCT_NAME,
     description="Production-ready REST API for Factur-X (ZUGFeRD 2.4) conversions and data extraction.",
-    version=PRODUCT_VERSION,
+    version=__version__,
     docs_url="/docs",
     redoc_url="/redoc"
 )
@@ -68,6 +75,17 @@ templates = Jinja2Templates(directory="app/templates")
 async def startup_event():
     # STARTUP: Validating Environment
     logger.info(f"Initializing {PRODUCT_NAME}...")
+    
+    # 1. INTEGRITY CHECK: Critical Schemas
+    # Use absolute path relative to this file to be robust against CWD changes
+    base_dir = Path(__file__).parent
+    schema_path = base_dir / "resources" / "schemas" / "Factur-X_1.08_EN16931.xsd"
+    
+    if not schema_path.exists():
+        logger.critical(f"🚨 FATAL: Validation schema missing at {schema_path}")
+        logger.critical("   The application cannot start without EN16931 schemas.")
+        sys.exit(1)
+    logger.info("✅ Schema integrity verified (Factur-X 1.08).")
     
     # LICENSE CHECK: Fail Fast Strategy
     try:
@@ -100,7 +118,6 @@ async def shutdown_event():
     logger.info("Shutting down API...")
 
 from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.requests import Request
 from starlette.responses import Response
 
 # SECURITY: DoS Protection via Max Upload Size (20MB)
@@ -157,7 +174,7 @@ async def health_check():
     return {
         "status": "healthy",
         "service": "factur-x-api",
-        "version": "1.0.0"
+        "version": __version__
     }
 
 @app.get("/metrics", tags=["observability"], include_in_schema=True)
@@ -198,10 +215,15 @@ async def sitemap():
 
 if __name__ == "__main__":
     import uvicorn
+    import os
+    
+    reload_policy = os.getenv("UVICORN_RELOAD", "false").lower() == "true"
+    port = int(os.getenv("PORT", "8000"))
+    
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
-        port=8000,
-        reload=True,
+        port=port,
+        reload=reload_policy,
         log_level="info"
     )

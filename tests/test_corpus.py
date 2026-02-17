@@ -1,5 +1,4 @@
 import pytest
-import os
 from pathlib import Path
 from app.services.validator import ValidationService
 

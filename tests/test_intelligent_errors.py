@@ -1,5 +1,4 @@
 
-import pytest
 from app.services.validator import ValidationService
 from app.services.generator import GeneratorService
 from app.schemas.validation import InvoiceMetadata, SellerInfo, BuyerInfo, MonetaryAmounts
@@ -41,7 +40,7 @@ def test_validator_sensitivity_nuclear():
     
     is_valid, fmt, flavor, errors = ValidationService.validate_file(bad_xml, "test.xml")
     
-    print(f"\n--- NUCLEAR TEST ---")
+    print("\n--- NUCLEAR TEST ---")
     print(f"Validation result: {is_valid}")
     print(f"Errors found: {errors}")
     assert is_valid is False

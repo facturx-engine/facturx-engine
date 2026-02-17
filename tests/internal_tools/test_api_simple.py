@@ -2,7 +2,6 @@
 
 import requests
 import json
-from pathlib import Path
 
 print("=" * 60)
 print("TEST FACTUR-X API")

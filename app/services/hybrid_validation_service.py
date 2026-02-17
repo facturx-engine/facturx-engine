@@ -12,7 +12,7 @@ import logging
 import os
 from io import BytesIO
 from pathlib import Path
-from typing import Tuple, List, Optional, Dict, Any
+from typing import Optional, Dict, Any
 from concurrent.futures import ProcessPoolExecutor, TimeoutError as FuturesTimeoutError
 import asyncio
 
@@ -23,11 +23,11 @@ logger = logging.getLogger(__name__)
 
 # Path configuration
 PROJECT_ROOT = Path(__file__).parent.parent.parent
-DOCS_ROOT = PROJECT_ROOT / "docs" / "2025_12_04_FNFE_SCHEMATRONS_FR_CTC_V1.2.0"
-
 # Validation artifacts - Factur-X 1.08 / ZUGFeRD 2.4 (January 2026)
-XSD_PATH = DOCS_ROOT / "_Factur-X_XSD_et_Schematrons_V1.08" / "Factur-X_1.08_EN16931" / "Factur-X_1.08_EN16931.xsd"
-XSLT_PATH = DOCS_ROOT / "_Factur-X_XSD_et_Schematrons_V1.08" / "Factur-X_1.08_EN16931" / "_XSLT_EN16931" / "FACTUR-X_EN16931.xslt"
+# Relocated to app/resources/schemas to avoid Windows MAX_PATH (260 chars) issues
+SCHEMA_ROOT = PROJECT_ROOT / "app" / "resources" / "schemas"
+XSD_PATH = SCHEMA_ROOT / "Factur-X_1.08_EN16931.xsd"
+XSLT_PATH = SCHEMA_ROOT / "_XSLT_EN16931" / "FACTUR-X_EN16931.xslt"
 
 # ProcessPool configuration
 _executor: Optional[ProcessPoolExecutor] = None
@@ -57,10 +57,9 @@ def _run_hybrid_validation(xml_content: bytes, xsd_path: str, xslt_path: str) ->
     2. Prevent GIL contention
     3. Allow process recycling on memory issues
     """
-    import sys
     import os
     
-    from app.services.hybrid_validator import HybridValidator, ValidationResult
+    from app.services.hybrid_validator import HybridValidator
     
     try:
         validator = HybridValidator(

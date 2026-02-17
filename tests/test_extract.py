@@ -9,7 +9,9 @@ from reportlab.pdfgen import canvas
 
 from app.main import app
 
-client = TestClient(app)
+@pytest.fixture
+def client():
+    return TestClient(app)
 
 
 def create_dummy_pdf() -> bytes:
@@ -23,7 +25,7 @@ def create_dummy_pdf() -> bytes:
     return buffer.read()
 
 
-def test_extract_non_facturx_pdf():
+def test_extract_non_facturx_pdf(client):
     """Test extraction from a PDF without Factur-X XML."""
     pdf_content = create_dummy_pdf()
     
@@ -41,7 +43,7 @@ def test_extract_non_facturx_pdf():
     assert any("NO_XML" in error["code"] for error in data["errors"])
 
 
-def test_end_to_end_convert_validate_extract():
+def test_end_to_end_convert_validate_extract(client):
     """
     Full product workflow test:
     1. Convert PDF → Factur-X
@@ -167,7 +169,7 @@ def test_end_to_end_convert_validate_extract():
     print("  - Full product workflow validated!")
 
 
-def test_diagnostics_endpoint():
+def test_diagnostics_endpoint(client):
     """Test the /diagnostics endpoint."""
     response = client.get("/diagnostics")
     assert response.status_code == 200

@@ -6,6 +6,11 @@ FROM python:3.11-slim-bookworm
 
 LABEL maintainer="Factur-X Engine"
 LABEL description="Self-hosted Factur-X API with EN16931 validation"
+LABEL org.opencontainers.image.title="Factur-X Engine"
+LABEL org.opencontainers.image.description="The Privacy-First Invoicing Engine (100% Air-gapped)"
+LABEL org.opencontainers.image.vendor="Factur-X Engine"
+LABEL org.opencontainers.image.version="1.4.3"
+LABEL org.opencontainers.image.licenses="FSL-1.1"
 
 WORKDIR /app
 
@@ -24,12 +29,6 @@ COPY app/ app/
 
 # Application code includes hybrid_validation_service.py
 
-# Copy EN16931 Schematron XSLT rules (official EU validation)
-COPY docs/2025_12_04_FNFE_SCHEMATRONS_FR_CTC_V1.2.0/_EN16931_Schematrons_V1.3.15_CII_ET_UBL/_XSLT/ docs/2025_12_04_FNFE_SCHEMATRONS_FR_CTC_V1.2.0/_EN16931_Schematrons_V1.3.15_CII_ET_UBL/_XSLT/
-
-# Copy XSD schemas
-COPY docs/2025_12_04_FNFE_SCHEMATRONS_FR_CTC_V1.2.0/_CII_D22B_XSD/ docs/2025_12_04_FNFE_SCHEMATRONS_FR_CTC_V1.2.0/_CII_D22B_XSD/
-
 # License attribution
 COPY LICENSE_SAXON .
 
@@ -44,4 +43,4 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["gunicorn", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "--max-requests", "1000", "--max-requests-jitter", "50", "--bind", "0.0.0.0:8000", "app.main:app"]

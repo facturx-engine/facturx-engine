@@ -3,12 +3,14 @@ FastAPI route handlers for Factur-X API.
 """
 import logging
 import json
+from typing import Union
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from fastapi.responses import StreamingResponse
 from io import BytesIO
 
-from app.schemas.validation import InvoiceMetadata, ValidationResult, ErrorResponse
+from app.schemas.validation import InvoiceMetadata, ValidationResult, ProValidationResult, ErrorResponse
 from app.schemas.extraction import ExtractionResult
+from app.schemas.integration import SerializationResponse
 from app.services.generator import GeneratorService
 from app.services.validator import ValidationService
 
@@ -175,7 +177,7 @@ def generate_facturx_xml(
 
 
 @router.post("/validate",
-             response_model=ValidationResult,
+             response_model=Union[ValidationResult, ProValidationResult],
              responses={
                  400: {"model": ErrorResponse, "description": "Invalid input"},
                  500: {"model": ErrorResponse, "description": "Server error"}
@@ -188,8 +190,8 @@ def validate_facturx(
     
     Returns a validation report with detected format, flavor, and any errors.
     
-    **Pro Edition**: Full compliance report with all errors detailed.
-    **Community Edition (Teaser)**: Shows first error + count of hidden errors.
+    **Pro Edition**: Smart Diagnostics with actionable human-readable fixes.
+    **Community Edition**: Full raw validation report (Standard EN16931 error codes).
     """
     import time
     import os
@@ -210,11 +212,17 @@ def validate_facturx(
                 detail={"error": "EMPTY_FILE", "message": "File is empty"}
             )
         
-        # LICENSE CHECK
+        # LICENSE & TRIAL CHECK
         license_key = os.getenv("LICENSE_KEY", "").strip()
         is_pro = False
+        is_trial = False
         
-        if license_key:
+        from app.services.trial_service import is_trial_file
+        if is_trial_file(file_content):
+            is_trial = True
+            is_pro = True
+            logger.info("TRIAL Mode enabled - Reference file recognized")
+        elif license_key:
             try:
                 if is_licensed():
                     is_pro = True
@@ -243,76 +251,57 @@ def validate_facturx(
         
         # Extract all errors from hybrid result
         all_errors = result.get("errors", [])
-        total_error_count = len(all_errors)
+        error_rules = [e.get("rule_id") for e in all_errors if e.get("rule_id")]
+        
+        # Record Metrics (Distinguish Pro vs Community for internal analytics)
+        metrics.record_validation(
+            mode="pro" if is_pro else "community",
+            is_valid=result["is_valid"],
+            profile=result.get("profile_detected"),
+            error_rules=error_rules
+        )
         
         if is_pro:
-            # PRO MODE: Full compliance report
-            error_messages = [e.get("message", str(e)) for e in all_errors]
-            error_rules = [e.get("rule_id") for e in all_errors if e.get("rule_id")]
+            # PRO MODE: Smart Diagnostics with human-readable explanations
+            from app.services.smart_diagnostics import get_diagnostics_engine
+            from app.schemas.validation import ProValidationResult, DiagnosticDetail
             
-            # PRO-TIER METRICS
-            metrics.record_validation(
-                mode="pro",
-                is_valid=result["is_valid"],
-                profile=result.get("profile_detected"),
-                error_rules=error_rules
+            engine = get_diagnostics_engine()
+            diagnostics = engine.analyze(all_errors)
+            
+            diagnostic_details = [
+                DiagnosticDetail(
+                    rule_id=d.rule_id,
+                    severity=d.severity,
+                    title=d.title,
+                    explanation=d.explanation,
+                    suggestion=d.suggestion,
+                    context=d.context if d.context else None
+                )
+                for d in diagnostics
+            ]
+            
+            return ProValidationResult(
+                valid=result["is_valid"],
+                format=result.get("format_detected"),
+                flavor=result.get("profile_detected"),
+                error_count=len([d for d in diagnostics if d.severity == "error"]),
+                warning_count=len([d for d in diagnostics if d.severity == "warning"]),
+                diagnostics=diagnostic_details,
+                validation_mode="pro_smart_diagnostics",
+                trial_notice="Trial Mode: Reference file recognized. Pro features unlocked." if is_trial else None
             )
-            
+        else:
+            # COMMUNITY MODE: Open Validation (full error list, raw format)
+            error_messages = [e.get("message", str(e)) for e in all_errors]
             return ValidationResult(
                 valid=result["is_valid"],
                 format=result.get("format_detected"),
                 flavor=result.get("profile_detected"),
                 errors=error_messages,
-                validation_mode="pro"
+                validation_mode="open_community",
+                trial_notice="Trial Mode: Reference file recognized. Pro features unlocked." if is_trial else None
             )
-        else:
-            # TEASER MODE: Show first error + hidden count
-            if total_error_count == 0:
-                # No errors - valid file
-                metrics.record_validation(
-                    mode="teaser",
-                    is_valid=True,
-                    profile=result.get("profile_detected")
-                )
-                return ValidationResult(
-                    valid=True,
-                    format=result.get("format_detected"),
-                    flavor=result.get("profile_detected"),
-                    errors=[],
-                    validation_mode="teaser"
-                )
-            else:
-                # Show ONLY first error + teaser message
-                first_error = all_errors[0]
-                hidden_count = total_error_count - 1
-                
-                teaser_errors = [
-                    f"[{first_error.get('rule_id', 'RULE')}] {first_error.get('message', 'Erreur de conformité détectée')}"
-                ]
-                
-                if hidden_count > 0:
-                    teaser_errors.append(
-                        f"⚠️ {hidden_count} autres erreurs de conformité critique détectées. "
-                        f"Activez la version Pro pour le rapport complet et garantir l'acceptation par Chorus Pro/PPF."
-                    )
-                
-                # TEASER CONVERSION METRICS
-                error_rules = [e.get("rule_id") for e in all_errors if e.get("rule_id")]
-                metrics.record_validation(
-                    mode="teaser",
-                    is_valid=False,
-                    profile=result.get("profile_detected"),
-                    error_rules=error_rules,
-                    hidden_count=hidden_count
-                )
-                
-                return ValidationResult(
-                    valid=False,
-                    format=result.get("format_detected"),
-                    flavor=result.get("profile_detected"),
-                    errors=teaser_errors,
-                    validation_mode="teaser"
-                )
         
     except HTTPException:
         metrics.inc("errors_total")
@@ -397,3 +386,114 @@ def extract_facturx(
         metrics.dec_gauge("active_requests")
         metrics.observe("request_duration_seconds", time.time() - start_time)
 
+@router.post("/serialize",
+             response_model=SerializationResponse,
+             responses={
+                 400: {"model": ErrorResponse, "description": "Invalid input"},
+                 500: {"model": ErrorResponse, "description": "Server error"}
+             })
+def serialize_facturx(
+    file: UploadFile = File(..., description="Factur-X PDF or XML file to serialize")
+):
+    """
+    Business-Ready JSON Serialization (Pro Feature).
+    
+    Transforms XML data into a normalized, high-precision JSON format 
+    designed for ERP and accounting system integration.
+    
+    **Trial Mode**: Available for reference files.
+    **Community Mode**: Returns obfuscated (masked) data for schema testing.
+    """
+    import time
+    import os
+    from app.metrics import metrics
+    from app.license import is_licensed
+    from app.services.business_serializer import BusinessReadySerializer
+    
+    start_time = time.time()
+    metrics.inc("requests_total")
+    metrics.inc("requests_serialize")
+    metrics.inc_gauge("active_requests")
+    
+    try:
+        # Read file content
+        file_content = file.file.read()
+        if not file_content:
+            raise HTTPException(
+                status_code=400,
+                detail={"error": "EMPTY_FILE", "message": "File is empty"}
+            )
+
+        # LICENSE & TRIAL CHECK
+        license_key = os.getenv("LICENSE_KEY", "").strip()
+        is_pro = False
+        is_trial = False
+        
+        from app.services.trial_service import is_trial_file
+        if is_trial_file(file_content):
+            is_trial = True
+            is_pro = True
+            logger.info("TRIAL Mode enabled for /serialize")
+        elif license_key:
+            try:
+                if is_licensed():
+                    is_pro = True
+            except Exception:
+                pass
+
+        # Extract XML if it's a PDF
+        xml_data = None
+        if file.filename.lower().endswith('.pdf'):
+            from facturx import get_xml_from_pdf
+            try:
+                # get_xml_from_pdf returns (filename, xml_content)
+                _, xml_data = get_xml_from_pdf(file_content)
+            except Exception as e:
+                logger.error(f"XML Extraction failed: {e}")
+        else:
+            xml_data = file_content
+
+        if not xml_data:
+            raise HTTPException(
+                status_code=400,
+                detail={"error": "NO_XML_FOUND", "message": "No Factur-X/ZUGFeRD XML found in file"}
+            )
+
+        # Serialize
+        try:
+            # Obfuscate if NOT Pro AND NOT Trial
+            should_obfuscate = not is_pro
+            
+            invoice_data = BusinessReadySerializer.serialize(
+                xml_data, 
+                is_pro=is_pro, 
+                obfuscate=should_obfuscate
+            )
+            
+            return SerializationResponse(
+                success=True,
+                invoice=invoice_data,
+                trial_notice="Trial Mode: Reference file recognized. Full data unlocked." if is_trial else (
+                    "Community Mode: Data is obfuscated. Activate Pro license to unlock." if should_obfuscate else None
+                )
+            )
+        except Exception as e:
+            logger.exception(f"Serialization failed: {e}")
+            return SerializationResponse(
+                success=False,
+                errors=[{"error": "SERIALIZATION_FAILED", "message": str(e)}]
+            )
+        
+    except HTTPException:
+        metrics.inc("errors_total")
+        raise
+    except Exception as e:
+        metrics.inc("errors_total")
+        logger.exception(f"Unexpected error in serialize endpoint: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail={"error": "INTERNAL_ERROR", "message": "An unexpected error occurred"}
+        )
+    finally:
+        metrics.dec_gauge("active_requests")
+        metrics.observe("request_duration_seconds", time.time() - start_time)

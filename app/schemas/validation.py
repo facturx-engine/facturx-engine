@@ -1,7 +1,7 @@
 """
 Pydantic models for API request/response validation.
 """
-from typing import Optional, Literal, List, Union
+from typing import Optional, Literal, List, Union, Dict, Any
 from pydantic import BaseModel, Field
 
 
@@ -153,6 +153,29 @@ class ValidationResult(BaseModel):
     flavor: Optional[str] = Field(None, description="Detected flavor/level")
     errors: list[str] = Field(default_factory=list, description="List of validation errors")
     validation_mode: Optional[str] = Field(None, description="Validation mode: 'hybrid' (Pro) or 'lite' (Community)")
+    trial_notice: Optional[str] = Field(None, description="Notice for trial use of Pro features")
+
+
+class DiagnosticDetail(BaseModel):
+    """A single diagnostic with human-readable explanation (Pro Feature)."""
+    rule_id: str = Field(..., description="EN 16931 rule ID (e.g., BR-CO-10)")
+    severity: str = Field(..., description="Severity: error, warning, info")
+    title: str = Field(..., description="Short, actionable title")
+    explanation: str = Field(..., description="Detailed explanation of the issue")
+    suggestion: str = Field(..., description="How to fix this issue")
+    context: Optional[Dict[str, Any]] = Field(None, description="Extracted values for debugging")
+
+
+class ProValidationResult(BaseModel):
+    """Enhanced validation result with Smart Diagnostics (Pro Feature)."""
+    valid: bool = Field(..., description="Whether the file is valid")
+    format: Optional[str] = Field(None, description="Detected format")
+    flavor: Optional[str] = Field(None, description="Detected profile")
+    error_count: int = Field(..., description="Total number of errors")
+    warning_count: int = Field(default=0, description="Total number of warnings")
+    diagnostics: List[DiagnosticDetail] = Field(default_factory=list, description="Smart diagnostics with explanations")
+    validation_mode: str = Field(default="pro_diagnostics", description="Always 'pro_diagnostics' for this response type")
+    trial_notice: Optional[str] = Field(None, description="Trial mode notice for reference files")
 
 
 class ErrorResponse(BaseModel):

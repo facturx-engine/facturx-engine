@@ -1,9 +1,7 @@
-# Global Product Constants
-# Change these values to rebrand the entire application
 
 PRODUCT_NAME = "Factur-X Engine" 
 PRODUCT_SLUG = "factur-x-engine"
-PRODUCT_VERSION = "1.3.6"
+
 
 # Community Edition Branding
 COMMUNITY_EDITION_NAME = f"{PRODUCT_NAME} (Community)"

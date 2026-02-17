@@ -20,12 +20,6 @@ ignore = [
     "E501", # Line too long (not enforced in this project)
     "W291", # Trailing whitespace (cosmetic)
     "W293", # Blank line contains whitespace (cosmetic)
-    "E722", # Bare except (many in legacy main)
-    "F401", # Unused import (many in legacy main)
-    "F541", # F-string without placeholders
-    "F841", # Unused variable
-    "E701", # Multiple statements on one line
-    "F811", # Redefined while unused
 ]
 
 [tool.ruff.lint.per-file-ignores]

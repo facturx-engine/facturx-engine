@@ -149,10 +149,29 @@
     <section class="relative pt-48 pb-32 overflow-hidden">
         <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-20 items-center">
             <div class="relative z-20">
-                <div
-                    class="inline-block px-3 py-1 border border-amber-500/30 bg-amber-500/5 text-amber-500 text-[10px] font-mono tracking-widest uppercase mb-8">
-                    Status: v1.3 stable // Air-Gapped Ready
+
+
+                <!-- NEW BADGES -->
+                <div class="flex flex-wrap gap-4 mb-8">
+                    <div
+                        class="inline-flex items-center px-3 py-1 rounded-full border border-sky-500/30 bg-sky-500/10 text-sky-400 text-xs font-bold tracking-wide">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Powered by SaxonC (Chorus Pro Compatible)
+                    </div>
+                    <div
+                        class="inline-flex items-center px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs font-bold tracking-wide">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                            </path>
+                        </svg>
+                        Privacy First (No Cloud Dependency)
+                    </div>
                 </div>
+
                 <h1 class="text-6xl md:text-8xl font-black tracking-tighter text-white uppercase leading-none mb-8">
                     E-Invoicing <br>
                     <span class="text-amber-500">Middleware</span>
@@ -282,6 +301,27 @@
                 </p>
             </div>
 
+            <div class="space-y-4">
+                <h3 class="text-xl font-bold text-white text-slate-200">4. Business-Ready Serialization (JSON)</h3>
+                <p class="text-slate-400 leading-relaxed">
+                    Stop parsing complex XML trees. The <strong>Pro Edition</strong> transforms Factur-X/ZUGFeRD/CII
+                    into
+                    a normalized, flat JSON object. Optimized for direct insertion into SQL/NoSQL databases or easy UI
+                    rendering.
+                </p>
+            </div>
+
+            <div class="space-y-4">
+                <h3 class="text-xl font-bold text-white text-slate-200">5. Advanced Diagnostics (Angles Morts)</h3>
+                <p class="text-slate-400 leading-relaxed">
+                    Go beyond standard validation. The <strong>Pro Edition</strong> proactively detects "silent killers"
+                    of invoices:
+                    incoherence between SIRET and VAT Intra, negative totals with wrong type codes, and forbidden
+                    characters.
+                    It essentially acts as a pre-clearance audit before you send to statutory platforms.
+                </p>
+            </div>
+
         </div>
     </section>
 
@@ -327,6 +367,62 @@
                     <h3 class="text-2xl font-bold text-white">European Mandates</h3>
                     <p class="text-sm text-slate-500 leading-relaxed">Aligned with French 2026 and German 2025 mandates.
                         Technical parity with Chorus Pro (France) and KoSIT (Germany) validation authorities.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- DORA / BANKING SECTION -->
+    <section class="container mx-auto px-6 py-24 border-t border-white/5">
+        <div class="max-w-4xl mx-auto">
+            <div class="flex items-center gap-4 mb-8">
+                <div
+                    class="px-3 py-1 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded font-mono text-xs uppercase tracking-widest">
+                    Enterprise & Privacy
+                </div>
+                <h2 class="text-3xl md:text-4xl font-black text-white uppercase tracking-tighter">
+                    Privacy & Compliance <span class="text-slate-500">Ready</span>
+                </h2>
+            </div>
+
+            <p class="text-xl text-slate-300 leading-relaxed mb-12">
+                Whether for <strong>GDPR</strong> data minimization or <strong>DORA</strong> operational resilience,
+                Factur-X Engine is architected to keep your financial data safe and sovereign.
+            </p>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Card 1 -->
+                <div
+                    class="bg-slate-900/50 p-8 rounded-xl border border-white/5 hover:border-amber-500/30 transition-colors">
+                    <h3 class="text-white font-bold text-lg mb-3 flex items-center">
+                        <svg class="w-5 h-5 text-amber-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10">
+                            </path>
+                        </svg>
+                        Zero Third-Party Dependency
+                    </h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Eliminate systemic risk. Unlike SaaS APIs, the engine runs fully on your infrastructure. If we
+                        disappear, your invoicing continues to function. You own the runtime.
+                    </p>
+                </div>
+
+                <!-- Card 2 -->
+                <div
+                    class="bg-slate-900/50 p-8 rounded-xl border border-white/5 hover:border-amber-500/30 transition-colors">
+                    <h3 class="text-white font-bold text-lg mb-3 flex items-center">
+                        <svg class="w-5 h-5 text-amber-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
+                            </path>
+                        </svg>
+                        Data Sovereignty (Air-Gapped)
+                    </h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        No financial data ever leaves your network. The container requires <strong>no outbound internet
+                            access</strong>. Simplifies GDPR and DORA data mapping.
+                    </p>
                 </div>
             </div>
         </div>
@@ -476,6 +572,7 @@
       "applicationCategory": "DeveloperApplication, BusinessApplication",
       "description": "High-performance Python middleware for generating and validating Factur-X, ZUGFeRD, and XRechnung e-invoices. 100% Air-gapped, no Java dependencies.",
       "url": "https://facturx-engine.github.io/facturx-engine/",
+      "softwareVersion": "1.4.3",
       "codeRepository": "https://github.com/facturx-engine/facturx-engine",
       "license": "https://github.com/facturx-engine/facturx-engine/blob/main/LICENSE",
       "programmingLanguage": "Python",

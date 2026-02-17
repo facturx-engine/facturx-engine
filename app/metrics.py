@@ -88,13 +88,17 @@ class MetricsCollector:
     
     # === PRO-TIER METHODS ===
     
+    def _inc_labeled_unlocked(self, metric: str, label: str, value: int = 1):
+        """Internal helper to increment a labeled counter without lock acquisition."""
+        if metric in self._labeled_counters:
+            if label not in self._labeled_counters[metric]:
+                self._labeled_counters[metric][label] = 0
+            self._labeled_counters[metric][label] += value
+
     def inc_labeled(self, metric: str, label: str, value: int = 1):
         """Increment a labeled counter (Pro feature)."""
         with self._lock:
-            if metric in self._labeled_counters:
-                if label not in self._labeled_counters[metric]:
-                    self._labeled_counters[metric][label] = 0
-                self._labeled_counters[metric][label] += value
+            self._inc_labeled_unlocked(metric, label, value)
     
     def record_validation(self, mode: str, is_valid: bool, profile: str = None, 
                           error_rules: list = None, hidden_count: int = 0):
@@ -108,23 +112,24 @@ class MetricsCollector:
             error_rules: List of rule IDs that failed (e.g., ["BR-CO-17", "BR-01"])
             hidden_count: Number of errors hidden in teaser mode
         """
-        # Outcome by mode
-        result = "valid" if is_valid else "invalid"
-        self.inc_labeled("validation_outcome", f"{mode}:{result}")
-        
-        # Profile detection
-        if profile:
-            self.inc_labeled("validation_profile", profile)
-        
-        # Error type breakdown (top errors for dashboard)
-        if error_rules:
-            for rule_id in error_rules[:5]:  # Top 5 errors per request
-                self.inc_labeled("validation_error_type", rule_id)
-        
-        # Teaser conversion opportunity tracking
-        if mode == "teaser" and hidden_count > 0:
-            bucket = "1" if hidden_count == 1 else "2-5" if hidden_count <= 5 else "6+"
-            self.inc_labeled("teaser_hidden_errors", bucket)
+        with self._lock:
+            # Outcome by mode
+            result = "valid" if is_valid else "invalid"
+            self._inc_labeled_unlocked("validation_outcome", f"{mode}:{result}")
+
+            # Profile detection
+            if profile:
+                self._inc_labeled_unlocked("validation_profile", profile)
+
+            # Error type breakdown (top errors for dashboard)
+            if error_rules:
+                for rule_id in error_rules[:5]:  # Top 5 errors per request
+                    self._inc_labeled_unlocked("validation_error_type", rule_id)
+
+            # Teaser conversion opportunity tracking
+            if mode == "teaser" and hidden_count > 0:
+                bucket = "1" if hidden_count == 1 else "2-5" if hidden_count <= 5 else "6+"
+                self._inc_labeled_unlocked("teaser_hidden_errors", bucket)
     
     def get_basic_prometheus_format(self) -> str:
         """Export BASIC metrics only (Community tier)."""
@@ -137,24 +142,23 @@ class MetricsCollector:
         lines.append(f"facturx_uptime_seconds {uptime:.2f}")
         lines.append("")
         
-        # Counters (basic)
-        lines.append("# HELP facturx_requests_total Total number of requests")
-        lines.append("# TYPE facturx_requests_total counter")
+        # Snapshots under a single lock
         with self._lock:
+            # Counters (basic)
+            lines.append("# HELP facturx_requests_total Total number of requests")
+            lines.append("# TYPE facturx_requests_total counter")
             for name, value in self._counters.items():
                 lines.append(f"facturx_{name} {value}")
-        lines.append("")
-        
-        # Gauges
-        lines.append("# HELP facturx_active_requests Number of requests currently being processed")
-        lines.append("# TYPE facturx_active_requests gauge")
-        with self._lock:
+            lines.append("")
+
+            # Gauges
+            lines.append("# HELP facturx_active_requests Number of requests currently being processed")
+            lines.append("# TYPE facturx_active_requests gauge")
             for name, value in self._gauges.items():
                 lines.append(f"facturx_{name} {value}")
-        lines.append("")
-        
-        # Histogram summary (without labels)
-        with self._lock:
+            lines.append("")
+
+            # Histogram summary (without labels)
             durations = self._histograms.get("request_duration_seconds", [])
             if durations:
                 avg = sum(durations) / len(durations)
