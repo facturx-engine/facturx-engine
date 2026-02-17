@@ -8,7 +8,7 @@ import psutil
 from datetime import datetime
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
-from typing import Dict, List
+from typing import List
 
 from app.version import __version__, __git_hash__, __build_date__
 
@@ -81,19 +81,19 @@ async def get_diagnostics():
     try:
         import facturx
         facturx_version = facturx.VERSION
-    except:
+    except ImportError:
         facturx_version = "unknown"
     
     try:
         import lxml
         lxml_version = lxml.etree.__version__
-    except:
+    except ImportError:
         lxml_version = "unknown"
     
     try:
         import fastapi
         fastapi_version = fastapi.__version__
-    except:
+    except ImportError:
         fastapi_version = "unknown"
     
     dependencies = [
