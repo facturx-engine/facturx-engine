@@ -2,9 +2,9 @@ name: Factur-X CI
 
 on:
   pull_request:
-    branches: [ "main" ]
+    branches: [ "**" ]
   push:
-    branches: [ "main" ]
+    branches: [ "**" ]
 
 jobs:
   lint:
@@ -47,9 +47,6 @@ jobs:
 
     - name: Run Tests with pytest
       run: |
-        # Run all tests except those marked as slow or requiring specific env if any
-        # -v: verbose
-        # -s: stdout (optional, maybe noisy for CI)
         pytest tests/
 
   docker-build:
