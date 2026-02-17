@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.5] - 2026-02-17
+
+### Added
+
+- **Tax Breakdown**: Real tax breakdown parsing from CII `ApplicableTradeTax` elements (category, rate, basis, amount per tax line) in both extractor and business serializer.
+- **XRechnung PDF Support**: New `pdf_utils.py` wrapper with `pypdf` fallback for `xrechnung.xml` attachments not recognized by upstream `facturx` library.
+- **Tests**: Added `/health` endpoint test, `/v1/xml` endpoint tests, invalid corpus files (malformed, truncated, non-invoice XML). Wired full ZUGFeRD 2.4 + XRechnung 3.0.2 corpus (181 tests).
+
+### Changed
+
+- **Async Endpoints**: All 5 API endpoints converted from `def` to `async def` for better throughput under load.
+- **Dependencies**: Removed unused `setuptools` and `jaraco.context` from `requirements.txt`.
+
+### Removed
+
+- **Dead Code**: Removed unused `get_trial_file_info()` from `trial_service.py`.
+
 ## [1.4.4] - 2026-02-17
 
 ### Added
