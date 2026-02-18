@@ -3,7 +3,6 @@ import subprocess
 import time
 import httpx
 import os
-import signal
 import sys
 
 # 1. Start the Backend (FastAPI) in a subprocess

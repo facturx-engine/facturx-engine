@@ -3,7 +3,7 @@ message: "If you use this software in your product or research, please cite it a
 authors:
   - family-names: "Factur-X Engine Team"
 title: "Factur-X Engine: Self-hosted REST API for EN 16931 E-Invoicing"
-version: 1.4.8
+version: 1.4.9
 date-released: 2026-02-18
 url: "https://github.com/facturx-engine/facturx-engine"
 repository-code: "https://github.com/facturx-engine/facturx-engine"
