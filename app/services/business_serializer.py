@@ -189,9 +189,137 @@ class BusinessReadySerializer:
 
     @staticmethod
     def _parse_ubl(root: etree._Element) -> BusinessReadyInvoice:
-        """Placeholder for UBL parsing logic (XRechnung)."""
-        # In a real implementation, this would mimic _parse_cii with UBL namespaces and paths
-        raise NotImplementedError("UBL serialization is not yet supported. Only CII (Factur-X/ZUGFeRD) is currently available.")
+        """Parse UBL XML (XRechnung / Peppol)."""
+        ns = BusinessReadySerializer.NS_UBL
+        
+        def xpath_first(el, path):
+            res = el.xpath(path, namespaces=ns)
+            return res[0].text if res and res[0].text else None
+
+        # Basic Info
+        inv_id = xpath_first(root, '//cbc:ID')
+        date_str = xpath_first(root, '//cbc:IssueDate')
+        try:
+            inv_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        except (ValueError, TypeError):
+            inv_date = date.today()
+
+        # Seller
+        seller_nodes = root.xpath('//cac:AccountingSupplierParty/cac:Party', namespaces=ns)
+        if not seller_nodes:
+            raise ValueError("Invalid UBL: Missing AccountingSupplierParty (mandatory)")
+        seller = BusinessReadySerializer._parse_ubl_party(seller_nodes[0])
+        
+        # Buyer
+        buyer_nodes = root.xpath('//cac:AccountingCustomerParty/cac:Party', namespaces=ns)
+        if not buyer_nodes:
+            raise ValueError("Invalid UBL: Missing AccountingCustomerParty (mandatory)")
+        buyer = BusinessReadySerializer._parse_ubl_party(buyer_nodes[0])
+
+        # Lines
+        line_items = []
+        for line_node in root.xpath('//cac:InvoiceLine', namespaces=ns):
+            try:
+                line_items.append(BusinessReadySerializer._parse_ubl_line(line_node))
+            except (IndexError, KeyError) as e:
+                logger.warning(f"Skipping malformed UBL line item: {e}")
+
+        # Totals
+        legal_monetary_total = root.xpath('//cac:LegalMonetaryTotal', namespaces=ns)
+        if not legal_monetary_total:
+            raise ValueError("Invalid UBL: Missing LegalMonetaryTotal (mandatory)")
+        total_node = legal_monetary_total[0]
+        
+        # Helper to extract from total_node with fallback
+        def get_total(path):
+            res = total_node.xpath(path, namespaces=ns)
+            return Decimal(res[0].text) if res and res[0].text else Decimal("0")
+
+        # Extract Tax Total (can be multiple, we take the first)
+        tax_total_res = root.xpath('//cac:TaxTotal/cbc:TaxAmount/text()', namespaces=ns)
+        tax_total = Decimal(tax_total_res[0]) if tax_total_res else Decimal("0")
+
+        return BusinessReadyInvoice(
+            invoice_number=inv_id or "UNKNOWN",
+            invoice_date=inv_date,
+            currency=xpath_first(root, '//cbc:DocumentCurrencyCode') or "EUR",
+            seller=seller,
+            buyer=buyer,
+            line_items=line_items,
+            tax_breakdown=BusinessReadySerializer._parse_ubl_tax_breakdown(root),
+            total_net_amount=get_total('cbc:TaxExclusiveAmount'),
+            total_tax_amount=tax_total,
+            total_gross_amount=get_total('cbc:TaxInclusiveAmount'),
+            amount_due=get_total('cbc:PayableAmount'),
+            format="ubl",
+            profile="xrechnung"
+        )
+
+    @staticmethod
+    def _parse_ubl_party(node: etree._Element) -> PartySchema:
+        ns = BusinessReadySerializer.NS_UBL
+        
+        # Helper for safer extraction
+        def get_text(xpath):
+            res = node.xpath(xpath, namespaces=ns)
+            return res[0] if res else None
+
+        name = get_text('cac:PartyName/cbc:Name/text()') or \
+               get_text('cac:PartyLegalEntity/cbc:RegistrationName/text()') or "Unknown"
+
+        return PartySchema(
+            name=name,
+            vat_number=get_text('cac:PartyTaxScheme/cbc:CompanyID/text()'),
+            address=AddressSchema(
+                line1=get_text('cac:PostalAddress/cbc:StreetName/text()') or "...",
+                city=get_text('cac:PostalAddress/cbc:CityName/text()') or "...",
+                postcode=get_text('cac:PostalAddress/cbc:PostalZone/text()') or "...",
+                country_code=get_text('cac:PostalAddress/cac:Country/cbc:IdentificationCode/text()') or "FR"
+            )
+        )
+
+    @staticmethod
+    def _parse_ubl_line(node: etree._Element) -> LineItemSchema:
+        ns = BusinessReadySerializer.NS_UBL
+        
+        name = node.xpath('cac:Item/cbc:Name/text()', namespaces=ns)[0]
+        qty = Decimal(node.xpath('cbc:InvoicedQuantity/text()', namespaces=ns)[0] or "1")
+        price = Decimal(node.xpath('cac:Price/cbc:PriceAmount/text()', namespaces=ns)[0] or "0")
+        total = Decimal(node.xpath('cbc:LineExtensionAmount/text()', namespaces=ns)[0] or "0")
+        
+        return LineItemSchema(
+            name=name,
+            quantity=qty,
+            unit_code=node.xpath('cbc:InvoicedQuantity/@unitCode', namespaces=ns)[0] if node.xpath('cbc:InvoicedQuantity/@unitCode', namespaces=ns) else "C62",
+            net_price=price,
+            line_total=total,
+            vat_rate=Decimal(node.xpath('cac:Item/cac:ClassifiedTaxCategory/cbc:Percent/text()', namespaces=ns)[0] or "0")
+        )
+
+    @staticmethod
+    def _parse_ubl_tax_breakdown(root: etree._Element) -> list:
+        """Parse TaxSubtotal elements into TaxBreakdownSchema list."""
+        ns = BusinessReadySerializer.NS_UBL
+
+        def xpath_text(el, path):
+            res = el.xpath(path + '/text()', namespaces=ns)
+            return res[0] if res else None
+
+        tax_nodes = root.xpath('//cac:TaxTotal/cac:TaxSubtotal', namespaces=ns)
+        
+        breakdown = []
+        for node in tax_nodes:
+            try:
+                breakdown.append(TaxBreakdownSchema(
+                    category=xpath_text(node, 'cac:TaxCategory/cbc:ID') or "S",
+                    rate=Decimal(xpath_text(node, 'cac:TaxCategory/cbc:Percent') or "0"),
+                    basis_amount=Decimal(xpath_text(node, 'cbc:TaxableAmount') or "0"),
+                    tax_amount=Decimal(xpath_text(node, 'cbc:TaxAmount') or "0"),
+                ))
+            except Exception as e:
+                logger.warning(f"Skipping malformed UBL tax entry: {e}")
+
+        return breakdown
 
     @staticmethod
     def _obfuscate(invoice: BusinessReadyInvoice) -> BusinessReadyInvoice:

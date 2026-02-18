@@ -14,6 +14,10 @@ LABEL org.opencontainers.image.licenses="FSL-1.1"
 
 WORKDIR /app
 
+# Optimization: Prevent .pyc files and enable real-time logging
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
 # Install system dependencies for lxml/saxonc
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libxml2 libxslt1.1 && \

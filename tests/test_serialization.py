@@ -1,9 +1,11 @@
 import unittest
 import asyncio
+import os
 from unittest.mock import patch
 from fastapi import UploadFile
 from io import BytesIO
 from decimal import Decimal
+from pathlib import Path
 
 from app.api import serialize_facturx
 
@@ -86,6 +88,41 @@ class TestSerialization(unittest.TestCase):
             self.assertEqual(response.invoice.seller.name, "Ac*******")
             self.assertEqual(response.invoice.total_net_amount, Decimal("0.00"))
             self.assertIn("Community Mode", response.trial_notice)
+
+    @patch('app.license.is_licensed', return_value=True)
+    @patch('app.metrics.metrics')
+    def test_serialize_ubl_xrechnung(self, mock_metrics, mock_is_licensed):
+        """Pro users should be able to serialize UBL (XRechnung) files."""
+        
+        # We must simulate a License Key being present to trigger the is_licensed check
+        with patch.dict(os.environ, {"LICENSE_KEY": "valid-key"}):
+            # Find a real UBL file in the corpus
+            corpus_dir = Path(__file__).parent / "corpus" / "xrechnung-3.0.2-testsuite-2025-07-10" / "instances"
+            ubl_file = None
+            for f in corpus_dir.rglob("*.xml"):
+                if b"CrossIndustryInvoice" not in f.read_bytes()[:500]:
+                    ubl_file = f
+                    break
+            
+            if not ubl_file:
+                self.skipTest("No UBL file found in corpus for testing")
+
+            print(f"Testing UBL serialization with: {ubl_file.name}")
+            content = ubl_file.read_bytes()
+            dummy_file = UploadFile(filename=ubl_file.name, file=BytesIO(content))
+
+            # Run serialization (Pro mode unlocked via mock)
+            response = run_async(serialize_facturx(file=dummy_file))
+
+            self.assertTrue(response.success)
+            self.assertEqual(response.invoice.format, "ubl")
+            self.assertEqual(response.invoice.profile, "xrechnung")
+            
+            # Basic assertions to ensure data is extracted
+            self.assertIsNotNone(response.invoice.invoice_number)
+            self.assertGreater(response.invoice.total_gross_amount, 0)
+            self.assertFalse(response.invoice.is_obfuscated)
+
 
 if __name__ == "__main__":
     unittest.main()

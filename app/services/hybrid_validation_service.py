@@ -16,7 +16,7 @@ from typing import Optional, Dict, Any
 from concurrent.futures import ProcessPoolExecutor, TimeoutError as FuturesTimeoutError
 import asyncio
 
-from facturx import get_level, get_flavor
+from app.services.validation_utils import detect_format
 from app.services.pdf_utils import get_xml_from_pdf
 from lxml import etree
 
@@ -177,8 +177,7 @@ class HybridValidationService:
             # 2. Detect format/profile
             try:
                 xml_etree = etree.fromstring(xml_content, parser=cls._SECURE_PARSER)
-                result["format_detected"] = get_flavor(xml_etree)
-                result["profile_detected"] = get_level(xml_etree)
+                result["format_detected"], result["profile_detected"] = detect_format(xml_etree)
             except Exception as e:
                 result["errors"].append({
                     "rule_id": "FX-PARSE-ERROR",

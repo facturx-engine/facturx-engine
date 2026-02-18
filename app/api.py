@@ -362,7 +362,7 @@ async def extract_facturx(
         # Pro features are now strictly on Validation and Metrics.
         from app.services.extractor import ExtractionService
         
-        result = ExtractionService.extract_invoice_data(
+        result = await ExtractionService.extract_invoice_data_async(
             file_content,
             file.filename
         )

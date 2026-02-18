@@ -9,6 +9,8 @@ from lxml import etree
 logger = logging.getLogger(__name__)
 
 
+from app.services.validation_utils import humanize_errors, detect_format
+
 class ValidationService:
     """Service for validating Factur-X/ZUGFeRD files."""
 
@@ -26,22 +28,6 @@ class ValidationService:
     # Pre-compiled XSLT validator (Singleton)
     _CORE_VALIDATOR: Optional[etree.XSLT] = None
 
-    # Dictionary mapping technical XSD substrings to user-friendly messages
-    _ERROR_MAP = {
-        "udt:DateTimeString": "Le format de la date est invalide (Format attendu: YYYYMMDD).",
-        "SpecifiedExchangedDocumentContext": "La structure du document est mal formée (Contexte manquant).",
-        "ram:ID' is unexpected": "Le numéro de facture (ID) est mal positionné ou dupliqué.",
-        "Expected is ( {urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100}Name )": "Le nom de l'entreprise (Seller Name) est obligatoire.",
-        "PostcodeCode": "Le code postal est manquant dans l'adresse.",
-        "LineOne": "La première ligne de l'adresse est obligatoire.",
-        "CountryID": "Le code pays (ex: FR) est manquant.",
-        "currencyID": "Le code devise (ex: EUR) est invalide ou absent.",
-        "TypeCode": "Le type de document (TypeCode 380) est manquant.",
-        "SupplyChainTradeTransaction": "La section Transaction (calculs) est manquante ou mal placée.",
-        "IncludedSupplyChainTradeLineItem": "Les lignes de facture (articles) sont obligatoires pour ce profil.",
-        "SpecifiedTradeSettlementHeaderMonetarySummation": "La section Totaux est mal formée ou incomplète.",
-    }
-
     @classmethod
     def _initialize_schematrons(cls):
         """Initializes XSLT validators if not already loaded."""
@@ -55,28 +41,6 @@ class ValidationService:
                     logger.info("Loaded Factur-X Python-Compatible Business Rules (XSLT)")
                 except Exception as e:
                     logger.error(f"Failed to load Core Rules: {e}")
-
-    @staticmethod
-    def _humanize_errors(technical_errors: List[str]) -> List[str]:
-        """Converts cryptic technical errors into human-readable guidance."""
-        human_errors = []
-        if not technical_errors:
-            return []
-            
-        for err in technical_errors:
-            if not err:
-                continue
-            err_str = str(err)
-            found = False
-            for tech_pattern, human_msg in ValidationService._ERROR_MAP.items():
-                if tech_pattern in err_str:
-                    human_errors.append(human_msg)
-                    found = True
-                    break
-            if not found:
-                # Fallback to original if no mapping found
-                human_errors.append(err_str)
-        return list(dict.fromkeys(human_errors)) # Remove duplicates
 
     @staticmethod
     def _check_schematron(xml_etree: etree._Element, validator: etree.XSLT) -> List[str]:
@@ -159,20 +123,9 @@ class ValidationService:
             try:
                 xml_etree = etree.fromstring(xml_content, parser=ValidationService._SECURE_PARSER)
                 try:
-                    detected_format = get_flavor(xml_etree)
-                    detected_flavor = get_level(xml_etree)
+                    detected_format, detected_flavor = detect_format(xml_etree)
                 except Exception as e:
-                    # Resilience: Handle newer URNs (like XRechnung 3.0) not yet in facturx library
-                    urn_xpath = "//*[local-name()='GuidelineSpecifiedDocumentContextParameter']/*[local-name()='ID']"
-                    urn_el = xml_etree.xpath(urn_xpath)
-                    urn = urn_el[0].text if (urn_el and urn_el[0].text) else ""
-                    
-                    if "en16931" in urn.lower() or "xrechnung" in urn.lower():
-                        logger.info(f"Using fallback flavor detection for URN: {urn}")
-                        detected_format = "factur-x" # Map to CII behavior
-                        detected_flavor = "en16931"
-                    else:
-                        raise e
+                    return False, None, None, [f"Format detection failed: {str(e)}"]
             except Exception as e:
                 return False, None, None, [f"Invalid XML syntax: {str(e)}"]
             
@@ -180,7 +133,7 @@ class ValidationService:
             try:
                 xml_check_xsd(xml_content, flavor=detected_format, level=detected_flavor)
             except Exception as e:
-                return False, detected_format, detected_flavor, ValidationService._humanize_errors([str(e)])
+                return False, detected_format, detected_flavor, humanize_errors([str(e)])
 
             # 2. Business Rules Validation (Schematron Lite)
             if detected_flavor in ["en16931", "extended"]:
@@ -188,6 +141,7 @@ class ValidationService:
                     schematron_errors = ValidationService._check_schematron(xml_etree, ValidationService._CORE_VALIDATOR)
                     if schematron_errors:
                         logger.warning(f"Business rule validation failed: {schematron_errors}")
+                        # Errors are already humanized by message content usually, but we could wrap them
                         return False, detected_format, detected_flavor, schematron_errors
 
             logger.info("Complete validation (XSD + Business Rules) successful")
