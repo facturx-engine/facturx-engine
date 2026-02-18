@@ -34,6 +34,12 @@ curl -X POST "http://localhost:8000/v1/convert" \
 # Validate compliance
 curl -X POST "http://localhost:8000/v1/validate" \
   -F "file=@invoice_compliant.pdf"
+
+# Extract Data (Community)
+# curl -X POST "http://localhost:8000/v1/extract" -F "file=@invoice.pdf"
+
+# Serialize for ERP (Pro)
+# curl -X POST "http://localhost:8000/v1/serialize" -F "file=@invoice.pdf"
 ```
 
 **Windows users:** Replace `curl` with `curl.exe` and use PowerShell syntax for file reading.
@@ -57,7 +63,7 @@ This **Community** version is production-ready. The code is Open Core (transpare
 | :--- | :--- | :--- | :--- | :--- |
 | **Pricing** | **Free** (FSL 1.1) | **490€ / year** | **2490€ / year** | **Contact Us** |
 | **Usage** | Internal Use | Internal Use | **Redistribution** | High Volume |
-| **Extraction** | Full Data | **Business JSON** | **Business JSON** | Custom |
+| **Data Format** | Raw Extraction | **ERP-Ready JSON** | **ERP-Ready JSON** | Custom |
 | **Validation** | EN 16931 Rules | **Smart Diagnostics** | **Smart Diagnostics** | Custom Rules |
 | **Support** | Community | **Priority** | **SLA** | Dedicated |
 

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Factur-X Date Formats | BT-2, BT-9, BT-26 Guide</title>
+    <meta name="description"
+        content="Definitive guide to date formats in Factur-X / ZUGFeRD. Learn the difference between YYYYMMDD (102) and DateTime strings. Fix format 102 errors in EN 16931.">
+
+    <!-- Breadcrumb Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [{
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://facturx-engine.github.io/facturx-engine/"
+      },{
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Guides",
+        "item": "https://facturx-engine.github.io/facturx-engine/guides/"
+      },{
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Date Formats",
+        "item": "https://facturx-engine.github.io/facturx-engine/guides/dates.html"
+      }]
+    }
+    </script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        amber: { 500: '#f59e0b', 600: '#d97706' },
+                        slate: { 950: '#020617' }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+</head>
+
+<body class="bg-slate-950 text-slate-300 font-sans selection:bg-amber-500 selection:text-black leading-relaxed">
+
+    <nav
+        class="fixed top-0 w-full z-50 border-b border-white/5 bg-slate-950/80 backdrop-blur-md h-20 flex items-center">
+        <div class="max-w-7xl mx-auto px-6 w-full flex items-center justify-between">
+            <a href="../index.html" class="flex items-center gap-3">
+                <div
+                    class="w-10 h-10 border-2 border-amber-500 flex items-center justify-center rounded-sm bg-slate-900">
+                    <span class="font-mono font-bold text-amber-500">FX</span>
+                </div>
+                <span class="text-xl font-bold tracking-tighter text-white uppercase">Factur-X <span
+                        class="text-amber-500">Engine</span></span>
+            </a>
+            <div class="flex items-center gap-4">
+                <a href="../ref/api-reference.html"
+                    class="text-slate-400 hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest">Documentation</a>
+                <a href="https://github.com/facturx-engine/facturx-engine"
+                    class="px-4 py-2 border border-white/10 rounded text-xs font-bold uppercase tracking-widest hover:bg-white/5 transition-colors">GitHub</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-40 pb-20">
+        <div class="max-w-4xl mx-auto px-6">
+
+            <header class="mb-16 border-b border-white/5 pb-10">
+                <div class="text-amber-500 font-mono text-sm tracking-widest uppercase mb-4">Implementation Guide</div>
+                <h1 class="text-4xl md:text-5xl font-black text-white tracking-tight mb-6 uppercase">
+                    Date Formats in <span class="text-amber-500">EN 16931</span>
+                </h1>
+                <p class="text-xl text-slate-400 leading-relaxed font-light">
+                    Stop guessing format codes. 99% of valid Factur-X/ZUGFeRD dates use format <strong>102</strong>
+                    (YYYYMMDD).
+                </p>
+            </header>
+
+            <div class="space-y-16">
+
+                <!-- Rule 1 -->
+                <div>
+                    <h2 class="text-2xl font-bold text-white mb-6 flex items-center">
+                        <span
+                            class="bg-amber-500 text-black text-xs px-2 py-1 rounded mr-3 uppercase font-mono tracking-widest">Rule
+                            #1</span>
+                        The Format "102"
+                    </h2>
+                    <p class="text-slate-400 mb-6">
+                        In the XML standard (CII or UBL), dates are almost always accompanied by a format code.
+                        The standard EN 16931 strictly mandates format <strong>102</strong> which implies
+                        <code>YYYYMMDD</code>.
+                    </p>
+                    <div class="bg-black p-6 rounded-lg border border-white/10 overflow-x-auto">
+                        <pre class="font-mono text-sm text-green-400"><code>&lt;ram:OccurrenceDateTime&gt;
+  &lt;udt:DateTimeString format="102"&gt;20260218&lt;/udt:DateTimeString&gt;
+&lt;/ram:OccurrenceDateTime&gt;</code></pre>
+                    </div>
+                    <div class="mt-4 flex gap-4 text-xs font-mono">
+                        <span class="text-red-500">❌ 18/02/2026</span>
+                        <span class="text-red-500">❌ 2026-02-18</span>
+                        <span class="text-green-500">✅ 20260218</span>
+                    </div>
+                </div>
+
+                <!-- Critical Fields -->
+                <div>
+                    <h2 class="text-2xl font-bold text-white mb-6">Critical Date Fields</h2>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="bg-slate-900 border border-white/5 p-6 rounded-lg">
+                            <span class="text-amber-500 font-mono font-bold">BT-2</span>
+                            <h3 class="text-white font-bold mb-2">Invoice Issue Date</h3>
+                            <p class="text-sm text-slate-500">Validation Date. The exchange rate is calculated based on
+                                this date.</p>
+                        </div>
+                        <div class="bg-slate-900 border border-white/5 p-6 rounded-lg">
+                            <span class="text-amber-500 font-mono font-bold">BT-9</span>
+                            <h3 class="text-white font-bold mb-2">Due Date</h3>
+                            <p class="text-sm text-slate-500">When the payment is expected. Optional if using payment
+                                terms description.</p>
+                        </div>
+                        <div class="bg-slate-900 border border-white/5 p-6 rounded-lg">
+                            <span class="text-amber-500 font-mono font-bold">BT-72</span>
+                            <h3 class="text-white font-bold mb-2">Actual Delivery Date</h3>
+                            <p class="text-sm text-slate-500">Date of supply of goods or services. Vital for VAT tax
+                                point.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- API Usage -->
+                <div>
+                    <h2 class="text-2xl font-bold text-white mb-6">Using the API</h2>
+                    <p class="text-slate-400 mb-6">
+                        When using React/Node.js/Python with <strong>Factur-X Engine</strong>, you don't need to obscure
+                        XML nodes.
+                        Just pass an ISO-8601 string in the JSON metadata, and we convert it to format 102
+                        automatically.
+                    </p>
+                    <div class="bg-black p-6 rounded-lg border border-white/10 overflow-x-auto">
+                        <pre class="font-mono text-sm text-slate-300"><code>// JSON Metadata Payload
+{
+  "date": <span class="text-amber-500">"2026-02-18"</span>,      // We convert this -> 20260218 (102)
+  "due_date": <span class="text-amber-500">"2026-03-31"</span>,  // We convert this -> 20260331 (102)
+  "delivery_date": <span class="text-amber-500">"2026-02-17"</span>
+}</code></pre>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="mt-24 p-8 bg-amber-500/10 border border-amber-500/20 rounded-xl text-center">
+                <h3 class="text-2xl font-bold text-white mb-2">Still getting formatting errors?</h3>
+                <p class="mb-6 text-slate-400">
+                    Use our validator to verify if your date format codes match the strict EN 16931 Schematron rules.
+                </p>
+                <div class="flex justify-center gap-4">
+                    <a href="../guides/error-codes.html"
+                        class="px-6 py-3 border border-white/10 rounded text-sm font-bold uppercase tracking-widest hover:border-amber-500 transition-colors text-white">
+                        Check Error Codes
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="py-12 bg-slate-900 border-t border-white/5">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <a href="../index.html"
+                class="text-slate-500 hover:text-white transition-colors text-xs font-bold uppercase tracking-widest">Back
+                to Home</a>
+        </div>
+    </footer>
+
+</body>
+
+</html>
