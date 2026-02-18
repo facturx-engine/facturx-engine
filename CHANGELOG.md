@@ -5,13 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.4.9] - 2026-02-18
+## [1.5.0] - 2026-02-18
+
+### Added
+
+- **Demo**: Official Hugging Face Spaces integration (Hugging Face / Gradio UI).
+- **Quality**: Global code cleanup and linting stabilization.
 
 ### Fixed
 
-- **CI**: Fixed linting failure in Hugging Face demo scripts.
-
-## [1.4.8] - 2026-02-18
+- **Validator**: (Critical) Fixed profile-aware validation bug (XSD/Schematron false negatives for MINIMUM/BASIC profiles).
+- **CI**: Fixed release pipeline failures (Git checkout and linting).
 
 ### Fixed
 
