@@ -2,7 +2,7 @@ import logging
 from io import BytesIO
 from pathlib import Path
 from typing import Tuple, Optional, List
-from facturx import xml_check_xsd, get_level, get_flavor
+from facturx import xml_check_xsd
 from app.services.pdf_utils import get_xml_from_pdf
 from lxml import etree
 

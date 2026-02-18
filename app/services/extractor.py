@@ -6,9 +6,8 @@ Pro edition adds advanced validation and compliance features.
 import logging
 import asyncio
 from io import BytesIO
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 from lxml import etree
-from facturx import get_level, get_flavor
 from app.services.pdf_utils import get_xml_from_pdf
 from app.services.validation_utils import detect_format
 
