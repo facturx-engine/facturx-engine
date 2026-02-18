@@ -197,15 +197,34 @@ class HybridValidationService:
                 result["is_valid"] = True  # Basic parse succeeded
                 return result
             
-            # 4. Run hybrid validation in process pool
+            # 4. Profile-aware schema selection
+            # The EN16931 XSD and Schematron rules only apply to the EN16931 and EXTENDED profiles.
+            # Applying them to MINIMUM/BASIC/BASICWL causes false negatives because those
+            # profiles intentionally omit fields that are mandatory in EN16931:
+            #   - XSD: requires IncludedSupplyChainTradeLineItem (absent in MINIMUM)
+            #   - XSLT: requires line-item totals, VAT breakdowns, etc.
+            # For simpler profiles, a successful XML parse is sufficient structural validation.
+            PROFILES_WITH_FULL_RULES = {"en16931", "extended"}
+            detected_profile = result.get("profile_detected", "").lower()
+            
+            if detected_profile in PROFILES_WITH_FULL_RULES:
+                effective_xsd_path = str(XSD_PATH)
+                effective_xslt_path = str(XSLT_PATH)
+                logger.info(f"Profile '{detected_profile}': applying full EN16931 XSD + Schematron rules")
+            else:
+                effective_xsd_path = ""   # Skip EN16931 XSD — not applicable to this profile
+                effective_xslt_path = ""  # Skip EN16931 XSLT — not applicable to this profile
+                logger.info(f"Profile '{detected_profile}': skipping EN16931 rules (XML parse succeeded — XSD-lite mode)")
+            
+            # 5. Run hybrid validation in process pool
             executor = _get_executor()
             
             try:
                 future = executor.submit(
                     _run_hybrid_validation,
                     xml_content,
-                    str(XSD_PATH),
-                    str(XSLT_PATH)
+                    effective_xsd_path,
+                    effective_xslt_path
                 )
                 validation_result = future.result(timeout=VALIDATION_TIMEOUT)
                 
