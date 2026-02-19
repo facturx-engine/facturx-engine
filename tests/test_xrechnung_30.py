@@ -1,4 +1,3 @@
-import pytest
 from lxml import etree
 from app.services.hybrid_validation_service import HybridValidationService
 from app.services.validation_utils import detect_format
