@@ -469,6 +469,14 @@ async def serialize_facturx(
                 status_code=400,
                 detail={"error": "NO_XML_FOUND", "message": "No Factur-X/ZUGFeRD XML found in file"}
             )
+            
+        # Ensure xml_data is bytes (avoid list error if extraction returns something else)
+        if isinstance(xml_data, list) and len(xml_data) > 0:
+            xml_data = xml_data[0]
+        if not isinstance(xml_data, (bytes, str)):
+            xml_data = str(xml_data).encode('utf-8')
+        elif isinstance(xml_data, str):
+            xml_data = xml_data.encode('utf-8')
 
         # Serialize
         try:

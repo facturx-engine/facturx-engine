@@ -30,7 +30,7 @@ class TestEndToEndWorkflows(unittest.TestCase):
                     data = response.json()
                     self.assertEqual(response.status_code, 200)
                     self.assertTrue(data["success"])
-                    self.assertIn("Community Mode", data.get("trial_notice", ""))
+                    self.assertIn("Community data", data.get("trial_notice", ""))
 
     def test_pro_workflow(self):
         """Workflow for a user WITH a valid license key."""

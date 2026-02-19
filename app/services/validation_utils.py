@@ -96,7 +96,23 @@ def detect_format(xml_etree: etree._Element) -> Tuple[Optional[str], Optional[st
             if "2.3" in urn:
                 return "factur-x", "xrechnung_2.3"
 
-        # Fallback to facturx library for standard ZUGFeRD/Factur-X
+        # 4. Manual mapping for standard Factur-X / ZUGFeRD profiles 
+        # (Avoids facturx library crashes on some ZUGFeRD 2.0 files with empty namespace prefixes)
+        urn_lower = urn.lower()
+        if "urn:cen.eu:en16931:2017" in urn_lower or "urn:factur-x.eu:1p0" in urn_lower:
+            if "basicwl" in urn_lower or "basic-wl" in urn_lower:
+                return "factur-x", "basicwl"
+            if "basic" in urn_lower:
+                return "factur-x", "basic"
+            if "minimum" in urn_lower:
+                return "factur-x", "minimum"
+            if "extended" in urn_lower:
+                return "factur-x", "extended"
+            # Default to en16931 if it matches the CEN URN
+            if "urn:cen.eu:en16931:2017" in urn_lower:
+                return "factur-x", "en16931"
+
+        # Fallback to facturx library for other cases
         detected_format = get_flavor(xml_etree)
         detected_flavor = get_level(xml_etree)
         return detected_format, detected_flavor
@@ -104,6 +120,7 @@ def detect_format(xml_etree: etree._Element) -> Tuple[Optional[str], Optional[st
     except Exception as e:
         logger.warning(f"Detection error, attempting heuristic fallback: {e}")
         # Final fallback: if it looks like XRechnung, at least tag it for CII processing
-        if "xrechnung" in str(etree.tostring(xml_etree[:100])):
+        xml_head = str(etree.tostring(xml_etree, encoding='unicode', method='xml')[:500]).lower()
+        if "xrechnung" in xml_head:
             return "factur-x", "en16931"
         raise e
