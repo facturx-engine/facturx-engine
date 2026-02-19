@@ -241,11 +241,11 @@ class HybridValidationService:
                 effective_xslt_path = str(XSLT_PATH)
                 logger.info(f"Profile '{detected_profile}': applying full EN16931 XSD + Schematron rules")
             elif detected_profile == "extended":
-                # Extended is a superset. EN16931 XSD is too restrictive.
-                # Skip XSD but keep Schematron (EN16931 business rules still apply to common elements).
-                effective_xsd_path = ""
-                effective_xslt_path = str(XSLT_PATH)
-                logger.info(f"Profile '{detected_profile}': applying Schematron rules (Skipping restricted XSD)")
+                # Extended is a superset. We use the specific EXTENDED XSLT which includes
+                # the necessary relaxations for Extended features (Foreign Currency, etc.)
+                effective_xsd_path = "" # Still skip XSD as it is too strict (EN16931)
+                effective_xslt_path = str(SCHEMA_ROOT / "_XSLT_EXTENDED" / "FACTUR-X_EXTENDED.xslt")
+                logger.info(f"Profile '{detected_profile}': applying EXTENDED Schematron rules")
             elif detected_profile == "basic":
                 effective_xslt_path = str(SCHEMA_ROOT / "_XSLT_BASIC" / "FACTUR-X_BASIC.xslt")
                 logger.info(f"Profile '{detected_profile}': applying BASIC Schematron rules")

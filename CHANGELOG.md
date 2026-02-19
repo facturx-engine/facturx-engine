@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.4] - 2026-02-19
+
+### Fixed
+
+- **Validation**: Added missing `FACTUR-X_EXTENDED.xslt` resource to the engine.
+- **Validator**: Fixed critical regression where `EXTENDED` profile was mismapping to strict rules. Validation is now correctly profile-aware for both `EN16931` and `EXTENDED`.
+- **Reliability**: Ensured the engine correctly identifies and applies permissive rules for valid Extended files (e.g., fixing `FX-SCH-A-000026`).
+
 ## [1.5.3] - 2026-02-19
 
 ### Added
