@@ -67,6 +67,7 @@ class BuyerInfo(BaseModel):
     name: str = Field(..., description="Buyer company name")
     address: Optional[Address] = Field(None, description="Physical address")
     vat_number: Optional[str] = Field(None, description="VAT identification number")
+    siret: Optional[str] = Field(None, description="SIRET (France specific)")
     global_id: Optional[str] = Field(None, description="Global Identifier")
     global_id_scheme: Optional[str] = Field(None, description="Scheme ID for Global ID")
     contact_name: Optional[str] = Field(None, description="Contact person name")
@@ -127,7 +128,7 @@ class InvoiceMetadata(BaseModel):
     tax_details: List[TaxDetail] = Field(default_factory=list, description="Tax breakdown details")
     amounts: MonetaryAmounts
     currency_code: str = Field(default="EUR", description="ISO 4217 currency code")
-    profile: Literal["minimum", "basicwl", "basic", "en16931", "extended"] = Field(
+    profile: Literal["minimum", "basicwl", "basic", "en16931", "extended", "xrechnung_3.0"] = Field(
         default="en16931",
         description="Factur-X profile level"
     )
@@ -146,13 +147,19 @@ class InvoiceMetadata(BaseModel):
     payment_means_code: Optional[str] = Field(None, description="Payment means code (e.g. 58=SEPA, 10=Cash)")
 
 
+class ValidationErrorDetail(BaseModel):
+    """Structured validation error for Community Edition."""
+    rule_id: Optional[str] = Field(None, description="Rule identifier (e.g. BR-CO-10)")
+    message: str = Field(..., description="Error message")
+    severity: str = Field(default="error", description="error or warning")
+
 class ValidationResult(BaseModel):
     """Validation result response."""
     valid: bool = Field(..., description="Whether the file is valid")
     format: Optional[str] = Field(None, description="Detected format (factur-x, zugferd, order-x)")
     flavor: Optional[str] = Field(None, description="Detected flavor/level")
-    errors: list[str] = Field(default_factory=list, description="List of validation errors")
-    validation_mode: Optional[str] = Field(None, description="Validation mode: 'hybrid' (Pro) or 'lite' (Community)")
+    errors: List[Union[str, ValidationErrorDetail]] = Field(default_factory=list, description="List of validation errors")
+    validation_mode: Optional[str] = Field(None, description="Validation mode")
     trial_notice: Optional[str] = Field(None, description="Notice for trial use of Pro features")
 
 

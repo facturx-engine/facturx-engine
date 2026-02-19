@@ -294,13 +294,21 @@ async def validate_facturx(
                 trial_notice="Trial Mode: Reference file recognized. Pro features unlocked." if is_trial else None
             )
         else:
-            # COMMUNITY MODE: Open Validation (full error list, raw format)
-            error_messages = [e.get("message", str(e)) for e in all_errors]
+            # COMMUNITY MODE: Open Validation (full error list, structured format)
+            from app.schemas.validation import ValidationErrorDetail
+            structured_errors = []
+            for e in all_errors:
+                structured_errors.append(ValidationErrorDetail(
+                    rule_id=e.get("rule_id"),
+                    message=e.get("message", str(e)),
+                    severity=e.get("severity", "error")
+                ))
+                
             return ValidationResult(
                 valid=result["is_valid"],
                 format=result.get("format_detected"),
                 flavor=result.get("profile_detected"),
-                errors=error_messages,
+                errors=structured_errors,
                 validation_mode="open_community"
             )
         
@@ -396,6 +404,8 @@ async def extract_facturx(
 async def serialize_facturx(
     file: UploadFile = File(..., description="Factur-X PDF or XML file to serialize")
 ):
+    import sys
+    sys.stderr.write(f"DEBUG_STDERR: Entering serialize_facturx with file {file.filename}\n")
     """
     Business-Ready JSON Serialization (Pro Feature).
     
@@ -475,7 +485,7 @@ async def serialize_facturx(
                 success=True,
                 invoice=invoice_data,
                 trial_notice="Trial Mode: Reference file recognized. Full data unlocked." if is_trial else (
-                    "Community Mode: Data is obfuscated. Activate Pro license to unlock." if should_obfuscate else None
+                    "PROMO: Only Pro users get full precision. Community data is obfuscated (set to zero) for schema testing." if should_obfuscate else None
                 )
             )
         except Exception as e:

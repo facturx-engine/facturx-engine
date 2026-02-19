@@ -64,7 +64,9 @@ def test_end_to_end_convert_validate_extract(client):
                 "city": "Paris",
                 "country_code": "FR"
             },
-            "vat_number": "FR98765432101"
+            "vat_number": "FR98765432101",
+            "siret": "12345678901234",
+            "email": "contact@seller.com"
         },
         "buyer": {
             "name": "Test Buyer Ltd",
@@ -73,7 +75,9 @@ def test_end_to_end_convert_validate_extract(client):
                 "postcode": "69001",
                 "city": "Lyon",
                 "country_code": "FR"
-            }
+            },
+            "siret": "98765432109876",
+            "email": "procurement@buyer.com"
         },
         "lines": [
             {
@@ -102,6 +106,7 @@ def test_end_to_end_convert_validate_extract(client):
         },
         "currency_code": "EUR",
         "profile": "en16931",
+        "due_date": "20260212",
         "payment_terms": "Net 30 days"
     }
     
@@ -134,6 +139,7 @@ def test_end_to_end_convert_validate_extract(client):
     )
     assert extract_response.status_code == 200
     extract_data = extract_response.json()
+    print(f"\nDEBUG_EXTRACT_DATA: {json.dumps(extract_data, indent=2)}")
     
     # Verify extraction succeeded
     assert extract_data["format_detected"] == "factur-x"
@@ -147,14 +153,22 @@ def test_end_to_end_convert_validate_extract(client):
     assert invoice_json is not None
     assert invoice_json["invoice_number"] == "E2E-EXTRACT-001"
     assert invoice_json["invoice_date"] == "20260113"
+    assert invoice_json.get("due_date") is not None
     assert invoice_json["currency"] == "EUR"
     
     # Verify seller data (Open Core - Full Data)
     assert invoice_json["seller"]["name"] == "Test Seller Corp"
     assert invoice_json["seller"]["vat_number"] == "FR98765432101"
+    assert invoice_json["seller"]["registration_id"] == "12345678901234"
+    assert invoice_json["seller"]["email"] == "contact@seller.com"
+    assert "1 Seller Street" in invoice_json["seller"]["line1"]
+    assert invoice_json["seller"]["city"] == "Paris"
     
     # Verify buyer data
     assert "Test" in invoice_json["buyer"]["name"]
+    assert invoice_json["buyer"]["registration_id"] == "98765432109876"
+    assert invoice_json["buyer"]["email"] == "procurement@buyer.com"
+    assert "2 Buyer Avenue" in invoice_json["buyer"]["line1"]
     
     # Verify totals (Real Values extracted in v1.3.1)
     assert invoice_json["totals"]["net_amount"] == "500.00"

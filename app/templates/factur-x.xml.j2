@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <rsm:CrossIndustryInvoice xmlns:rsm="urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100" xmlns:qdt="urn:un:unece:uncefact:data:standard:QualifiedDataType:100" xmlns:ram="urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:udt="urn:un:unece:uncefact:data:standard:UnqualifiedDataType:100">
   <rsm:ExchangedDocumentContext>
-   <ram:GuidelineSpecifiedDocumentContextParameter>
-      <ram:ID>{% if profile == 'minimum' %}urn:factur-x.eu:1p0:minimum{% elif profile == 'basicwl' %}urn:factur-x.eu:1p0:basicwl{% elif profile == 'basic' %}urn:cen.eu:en16931:2017#compliant#urn:factur-x.eu:1p0:basic{% elif profile == 'extended' %}urn:cen.eu:en16931:2017#conformant#urn:factur-x.eu:1p0:extended{% else %}urn:cen.eu:en16931:2017{% endif %}</ram:ID>
+    <ram:GuidelineSpecifiedDocumentContextParameter>
+      <ram:ID>{% if profile == 'minimum' %}urn:factur-x.eu:1p0:minimum{% elif profile == 'basicwl' %}urn:factur-x.eu:1p0:basicwl{% elif profile == 'basic' %}urn:cen.eu:en16931:2017#compliant#urn:factur-x.eu:1p0:basic{% elif profile == 'extended' %}urn:cen.eu:en16931:2017#conformant#urn:factur-x.eu:1p0:extended{% elif profile == 'xrechnung_3.0' %}urn:xeinkauf.de:kosit:xrechnung_3.0{% else %}urn:cen.eu:en16931:2017{% endif %}</ram:ID>
     </ram:GuidelineSpecifiedDocumentContextParameter>
   </rsm:ExchangedDocumentContext>
   <rsm:ExchangedDocument>
@@ -122,6 +122,11 @@
         {% if buyer.id %}<ram:ID>{{ buyer.id }}</ram:ID>{% endif %}
         {% if buyer.global_id %}<ram:GlobalID schemeID="{{ buyer.global_id_scheme | default('0088') }}">{{ buyer.global_id }}</ram:GlobalID>{% endif %}
         <ram:Name>{{ buyer.name }}</ram:Name>
+        {% if buyer.siret %}
+        <ram:SpecifiedLegalOrganization>
+             <ram:ID schemeID="0002">{{ buyer.siret }}</ram:ID>
+        </ram:SpecifiedLegalOrganization>
+        {% endif %}
         {% if buyer.email or buyer.phone %}
         <ram:DefinedTradeContact>
             {% if buyer.contact_name %}<ram:PersonName>{{ buyer.contact_name }}</ram:PersonName>{% endif %}

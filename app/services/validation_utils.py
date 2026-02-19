@@ -19,6 +19,12 @@ ERROR_MAP = {
     "SupplyChainTradeTransaction": "La section Transaction (calculs) est manquante ou mal placée.",
     "IncludedSupplyChainTradeLineItem": "Les lignes de facture (articles) sont obligatoires pour ce profil.",
     "SpecifiedTradeSettlementHeaderMonetarySummation": "La section Totaux est mal formée ou incomplète.",
+    # XRechnung / EN16931 Specific Mappings (Audit Fixes)
+    "BR-DE-11": "Le montant total de la facture doit être égal à la somme des montants HT et de la TVA.",
+    "BR-DE-1": "Le numéro de facture (BT-1) est obligatoire.",
+    "BR-DE-2": "La date d'émission de la facture (BT-2) est obligatoire.",
+    "BR-DE-4": "La référence de l'acheteur (BT-10) est obligatoire pour l'XRechnung.",
+    "XSD-INVALID": "Erreur de structure XML: Le fichier ne respecte pas le schéma technique officiel.",
 }
 
 def humanize_errors(technical_errors: List[str]) -> List[str]:
@@ -50,24 +56,54 @@ def detect_format(xml_etree: etree._Element) -> Tuple[Optional[str], Optional[st
         Tuple[format, profile] e.g. ("factur-x", "en16931")
     """
     try:
-        # 1. Check for UBL (XRechnung)
-        # UBL uses 'Invoice' as root but acts different from CII
-        if 'urn:oasis:names:specification:ubl' in xml_etree.tag or \
-           any('urn:oasis:names:specification:ubl' in str(ns) for ns in (xml_etree.nsmap.values() if xml_etree.nsmap else [])):
-            return "ubl", "xrechnung"
+        # 1. Identify URN / Guideline ID
+        # CII path: GuidelineSpecifiedDocumentContextParameter/ID
+        # UBL path: CustomizationID (or cbc:CustomizationID)
+        urn = ""
+        nsmap = xml_etree.nsmap
+        
+        # Try CII extraction
+        urn_xpath = "//*[local-name()='GuidelineSpecifiedDocumentContextParameter']/*[local-name()='ID']"
+        urn_el = xml_etree.xpath(urn_xpath)
+        if urn_el and urn_el[0].text:
+            urn = urn_el[0].text
+        
+        # Try UBL extraction if empty
+        if not urn:
+            ubl_xpath = "/*[local-name()='Invoice']/*[local-name()='CustomizationID']"
+            ubl_el = xml_etree.xpath(ubl_xpath)
+            if ubl_el and ubl_el[0].text:
+                urn = ubl_el[0].text
 
-        # 2. Check for Factur-X / ZUGFeRD (CII)
+        # 2. Check for UBL (XRechnung / Peppol)
+        is_ubl = 'urn:oasis:names:specification:ubl' in xml_etree.tag or \
+                 any('urn:oasis:names:specification:ubl' in str(ns) for ns in (nsmap.values() if nsmap else []))
+
+        if is_ubl:
+            profile = "en16931"
+            if "xrechnung" in urn.lower():
+                # Extract version from URN like urn:xeinkauf.de:kosit:xrechnung_3.0
+                if "3.0" in urn:
+                    profile = "xrechnung_3.0"
+                elif "2.3" in urn:
+                    profile = "xrechnung_2.3"
+            return "ubl", profile
+
+        # 3. Check for Factur-X / ZUGFeRD / XRechnung (CII)
+        if "xrechnung" in urn.lower():
+            if "3.0" in urn:
+                return "factur-x", "xrechnung_3.0"
+            if "2.3" in urn:
+                return "factur-x", "xrechnung_2.3"
+
+        # Fallback to facturx library for standard ZUGFeRD/Factur-X
         detected_format = get_flavor(xml_etree)
         detected_flavor = get_level(xml_etree)
         return detected_format, detected_flavor
+
     except Exception as e:
-        # Resilience: Handle newer URNs (like XRechnung 3.0) not yet in facturx library
-        urn_xpath = "//*[local-name()='GuidelineSpecifiedDocumentContextParameter']/*[local-name()='ID']"
-        urn_el = xml_etree.xpath(urn_xpath)
-        urn = urn_el[0].text if (urn_el and urn_el[0].text) else ""
-        
-        if "en16931" in urn.lower() or "xrechnung" in urn.lower():
-            logger.info(f"Using fallback flavor detection for URN: {urn}")
-            return "factur-x", "en16931" # Map to CII behavior
-        else:
-            raise e
+        logger.warning(f"Detection error, attempting heuristic fallback: {e}")
+        # Final fallback: if it looks like XRechnung, at least tag it for CII processing
+        if "xrechnung" in str(etree.tostring(xml_etree[:100])):
+            return "factur-x", "en16931"
+        raise e

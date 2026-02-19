@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.3] - 2026-02-19
+
+### Added
+
+- **Extraction**: Now extracts `due_date`, `registration_id` (SIRET), and `email` for both Seller and Buyer in CII and UBL formats.
+- **Generator**: Added support for Buyer `registration_id` (SIRET) and `due_date` in Factur-X XML templates.
+
+### Changed
+
+- **Extraction**: Address fields are now flattened in JSON output (`line1`, `city`, etc.).
+- **Cleanup**: Empty address fields (like `"..."`) are now sanitized and returned as `null`.
+
+### Fixed
+
+- **API**: Fixed critical 404 error on `/v1/serialize` endpoint by correctly including the router in `main.py`.
+- **Serializer**: Resolved `AttributeError` in format detection when parsing CII/UBL files.
+- **Reliability**: Refactored serialization tests to use `TestClient` for more robust validation of file uploads.
+
 ## [1.5.2] - 2026-02-19
 
 ### Fixed

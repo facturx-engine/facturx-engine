@@ -30,6 +30,11 @@ SCHEMA_ROOT = PROJECT_ROOT / "app" / "resources" / "schemas"
 XSD_PATH = SCHEMA_ROOT / "Factur-X_1.08_EN16931.xsd"
 XSLT_PATH = SCHEMA_ROOT / "_XSLT_EN16931" / "FACTUR-X_EN16931.xslt"
 
+# XRechnung 3.0.2
+XRECHNUNG_30_ROOT = SCHEMA_ROOT / "xrechnung_3.0.2" / "cii"
+XRECHNUNG_30_XSD = XRECHNUNG_30_ROOT / "xsd" / "CrossIndustryInvoice_100pD16B.xsd"
+XRECHNUNG_30_XSLT = XRECHNUNG_30_ROOT / "xslt" / "XRechnung-CII-validation.xsl"
+
 # ProcessPool configuration
 _executor: Optional[ProcessPoolExecutor] = None
 MAX_WORKERS = int(os.getenv("FX_VALIDATION_WORKERS", "2"))
@@ -203,17 +208,44 @@ class HybridValidationService:
             # profiles intentionally omit fields that are mandatory in EN16931:
             #   - XSD: requires IncludedSupplyChainTradeLineItem (absent in MINIMUM)
             #   - XSLT: requires line-item totals, VAT breakdowns, etc.
-            # For simpler profiles, a successful XML parse is sufficient structural validation.
-            PROFILES_WITH_FULL_RULES = {"en16931", "extended"}
-            detected_profile = result.get("profile_detected", "").lower()
+            # 
+            # CRITICAL (Parity): EXTENDED is a technical superset of EN16931. 
+            # Our current XSD (Factur-X_1.08_EN16931.xsd) is strictly EN16931 (Comfort) compliant.
+            # Applying this XSD to EXTENDED causes false negatives on valid Extended elements
+            # like TaxApplicableTradeCurrencyExchange (Fremdwährung).
+            # For EXTENDED: We skip XSD validation (structural) but KEEP Schematron (Business rules).
             
-            effective_xsd_path = ""   # Default: Skip XSD for non-EN16931/EXTENDED
+            detected_profile = result.get("profile_detected", "").lower()
+            detected_format = result.get("format_detected", "").lower()
+            
+            effective_xsd_path = ""   # Default: Skip XSD
             effective_xslt_path = ""  # Default: Skip XSLT
             
-            if detected_profile in PROFILES_WITH_FULL_RULES:
+            # 4.1 Handle UBL (Partial Support Note)
+            if detected_format == "ubl":
+                # Currently we only have CII assets for XRechnung.
+                # UBL requires a different XSD/XSLT stack.
+                result["errors"].append({
+                    "rule_id": "FX-UBL-PARTIAL",
+                    "message": f"Format UBL ({detected_profile}) détecté. La validation des règles métier (Schematron) pour UBL n'est pas encore activée.",
+                    "severity": "warning",
+                    "layer": "system"
+                })
+                # We skip further hybrid validation to avoid applying CII rules to UBL
+                result["is_valid"] = True # Structure is valid if it parsed
+                return result
+
+            # 4.2 Handle CII / Factur-X
+            if detected_profile == "en16931":
                 effective_xsd_path = str(XSD_PATH)
                 effective_xslt_path = str(XSLT_PATH)
                 logger.info(f"Profile '{detected_profile}': applying full EN16931 XSD + Schematron rules")
+            elif detected_profile == "extended":
+                # Extended is a superset. EN16931 XSD is too restrictive.
+                # Skip XSD but keep Schematron (EN16931 business rules still apply to common elements).
+                effective_xsd_path = ""
+                effective_xslt_path = str(XSLT_PATH)
+                logger.info(f"Profile '{detected_profile}': applying Schematron rules (Skipping restricted XSD)")
             elif detected_profile == "basic":
                 effective_xslt_path = str(SCHEMA_ROOT / "_XSLT_BASIC" / "FACTUR-X_BASIC.xslt")
                 logger.info(f"Profile '{detected_profile}': applying BASIC Schematron rules")
@@ -223,6 +255,10 @@ class HybridValidationService:
             elif detected_profile in ("basicwl", "basic wl"):
                 effective_xslt_path = str(SCHEMA_ROOT / "_XSLT_BASICWL" / "FACTUR-X_BASIC-WL.xslt")
                 logger.info(f"Profile '{detected_profile}': applying BASIC WL Schematron rules")
+            elif detected_profile == "xrechnung_3.0":
+                effective_xsd_path = str(XRECHNUNG_30_XSD)
+                effective_xslt_path = str(XRECHNUNG_30_XSLT)
+                logger.info(f"Profile '{detected_profile}': applying XRechnung 3.0.2 XSD + Schematron rules")
             else:
                 logger.info(f"Profile '{detected_profile}': no specific rules found (Structural Validation Only)")
             

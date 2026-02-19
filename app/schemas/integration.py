@@ -57,6 +57,9 @@ class BusinessReadyInvoice(BaseModel):
     due_date: Optional[date] = None
     currency: str = Field(default="EUR")
     
+    buyer_reference: Optional[str] = Field(None, description="Buyer reference (BT-10)")
+    contract_reference: Optional[str] = Field(None, description="Contract reference (BT-12)")
+    
     seller: PartySchema
     buyer: PartySchema
     
@@ -70,8 +73,8 @@ class BusinessReadyInvoice(BaseModel):
     amount_due: Decimal
     
     # Metadata
-    format: str = Field(..., description="factur-x / zugferd / xrechnung")
-    profile: str = Field(..., description="minimum / basic / en16931 / extended")
+    format: str = Field(..., description="factur-x / zugferd / xrechnung / ubl")
+    profile: str = Field(..., description="minimum / basic / en16931 / extended / xrechnung_3.0")
     is_obfuscated: bool = Field(default=False, description="True if data is masked for trial users")
 
 

@@ -12,6 +12,7 @@ from app.schemas.integration import (
     BusinessReadyInvoice, PartySchema, AddressSchema, 
     LineItemSchema, TaxBreakdownSchema
 )
+from app.services.validation_utils import detect_format
 
 logger = logging.getLogger(__name__)
 
@@ -61,10 +62,14 @@ class BusinessReadySerializer:
         else:
             raise ValueError("Unsupported XML format. Must be CII (Factur-X) or UBL.")
             
-        if obfuscate:
-            return BusinessReadySerializer._obfuscate(invoice)
-            
-        return invoice
+        try:
+            if obfuscate:
+                return BusinessReadySerializer._obfuscate(invoice)
+            return invoice
+        except Exception as e:
+            import sys
+            sys.stderr.write(f"DEBUG_SERIALIZE_FINAL: {str(e)}\n")
+            raise e
 
     @staticmethod
     def _parse_cii(root: etree._Element) -> BusinessReadyInvoice:
@@ -96,6 +101,15 @@ class BusinessReadySerializer:
             raise ValueError("Invalid CII: Missing BuyerTradeParty (mandatory)")
         buyer = BusinessReadySerializer._parse_cii_party(buyer_nodes[0])
 
+        # Secondary Info
+        due_date_str = xpath_first(root, '//ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradePaymentTerms/ram:DueDateDateTime/udt:DateTimeString')
+        due_date = None
+        if due_date_str:
+            try:
+                due_date = datetime.strptime(due_date_str, "%Y%m%d").date()
+            except Exception:
+                pass
+
         # Lines
         line_items = []
         for line_node in root.xpath('//ram:IncludedSupplyChainTradeLineItem', namespaces=ns):
@@ -104,16 +118,24 @@ class BusinessReadySerializer:
             except (IndexError, KeyError) as e:
                 logger.warning(f"Skipping malformed line item: {e}")
 
+        # Metadata / Profile detection
+        fmt, profile = detect_format(root)
+
         # Totals
         summation_nodes = root.xpath('//ram:SpecifiedTradeSettlementHeaderMonetarySummation', namespaces=ns)
         if not summation_nodes:
             raise ValueError("Invalid CII: Missing MonetarySummation (mandatory)")
         summation_node = summation_nodes[0]
-        
+
         return BusinessReadyInvoice(
             invoice_number=inv_id or "UNKNOWN",
             invoice_date=inv_date,
+            due_date=due_date,
+            format=fmt or "factur-x",
+            profile=profile or "en16931",
             currency=xpath_first(root, '//ram:InvoiceCurrencyCode') or "EUR",
+            buyer_reference=xpath_first(root, '//ram:ApplicableHeaderTradeAgreement/ram:BuyerReference'),
+            contract_reference=xpath_first(root, '//ram:ApplicableHeaderTradeAgreement/ram:ContractReferencedDocument/ram:IssuerAssignedID'),
             seller=seller,
             buyer=buyer,
             line_items=line_items,
@@ -121,22 +143,26 @@ class BusinessReadySerializer:
             total_net_amount=Decimal(xpath_first(summation_node, 'ram:TaxBasisTotalAmount') or "0"),
             total_tax_amount=Decimal(xpath_first(summation_node, 'ram:TaxTotalAmount') or "0"),
             total_gross_amount=Decimal(xpath_first(summation_node, 'ram:GrandTotalAmount') or "0"),
-            amount_due=Decimal(xpath_first(summation_node, 'ram:DuePayableAmount') or "0"),
-            format="factur-x",
-            profile="en16931"
+            amount_due=Decimal(xpath_first(summation_node, 'ram:DuePayableAmount') or "0")
         )
 
     @staticmethod
     def _parse_cii_party(node: etree._Element) -> PartySchema:
         ns = BusinessReadySerializer.NS_CII
+        def get_text(xpath):
+            res = node.xpath(xpath, namespaces=ns)
+            return res[0].text if res and res[0].text else None
+
         return PartySchema(
-            name=node.xpath('ram:Name/text()', namespaces=ns)[0] if node.xpath('ram:Name', namespaces=ns) else "Unknown",
-            vat_number=node.xpath('.//ram:SpecifiedTaxRegistration/ram:ID/text()', namespaces=ns)[0] if node.xpath('.//ram:SpecifiedTaxRegistration/ram:ID', namespaces=ns) else None,
+            name=get_text('ram:Name') or "Unknown",
+            vat_number=get_text('.//ram:SpecifiedTaxRegistration/ram:ID'),
+            registration_id=get_text('ram:SpecifiedLegalOrganization/ram:ID'),
+            email=get_text('ram:DefinedTradeContact/ram:EmailURIAddress/ram:URIID'),
             address=AddressSchema(
-                line1=node.xpath('.//ram:PostalTradeAddress/ram:LineOne/text()', namespaces=ns)[0] if node.xpath('.//ram:PostalTradeAddress/ram:LineOne', namespaces=ns) else "...",
-                city=node.xpath('.//ram:PostalTradeAddress/ram:CityName/text()', namespaces=ns)[0] if node.xpath('.//ram:PostalTradeAddress/ram:CityName', namespaces=ns) else "...",
-                postcode=node.xpath('.//ram:PostalTradeAddress/ram:PostcodeCode/text()', namespaces=ns)[0] if node.xpath('.//ram:PostalTradeAddress/ram:PostcodeCode', namespaces=ns) else "...",
-                country_code=node.xpath('.//ram:PostalTradeAddress/ram:CountryID/text()', namespaces=ns)[0] if node.xpath('.//ram:PostalTradeAddress/ram:CountryID', namespaces=ns) else "FR"
+                line1=get_text('.//ram:PostalTradeAddress/ram:LineOne') or "...",
+                city=get_text('.//ram:PostalTradeAddress/ram:CityName') or "...",
+                postcode=get_text('.//ram:PostalTradeAddress/ram:PostcodeCode') or "...",
+                country_code=get_text('.//ram:PostalTradeAddress/ram:CountryID') or "FR"
             )
         )
 
@@ -199,10 +225,19 @@ class BusinessReadySerializer:
         # Basic Info
         inv_id = xpath_first(root, '//cbc:ID')
         date_str = xpath_first(root, '//cbc:IssueDate')
+        due_date_str = xpath_first(root, '//cbc:DueDate')
+        
         try:
             inv_date = datetime.strptime(date_str, "%Y-%m-%d").date()
         except (ValueError, TypeError):
             inv_date = date.today()
+            
+        due_date = None
+        if due_date_str:
+            try:
+                due_date = datetime.strptime(due_date_str, "%Y-%m-%d").date()
+            except Exception:
+                pass
 
         # Seller
         seller_nodes = root.xpath('//cac:AccountingSupplierParty/cac:Party', namespaces=ns)
@@ -239,10 +274,16 @@ class BusinessReadySerializer:
         tax_total_res = root.xpath('//cac:TaxTotal/cbc:TaxAmount/text()', namespaces=ns)
         tax_total = Decimal(tax_total_res[0]) if tax_total_res else Decimal("0")
 
+        # Metadata / Profile detection
+        # Metadata / Profile detection
+        fmt, profile = detect_format(root)
+
         return BusinessReadyInvoice(
             invoice_number=inv_id or "UNKNOWN",
             invoice_date=inv_date,
             currency=xpath_first(root, '//cbc:DocumentCurrencyCode') or "EUR",
+            buyer_reference=xpath_first(root, '//cbc:BuyerReference'),
+            contract_reference=xpath_first(root, '//cac:ContractDocumentReference/cbc:ID'),
             seller=seller,
             buyer=buyer,
             line_items=line_items,
@@ -251,8 +292,9 @@ class BusinessReadySerializer:
             total_tax_amount=tax_total,
             total_gross_amount=get_total('cbc:TaxInclusiveAmount'),
             amount_due=get_total('cbc:PayableAmount'),
-            format="ubl",
-            profile="xrechnung"
+            format=fmt or "ubl",
+            profile=profile or "xrechnung",
+            due_date=due_date
         )
 
     @staticmethod
@@ -270,6 +312,8 @@ class BusinessReadySerializer:
         return PartySchema(
             name=name,
             vat_number=get_text('cac:PartyTaxScheme/cbc:CompanyID/text()'),
+            registration_id=get_text('cac:PartyLegalEntity/cbc:CompanyID/text()'),
+            email=get_text('cac:Contact/cbc:ElectronicMail/text()'),
             address=AddressSchema(
                 line1=get_text('cac:PostalAddress/cbc:StreetName/text()') or "...",
                 city=get_text('cac:PostalAddress/cbc:CityName/text()') or "...",

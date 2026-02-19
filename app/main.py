@@ -58,12 +58,12 @@ from app.version import __version__
 app = FastAPI(
     title=PRODUCT_NAME,
     description="Production-ready REST API for Factur-X (ZUGFeRD 2.4) conversions and data extraction.",
-    version=__version__,
-    docs_url="/docs",
-    redoc_url="/redoc"
+    version=__version__
 )
 
-
+# Include Routers
+app.include_router(router)
+app.include_router(diagnostics_router)
 
 
 # Switch to on_event which is more robust for logging in some versions

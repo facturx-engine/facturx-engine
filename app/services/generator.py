@@ -73,16 +73,21 @@ class GeneratorService:
             
             # Use factur-x library to generate Factur-X PDF
             logger.info("Generating Factur-X PDF...")
+            # Mapping for factur-x library (which might not know about 'xrechnung_3.0' profile name yet)
+            lib_level = metadata.profile
+            if lib_level == "xrechnung_3.0":
+                lib_level = "en16931" # Use en16931 base for library embedding, template handles the ID
+                
             result_bytes = generate_from_binary(
                 pdf_content,  # First positional arg: input PDF bytes
                 xml_bytes,    # Second positional arg: XML bytes
                 flavor='factur-x',
-                level=metadata.profile,
+                level=lib_level,
                 pdf_metadata={
                     'author': 'Factur-X API',
                     'keywords': 'Factur-X, ZUGFeRD, e-invoice',
                     'title': f'Invoice {metadata.invoice_number}',
-                    'subject': 'Factur-X Invoice',
+                    'subject': f'Factur-X Invoice ({metadata.profile})',
                 }
             )
             

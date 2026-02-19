@@ -87,11 +87,14 @@ class ExtractionService:
                 result["profile_detected"] = profile
                 
                 # 3. Map to Intelligent Demo JSON
-                if fmt == "ubl":
-                    result["invoice_json"] = ExtractionService._parse_demo_ubl(xml_root, filename)
-                else:
-                    # CII / Factur-X / ZUGFeRD
-                    result["invoice_json"] = ExtractionService._parse_demo_cii(xml_root, fmt, filename)
+                try:
+                    if fmt == "ubl":
+                        result["invoice_json"] = ExtractionService._parse_demo_ubl(xml_root, filename)
+                    else:
+                        result["invoice_json"] = ExtractionService._parse_demo_cii(xml_root, fmt or "factur-x", filename)
+                except Exception as inner_e:
+                    logger.error(f"INTELLIGENT PARSER FAIL: {str(inner_e)}")
+                    raise inner_e # Re-raise to let outer catch handle or debug
                 
             except Exception as e:
                 result["errors"].append({"code": "PARSE_ERROR", "message": f"XML Parse error: {str(e)}"})
@@ -108,14 +111,22 @@ class ExtractionService:
     def _parse_demo_cii(xml_root, flavor, filename):
         # Existing CII parsing logic (renamed from _parse_demo_invoice)
         # Namespaces
-        if flavor in ('factur-x', 'facturx'):
-            ns = {'rsm': 'urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100',
-                  'ram': 'urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100',
-                  'udt': 'urn:un:unece:uncefact:data:standard:UnqualifiedDataType:100'}
-        else:
-            ns = {'rsm': 'urn:ferd:CrossIndustryDocument:invoice:1p0',
-                  'ram': 'urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:12',
-                  'udt': 'urn:un:unece:uncefact:data:standard:UnqualifiedDataType:15'}
+        # Dynamic namespace selection based on detected Guideline ID (Profile)
+        # EN16931-1 (including XRechnung 3.0) and Factur-X usually use the standard namespaces
+        # Older ZUGFeRD 1.x use different URNs.
+        
+        # Standard CII (EN16931 / Factur-X)
+        ns = {'rsm': 'urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100',
+              'ram': 'urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100',
+              'udt': 'urn:un:unece:uncefact:data:standard:UnqualifiedDataType:100'}
+
+        # Check if it might be an older flavor
+        if flavor not in ('factur-x', 'facturx', 'ubl', 'xrechnung'):
+             # Fallback check for root tag
+             if 'CrossIndustryDocument' in xml_root.tag:
+                 ns = {'rsm': 'urn:ferd:CrossIndustryDocument:invoice:1p0',
+                       'ram': 'urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:12',
+                       'udt': 'urn:un:unece:uncefact:data:standard:UnqualifiedDataType:15'}
 
         def xpath_first(el, paths):
             if isinstance(paths, str):
@@ -189,7 +200,7 @@ class ExtractionService:
             
             # Line Total
             raw_line_total = xpath_first(item, [
-                './/ram:SpecifiedTradeSettlement/ram:SpecifiedTradeSettlementLineMonetarySummation/ram:LineTotalAmount',
+                './/ram:SpecifiedLineTradeSettlement/ram:SpecifiedTradeSettlementLineMonetarySummation/ram:LineTotalAmount',
                 './/ram:SpecifiedTradeSettlementMonetarySummation/ram:LineTotalAmount'
             ])
             try:
@@ -200,7 +211,7 @@ class ExtractionService:
             
             # VAT Rate
             raw_vat = xpath_first(item, [
-                './/ram:SpecifiedTradeSettlement/ram:ApplicableTradeTax/ram:RateApplicablePercent',
+                './/ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:RateApplicablePercent',
                 './/ram:ApplicableTradeTax/ram:RateApplicablePercent'
             ])
             try:
@@ -253,52 +264,66 @@ class ExtractionService:
         except Exception:
             payable_amount = gross_total
 
-        # 4. Extract Seller/Buyer
+        # 4. Extract Seller/Buyer & Secondary Header Info
+        due_date = xpath_first(xml_root, '//ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradePaymentTerms/ram:DueDateDateTime/udt:DateTimeString')
+        
+        def clean_str(s):
+            return s if s and s.strip() else None
+
         seller_name = xpath_first(xml_root, '//ram:SellerTradeParty/ram:Name') or ""
         seller_vat = xpath_first(xml_root, '//ram:SellerTradeParty//ram:SpecifiedTaxRegistration/ram:ID') or ""
-        seller_address_line = xpath_first(xml_root, '//ram:SellerTradeParty/ram:PostalTradeAddress/ram:LineOne') or ""
-        seller_city = xpath_first(xml_root, '//ram:SellerTradeParty/ram:PostalTradeAddress/ram:CityName') or ""
-        seller_postcode = xpath_first(xml_root, '//ram:SellerTradeParty/ram:PostalTradeAddress/ram:PostcodeCode') or ""
-        seller_country = xpath_first(xml_root, '//ram:SellerTradeParty/ram:PostalTradeAddress/ram:CountryID') or ""
+        seller_reg = xpath_first(xml_root, '//ram:SellerTradeParty/ram:SpecifiedLegalOrganization/ram:ID')
+        seller_email = xpath_first(xml_root, '//ram:SellerTradeParty/ram:DefinedTradeContact/ram:EmailURIUniversalCommunication/ram:URIID')
+        
+        seller_address_line = clean_str(xpath_first(xml_root, '//ram:SellerTradeParty/ram:PostalTradeAddress/ram:LineOne'))
+        seller_city = clean_str(xpath_first(xml_root, '//ram:SellerTradeParty/ram:PostalTradeAddress/ram:CityName'))
+        seller_postcode = clean_str(xpath_first(xml_root, '//ram:SellerTradeParty/ram:PostalTradeAddress/ram:PostcodeCode'))
+        seller_country = clean_str(xpath_first(xml_root, '//ram:SellerTradeParty/ram:PostalTradeAddress/ram:CountryID'))
         
         buyer_name = xpath_first(xml_root, '//ram:BuyerTradeParty/ram:Name') or ""
         buyer_vat = xpath_first(xml_root, '//ram:BuyerTradeParty//ram:SpecifiedTaxRegistration/ram:ID') or ""
-        buyer_address_line = xpath_first(xml_root, '//ram:BuyerTradeParty/ram:PostalTradeAddress/ram:LineOne') or ""
-        buyer_city = xpath_first(xml_root, '//ram:BuyerTradeParty/ram:PostalTradeAddress/ram:CityName') or ""
-        buyer_postcode = xpath_first(xml_root, '//ram:BuyerTradeParty/ram:PostalTradeAddress/ram:PostcodeCode') or ""
-        buyer_country = xpath_first(xml_root, '//ram:BuyerTradeParty/ram:PostalTradeAddress/ram:CountryID') or ""
+        buyer_reg = xpath_first(xml_root, '//ram:BuyerTradeParty/ram:SpecifiedLegalOrganization/ram:ID')
+        buyer_email = xpath_first(xml_root, '//ram:BuyerTradeParty/ram:DefinedTradeContact/ram:EmailURIUniversalCommunication/ram:URIID')
+        
+        buyer_address_line = clean_str(xpath_first(xml_root, '//ram:BuyerTradeParty/ram:PostalTradeAddress/ram:LineOne'))
+        buyer_city = clean_str(xpath_first(xml_root, '//ram:BuyerTradeParty/ram:PostalTradeAddress/ram:CityName'))
+        buyer_postcode = clean_str(xpath_first(xml_root, '//ram:BuyerTradeParty/ram:PostalTradeAddress/ram:PostcodeCode'))
+        buyer_country = clean_str(xpath_first(xml_root, '//ram:BuyerTradeParty/ram:PostalTradeAddress/ram:CountryID'))
 
         return {
             "invoice_number": invoice_id,
             "invoice_date": date_str,
+            "due_date": due_date,
             "currency": currency,
+            "buyer_reference": xpath_first(xml_root, '//ram:ApplicableHeaderTradeAgreement/ram:BuyerReference'),
+            "contract_reference": xpath_first(xml_root, '//ram:ApplicableHeaderTradeAgreement/ram:ContractReferencedDocument/ram:IssuerAssignedID'),
             "seller": {
                 "name": seller_name,
+                "registration_id": seller_reg,
+                "email": seller_email,
                 "vat_number": seller_vat,
-                "address": {
-                    "line": seller_address_line,
-                    "city": seller_city,
-                    "postal_code": seller_postcode,
-                    "country": seller_country
-                }
+                "line1": seller_address_line,
+                "city": seller_city,
+                "postcode": seller_postcode,
+                "country": seller_country
             },
             "buyer": {
                 "name": buyer_name,
+                "registration_id": buyer_reg,
+                "email": buyer_email,
                 "vat_number": buyer_vat,
-                "address": {
-                    "line": buyer_address_line,
-                    "city": buyer_city,
-                    "postal_code": buyer_postcode,
-                    "country": buyer_country
-                }
+                "line1": buyer_address_line,
+                "city": buyer_city,
+                "postcode": buyer_postcode,
+                "country": buyer_country
             },
+            "tax_breakdown": ExtractionService._parse_cii_tax_breakdown(xml_root, xpath_first, ns),
             "totals": {
                 "net_amount": f"{total_net_real:.2f}",
                 "tax_amount": f"{tax_total:.2f}",
                 "gross_amount": f"{gross_total:.2f}",
                 "payable_amount": f"{payable_amount:.2f}"
             },
-            "tax_breakdown": ExtractionService._parse_cii_tax_breakdown(xml_root, xpath_first, ns),
             "line_items": line_items,
             "_meta": {
                 "filename": filename,
@@ -323,37 +348,43 @@ class ExtractionService:
         # 1. Basic Info
         invoice_id = xpath_first(xml_root, '//cbc:ID')
         date_str = xpath_first(xml_root, '//cbc:IssueDate')
+        due_date = xpath_first(xml_root, '//cbc:DueDate')
         currency = xpath_first(xml_root, '//cbc:DocumentCurrencyCode') or "EUR"
+
+        def clean_str(s):
+            return s if s and s.strip() else None
 
         # 2. Seller
         seller_node = xml_root.xpath('//cac:AccountingSupplierParty/cac:Party', namespaces=ns)
-        seller = {"name": "", "vat_number": "", "address": {}}
+        seller = {"name": "", "vat_number": "", "registration_id": None, "email": None}
         if seller_node:
             s_node = seller_node[0]
             seller["name"] = xpath_first(s_node, 'cac:PartyName/cbc:Name') or \
                              xpath_first(s_node, 'cac:PartyLegalEntity/cbc:RegistrationName') or ""
             seller["vat_number"] = xpath_first(s_node, 'cac:PartyTaxScheme/cbc:CompanyID') or ""
-            seller["address"] = {
-                "line": xpath_first(s_node, 'cac:PostalAddress/cbc:StreetName') or "",
-                "city": xpath_first(s_node, 'cac:PostalAddress/cbc:CityName') or "",
-                "postal_code": xpath_first(s_node, 'cac:PostalAddress/cbc:PostalZone') or "",
-                "country": xpath_first(s_node, 'cac:PostalAddress/cac:Country/cbc:IdentificationCode') or ""
-            }
+            seller["registration_id"] = xpath_first(s_node, 'cac:PartyLegalEntity/cbc:CompanyID')
+            seller["email"] = xpath_first(s_node, 'cac:Contact/cbc:ElectronicMail')
+            
+            seller["line1"] = clean_str(xpath_first(s_node, 'cac:PostalAddress/cbc:StreetName'))
+            seller["city"] = clean_str(xpath_first(s_node, 'cac:PostalAddress/cbc:CityName'))
+            seller["postcode"] = clean_str(xpath_first(s_node, 'cac:PostalAddress/cbc:PostalZone'))
+            seller["country"] = clean_str(xpath_first(s_node, 'cac:PostalAddress/cac:Country/cbc:IdentificationCode'))
 
         # 3. Buyer
         buyer_node = xml_root.xpath('//cac:AccountingCustomerParty/cac:Party', namespaces=ns)
-        buyer = {"name": "", "vat_number": "", "address": {}}
+        buyer = {"name": "", "vat_number": "", "registration_id": None, "email": None}
         if buyer_node:
             b_node = buyer_node[0]
             buyer["name"] = xpath_first(b_node, 'cac:PartyName/cbc:Name') or \
                             xpath_first(b_node, 'cac:PartyLegalEntity/cbc:RegistrationName') or ""
             buyer["vat_number"] = xpath_first(b_node, 'cac:PartyTaxScheme/cbc:CompanyID') or ""
-            buyer["address"] = {
-                "line": xpath_first(b_node, 'cac:PostalAddress/cbc:StreetName') or "",
-                "city": xpath_first(b_node, 'cac:PostalAddress/cbc:CityName') or "",
-                "postal_code": xpath_first(b_node, 'cac:PostalAddress/cbc:PostalZone') or "",
-                "country": xpath_first(b_node, 'cac:PostalAddress/cac:Country/cbc:IdentificationCode') or ""
-            }
+            buyer["registration_id"] = xpath_first(b_node, 'cac:PartyLegalEntity/cbc:CompanyID')
+            buyer["email"] = xpath_first(b_node, 'cac:Contact/cbc:ElectronicMail')
+            
+            buyer["line1"] = clean_str(xpath_first(b_node, 'cac:PostalAddress/cbc:StreetName'))
+            buyer["city"] = clean_str(xpath_first(b_node, 'cac:PostalAddress/cbc:CityName'))
+            buyer["postcode"] = clean_str(xpath_first(b_node, 'cac:PostalAddress/cbc:PostalZone'))
+            buyer["country"] = clean_str(xpath_first(b_node, 'cac:PostalAddress/cac:Country/cbc:IdentificationCode'))
 
         # 4. Parsing Lines
         line_items = []
@@ -412,7 +443,10 @@ class ExtractionService:
         return {
             "invoice_number": invoice_id,
             "invoice_date": date_str,
+            "due_date": due_date,
             "currency": currency,
+            "buyer_reference": xpath_first(xml_root, '//cbc:BuyerReference'),
+            "contract_reference": xpath_first(xml_root, '//cac:ContractDocumentReference/cbc:ID'),
             "seller": seller,
             "buyer": buyer,
             "totals": {
