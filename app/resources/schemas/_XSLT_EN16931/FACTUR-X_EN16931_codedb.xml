@@ -2,6 +2,7 @@
 <codedb>
   <cl id="1">
     <enumeration value="urn:cen.eu:en16931:2017"/>
+    <enumeration value="urn:cen.eu:en16931:2017#compliant#urn:xeinkauf.de:kosit:xrechnung_3.0"/>
   </cl>
   <cl id="2">
     <enumeration value="71"/>

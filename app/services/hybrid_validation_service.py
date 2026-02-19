@@ -207,14 +207,24 @@ class HybridValidationService:
             PROFILES_WITH_FULL_RULES = {"en16931", "extended"}
             detected_profile = result.get("profile_detected", "").lower()
             
+            effective_xsd_path = ""   # Default: Skip XSD for non-EN16931/EXTENDED
+            effective_xslt_path = ""  # Default: Skip XSLT
+            
             if detected_profile in PROFILES_WITH_FULL_RULES:
                 effective_xsd_path = str(XSD_PATH)
                 effective_xslt_path = str(XSLT_PATH)
                 logger.info(f"Profile '{detected_profile}': applying full EN16931 XSD + Schematron rules")
+            elif detected_profile == "basic":
+                effective_xslt_path = str(SCHEMA_ROOT / "_XSLT_BASIC" / "FACTUR-X_BASIC.xslt")
+                logger.info(f"Profile '{detected_profile}': applying BASIC Schematron rules")
+            elif detected_profile == "minimum":
+                effective_xslt_path = str(SCHEMA_ROOT / "_XSLT_MINIMUM" / "FACTUR-X_MINIMUM.xslt")
+                logger.info(f"Profile '{detected_profile}': applying MINIMUM Schematron rules")
+            elif detected_profile in ("basicwl", "basic wl"):
+                effective_xslt_path = str(SCHEMA_ROOT / "_XSLT_BASICWL" / "FACTUR-X_BASIC-WL.xslt")
+                logger.info(f"Profile '{detected_profile}': applying BASIC WL Schematron rules")
             else:
-                effective_xsd_path = ""   # Skip EN16931 XSD — not applicable to this profile
-                effective_xslt_path = ""  # Skip EN16931 XSLT — not applicable to this profile
-                logger.info(f"Profile '{detected_profile}': skipping EN16931 rules (XML parse succeeded — XSD-lite mode)")
+                logger.info(f"Profile '{detected_profile}': no specific rules found (Structural Validation Only)")
             
             # 5. Run hybrid validation in process pool
             executor = _get_executor()
