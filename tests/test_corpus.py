@@ -145,8 +145,8 @@ def test_xrechnung_302_ubl_corpus(file_path):
     content = file_path.read_bytes()
     # Use HybridValidationService (Production Engine)
     try:
-        result = HybridValidationService.validate(content, file_path.name)
-    except Exception as e:
+        HybridValidationService.validate(content, file_path.name)
+    except Exception:
         pass
     assert True  # If we reached here, no crash occurred
 
