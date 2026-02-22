@@ -1,35 +1,63 @@
 # =============================================================================
 # Factur-X Engine — Multi-stage Dockerfile
 #
-# Stage 1 (jlink-builder): Downloads VeraPDF and builds a minimal custom JRE
+# Stage 1 (jlink-builder): Downloads VeraPDF via headless IzPack installer
+#   from the official distribution server and builds a minimal custom JRE
 #   using jlink. The resulting JRE contains only the modules actually needed
 #   by VeraPDF (~70-90 MB vs ~200 MB for a full headless JRE).
 #
 # Stage 2 (runtime): python:3.11-slim + custom JRE + VeraPDF JAR + Python app.
 #
 # VeraPDF version: update VERAPDF_VERSION to the latest stable release.
-# Releases: https://github.com/veraPDF/veraPDF-apps/releases
+# Releases: https://software.verapdf.org/releases/
 # =============================================================================
 
 # ----------------------------------------
-# Stage 1: Build minimal JRE with jlink
+# Stage 1: Install VeraPDF + build minimal JRE with jlink
 # ----------------------------------------
 FROM eclipse-temurin:17-jdk-bookworm AS jlink-builder
 
 ARG VERAPDF_VERSION=1.26.2
+ARG VERAPDF_MAJOR_MINOR=1.26
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    wget ca-certificates unzip && \
+    wget ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
-# Download VeraPDF distribution ZIP and extract the executable fat JAR
+# Write AutomatedInstallation XML for IzPack headless installer.
+# Panel IDs match the VeraPDF Greenfield 1.x installer specification.
+RUN printf '%s\n' \
+    '<?xml version="1.0" encoding="UTF-8" standalone="no"?>' \
+    '<AutomatedInstallation langpack="eng">' \
+    '    <com.izforge.izpack.panels.htmlhello.HTMLHelloPanel id="htmlhello"/>' \
+    '    <com.izforge.izpack.panels.target.TargetPanel id="target">' \
+    '        <installpath>/opt/verapdf</installpath>' \
+    '    </com.izforge.izpack.panels.target.TargetPanel>' \
+    '    <com.izforge.izpack.panels.packs.PacksPanel id="packs">' \
+    '        <pack index="0" name="veraPDF software" selected="true"/>' \
+    '    </com.izforge.izpack.panels.packs.PacksPanel>' \
+    '    <com.izforge.izpack.panels.install.InstallPanel id="install"/>' \
+    '    <com.izforge.izpack.panels.finish.FinishPanel id="finish"/>' \
+    '</AutomatedInstallation>' \
+    > /tmp/verapdf-auto-install.xml
+
+# Download the Greenfield installer from the official distribution server
+# and perform a fully headless installation to /opt/verapdf
 RUN wget -q \
-    "https://github.com/veraPDF/veraPDF-apps/releases/download/v${VERAPDF_VERSION}/verapdf-${VERAPDF_VERSION}.zip" \
-    -O /tmp/verapdf.zip && \
-    unzip -q /tmp/verapdf.zip -d /tmp/verapdf-dist && \
-    JAR=$(find /tmp/verapdf-dist -maxdepth 3 -name "verapdf.jar" | head -1) && \
-    cp "$JAR" /verapdf.jar && \
-    rm -rf /tmp/verapdf.zip /tmp/verapdf-dist
+    "https://software.verapdf.org/releases/${VERAPDF_MAJOR_MINOR}/verapdf-greenfield-${VERAPDF_VERSION}-installer.jar" \
+    -O /tmp/verapdf-installer.jar && \
+    java -jar /tmp/verapdf-installer.jar /tmp/verapdf-auto-install.xml && \
+    rm /tmp/verapdf-installer.jar /tmp/verapdf-auto-install.xml
+
+# Locate the installed CLI fat JAR and stage it at /verapdf.jar.
+# The IzPack installer places the executable JAR at /opt/verapdf/verapdf-<version>.jar.
+# We exclude uninstaller JARs and take the highest version if multiple are found.
+RUN JAR=$(find /opt/verapdf -maxdepth 2 -name "verapdf-*.jar" \
+        ! -name "*uninstall*" \
+        | sort -V | tail -1) && \
+    test -n "$JAR" || { echo "ERROR: VeraPDF JAR not found after installation" >&2; exit 1; } && \
+    echo "Packaging VeraPDF JAR: $JAR" && \
+    cp "$JAR" /verapdf.jar
 
 # Detect required JDK modules via jdeps, then merge with a known-good base set.
 # --ignore-missing-deps: tolerates non-modular (automatic module) dependencies

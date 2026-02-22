@@ -1,10 +1,11 @@
+import logging
 import os
 import subprocess
 import tempfile
-import logging
+from dataclasses import dataclass
 from enum import Enum
 from typing import List, Optional, Tuple
-from dataclasses import dataclass
+
 from lxml import etree
 from saxonche import PySaxonProcessor
 

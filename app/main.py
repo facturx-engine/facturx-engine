@@ -4,6 +4,7 @@ Factur-X API - Main Application Entry Point
 import logging
 import multiprocessing
 import os
+import subprocess
 
 # For Windows multiprocessing support (spawn)
 if os.name == 'nt':
@@ -84,7 +85,6 @@ async def startup_event():
     logger.info("✅ Schema integrity verified (Factur-X 1.08).")
 
     # 2. VERAPDF CHECK: Verify custom JRE + JAR are accessible
-    import subprocess as _sp
     verapdf_jar = os.getenv("VERAPDF_JAR", "")
     if verapdf_jar:
         if not Path(verapdf_jar).exists():
@@ -92,14 +92,14 @@ async def startup_event():
             logger.warning("   PDF/A-3b validation will be skipped until the JAR is available.")
         else:
             try:
-                result = _sp.run(["java", "-version"], capture_output=True, timeout=10)
+                result = subprocess.run(["java", "-version"], capture_output=True, timeout=10)
                 if result.returncode == 0:
                     logger.info("✅ VeraPDF ready (custom JRE functional, JAR present).")
                 else:
                     logger.warning(f"⚠️  VeraPDF JRE check failed (exit {result.returncode}). PDF/A-3b validation may not work.")
             except FileNotFoundError:
                 logger.warning("⚠️  'java' not found in PATH. PDF/A-3b validation disabled.")
-            except _sp.TimeoutExpired:
+            except subprocess.TimeoutExpired:
                 logger.warning("⚠️  JRE check timed out at startup. Continuing anyway.")
     else:
         logger.info("ℹ️  VERAPDF_JAR not set — PDF/A-3b validation disabled (XML validation active).")
@@ -196,8 +196,6 @@ async def health_check():
     - API process (always healthy if this responds)
     - VeraPDF / custom JRE (present and executable)
     """
-    import subprocess
-
     verapdf_jar = os.getenv("VERAPDF_JAR", "")
     verapdf_status: dict = {}
 
