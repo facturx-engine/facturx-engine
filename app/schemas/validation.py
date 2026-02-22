@@ -161,6 +161,7 @@ class ValidationResult(BaseModel):
     errors: List[Union[str, ValidationErrorDetail]] = Field(default_factory=list, description="List of validation errors")
     validation_mode: Optional[str] = Field(None, description="Validation mode")
     trial_notice: Optional[str] = Field(None, description="Notice for trial use of Pro features")
+    pdfa_valid: Optional[bool] = Field(None, description="PDF/A-3b compliance (null if input was raw XML or VeraPDF unavailable)")
 
 
 class DiagnosticDetail(BaseModel):
@@ -183,6 +184,7 @@ class ProValidationResult(BaseModel):
     diagnostics: List[DiagnosticDetail] = Field(default_factory=list, description="Smart diagnostics with explanations")
     validation_mode: str = Field(default="pro_diagnostics", description="Always 'pro_diagnostics' for this response type")
     trial_notice: Optional[str] = Field(None, description="Trial mode notice for reference files")
+    pdfa_valid: Optional[bool] = Field(None, description="PDF/A-3b compliance (null if input was raw XML or VeraPDF unavailable)")
 
 
 class ErrorResponse(BaseModel):

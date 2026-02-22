@@ -1,7 +1,9 @@
 import os
+import subprocess
+import tempfile
 import logging
 from enum import Enum
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from dataclasses import dataclass
 from lxml import etree
 from saxonche import PySaxonProcessor
@@ -11,7 +13,10 @@ logger = logging.getLogger(__name__)
 class ValidationLayer(Enum):
     XSD = "xsd"
     SCHEMATRON = "schematron"
+    PDF_A = "pdf_a"
     SYSTEM = "system"
+
+VERAPDF_MRR_NS = "http://www.verapdf.org/MachineReadableReport"
 
 @dataclass
 class ValidationError:
@@ -132,3 +137,145 @@ class HybridValidator:
             schematron_valid=schematron_valid,
             errors=errors
         )
+
+
+def validate_pdfa3(
+    pdf_bytes: bytes, verapdf_jar: str
+) -> Tuple[Optional[bool], List[ValidationError]]:
+    """
+    Validate PDF/A-3b compliance using VeraPDF via subprocess.
+
+    Invokes VeraPDF as an isolated subprocess so the JVM is fully destroyed
+    after each call — no memory leaks possible in the main Python process.
+
+    Args:
+        pdf_bytes: Raw PDF bytes to validate.
+        verapdf_jar: Absolute path to the verapdf fat JAR.
+
+    Returns:
+        (pdfa_valid, errors) where pdfa_valid is True/False, or None on
+        subprocess failure (so callers can distinguish "invalid" from "unknown").
+    """
+    try:
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+            tmp.write(pdf_bytes)
+            tmp_path = tmp.name
+
+        try:
+            proc = subprocess.run(
+                [
+                    "java",
+                    "-Xms32m", "-Xmx256m",
+                    "-jar", verapdf_jar,
+                    "--flavour", "3b",   # PDF/A-3b — the Factur-X container profile
+                    "--format", "mrr",   # Machine-Readable Report (XML)
+                    tmp_path,
+                ],
+                capture_output=True,
+                timeout=60,
+            )
+
+            if not proc.stdout:
+                logger.warning(
+                    "VeraPDF produced no stdout (stderr: %s)",
+                    proc.stderr.decode(errors="replace")[:300],
+                )
+                return None, []
+
+            try:
+                mrr_doc = etree.fromstring(proc.stdout)
+            except etree.XMLSyntaxError as parse_err:
+                logger.error(
+                    "VeraPDF MRR XML parse error: %s. Raw: %s",
+                    parse_err,
+                    proc.stdout[:300],
+                )
+                return None, [
+                    ValidationError(
+                        rule_id="PDFA-PARSE-ERROR",
+                        message=f"VeraPDF output could not be parsed: {parse_err}",
+                        location="",
+                        severity="error",
+                        layer=ValidationLayer.SYSTEM,
+                    )
+                ]
+
+            ns = {"vp": VERAPDF_MRR_NS}
+            vr = mrr_doc.find(".//vp:validationReport", ns)
+            if vr is None:
+                logger.warning("VeraPDF: validationReport element missing in MRR output")
+                return None, []
+
+            is_compliant = vr.get("isCompliant", "false").lower() == "true"
+            errors: List[ValidationError] = []
+
+            if not is_compliant:
+                for rule in vr.findall(".//vp:rule[@status='failed']", ns):
+                    clause = rule.get("clause", "")
+                    test_num = rule.get("testNumber", "")
+                    rule_id = f"PDFA-3B-{clause}.{test_num}".replace("/", "-")
+
+                    desc_el = rule.find("vp:description", ns)
+                    description = (
+                        desc_el.text.strip()
+                        if desc_el is not None and desc_el.text
+                        else "PDF/A-3b compliance violation"
+                    )
+
+                    error_els = rule.findall("vp:error", ns)
+                    if error_els:
+                        for err_el in error_els:
+                            err_msg = err_el.get("message", description)
+                            loc_el = err_el.find("vp:location", ns)
+                            location = (
+                                loc_el.text.strip()
+                                if loc_el is not None and loc_el.text
+                                else clause
+                            )
+                            errors.append(
+                                ValidationError(
+                                    rule_id=rule_id,
+                                    message=err_msg,
+                                    location=location,
+                                    severity="error",
+                                    layer=ValidationLayer.PDF_A,
+                                )
+                            )
+                    else:
+                        errors.append(
+                            ValidationError(
+                                rule_id=rule_id,
+                                message=description,
+                                location=clause,
+                                severity="error",
+                                layer=ValidationLayer.PDF_A,
+                            )
+                        )
+
+            return is_compliant, errors
+
+        finally:
+            os.unlink(tmp_path)
+
+    except subprocess.TimeoutExpired:
+        logger.error("VeraPDF validation timed out after 60s")
+        return None, [
+            ValidationError(
+                rule_id="PDFA-TIMEOUT",
+                message="VeraPDF PDF/A-3b validation timed out after 60 seconds",
+                location="",
+                severity="error",
+                layer=ValidationLayer.SYSTEM,
+            )
+        ]
+    except Exception as exc:
+        logger.error("VeraPDF subprocess error: %s", exc)
+        return None, [
+            ValidationError(
+                rule_id="PDFA-ERROR",
+                message=f"VeraPDF validation failed: {exc}",
+                location="",
+                severity="error",
+                layer=ValidationLayer.SYSTEM,
+            )
+        ]

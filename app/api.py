@@ -291,7 +291,8 @@ async def validate_facturx(
                 warning_count=len([d for d in diagnostics if d.severity == "warning"]),
                 diagnostics=diagnostic_details,
                 validation_mode="pro_smart_diagnostics",
-                trial_notice="Trial Mode: Reference file recognized. Pro features unlocked." if is_trial else None
+                trial_notice="Trial Mode: Reference file recognized. Pro features unlocked." if is_trial else None,
+                pdfa_valid=result.get("pdfa_valid"),
             )
         else:
             # COMMUNITY MODE: Open Validation (full error list, structured format)
@@ -309,7 +310,8 @@ async def validate_facturx(
                 format=result.get("format_detected"),
                 flavor=result.get("profile_detected"),
                 errors=structured_errors,
-                validation_mode="open_community"
+                validation_mode="open_community",
+                pdfa_valid=result.get("pdfa_valid"),
             )
         
     except HTTPException:

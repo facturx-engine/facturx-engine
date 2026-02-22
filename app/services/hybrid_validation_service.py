@@ -41,6 +41,10 @@ MAX_WORKERS = int(os.getenv("FX_VALIDATION_WORKERS", "2"))
 VALIDATION_TIMEOUT = int(os.getenv("FX_VALIDATION_TIMEOUT", "30"))
 MAX_TASKS_PER_CHILD = int(os.getenv("FX_MAX_TASKS_PER_CHILD", "100"))
 
+# VeraPDF subprocess configuration
+# Set VERAPDF_JAR=/app/bin/verapdf.jar in the Docker image (via ENV in Dockerfile)
+VERAPDF_JAR = os.getenv("VERAPDF_JAR", "")
+
 
 def _get_executor() -> ProcessPoolExecutor:
     """Get or create the validation process pool."""
@@ -146,6 +150,7 @@ class HybridValidationService:
             "profile_detected": None,
             "xsd_valid": None,
             "schematron_valid": None,
+            "pdfa_valid": None,
             "errors": [],
             "validation_mode": "hybrid"  # vs "lite" for Community fallback
         }
@@ -302,7 +307,32 @@ class HybridValidationService:
                     "severity": "error",
                     "layer": "system"
                 })
-            
+
+            # 6. PDF/A-3b validation via VeraPDF subprocess (PDF inputs only)
+            # Runs in the main process as an isolated subprocess — no memory leaks.
+            # Skipped gracefully when VERAPDF_JAR is not configured (dev/test environments).
+            if is_pdf:
+                if VERAPDF_JAR and os.path.exists(VERAPDF_JAR):
+                    try:
+                        from app.services.hybrid_validator import validate_pdfa3
+                        pdfa_valid, pdfa_errors = validate_pdfa3(file_content, VERAPDF_JAR)
+                        result["pdfa_valid"] = pdfa_valid
+                        for e in pdfa_errors:
+                            result["errors"].append({
+                                "rule_id": e.rule_id,
+                                "message": e.message,
+                                "location": e.location,
+                                "severity": e.severity,
+                                "layer": e.layer.value,
+                            })
+                        if pdfa_valid is False:
+                            result["is_valid"] = False
+                    except Exception as e:
+                        logger.error("VeraPDF integration error: %s", e)
+                        # pdfa_valid stays None — caller can distinguish from explicit False
+                elif VERAPDF_JAR:
+                    logger.warning("VERAPDF_JAR configured but not found: %s", VERAPDF_JAR)
+
             return result
             
         except Exception as e:
