@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2026-02-23
+
+### Added
+
+- **Monetization**: Introduced Low-Touch "Evaluation Key" system (Ed25519 cryptography) unlocking 100% of Pro features for 30 days. Let the product sell itself.
+- **API Standard**: All APIs now meticulously conform to RFC 9457 structured error format payloads.
+- **Compliance**: Automatic SBOM (CycloneDX) deployment via Github Actions to anticipate the 2026 EU CRA constraints.
+
+### Changed
+
+- **Architecture Shift**: Hard-pivoted from native C-bindings (saxonche) to OS-level Subprocesses for VeraPDF and Saxon. Completely eradicates the silent JVM memory leaks and isolates MPLv2.0 dependencies.
+- **Conversion Endpoints**: Deprecated the generic layout engine inside `/v1/convert` into a "Bring Your Own PDF" paradigm to achieve zero-maintenance.
+
 ## [1.5.5] - 2026-02-19
 
 ### Fixed
