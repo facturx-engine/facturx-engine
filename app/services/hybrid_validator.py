@@ -115,8 +115,8 @@ class HybridValidator:
                             timeout=30
                         )
                         
-                        if proc.returncode != 0 and b"Exception" in proc.stderr:
-                            logger.error(f"Saxon Subprocess Error: {proc.stderr.decode('utf-8', 'ignore')}")
+                        if proc.returncode != 0:
+                            logger.error(f"Saxon Subprocess Error: {proc.stderr.decode('utf-8', 'ignore')} | exit code: {proc.returncode}")
                             errors.append(ValidationError("SYS-SAXON", "Saxon Execution Failed", "", "error", ValidationLayer.SYSTEM))
                             schematron_valid = False
                         else:

@@ -55,17 +55,17 @@ RUN wget -q \
     -O /tmp/verapdf-installer.zip && \
     unzip -q /tmp/verapdf-installer.zip -d /tmp/verapdf-installer-dir && \
     java -jar "/tmp/verapdf-installer-dir/verapdf-greenfield-${VERAPDF_VERSION}/verapdf-izpack-installer-${VERAPDF_VERSION}.jar" \
-        /tmp/verapdf-auto-install.xml && \
+    /tmp/verapdf-auto-install.xml && \
     rm -rf /tmp/verapdf-installer.zip /tmp/verapdf-installer-dir /tmp/verapdf-auto-install.xml
 
-# Download Saxon-HE 12.5 JAR from Maven Central
-RUN wget -q "https://repo1.maven.org/maven2/net/sf/saxon/Saxon-HE/12.5/Saxon-HE-12.5.jar" -O /saxon.jar
+# Download Saxon-HE 10.8 JAR from Maven Central (10.8 natively includes xmlresolver)
+RUN wget -q "https://repo1.maven.org/maven2/net/sf/saxon/Saxon-HE/10.8/Saxon-HE-10.8.jar" -O /saxon.jar
 
 # Locate the installed CLI fat JAR and stage it at /verapdf.jar.
 # The IzPack installer places the executable JAR in /opt/verapdf/bin/ as
 # greenfield-apps-<version>.jar (not verapdf-*.jar).
 RUN JAR=$(find /opt/verapdf/bin -maxdepth 1 -name "greenfield-apps-*.jar" \
-        | sort -V | tail -1) && \
+    | sort -V | tail -1) && \
     test -n "$JAR" || { echo "ERROR: VeraPDF JAR not found after installation" >&2; exit 1; } && \
     echo "Packaging VeraPDF JAR: $JAR" && \
     cp "$JAR" /verapdf.jar
@@ -76,20 +76,20 @@ RUN JAR=$(find /opt/verapdf/bin -maxdepth 1 -name "greenfield-apps-*.jar" \
 # The hardcoded base set covers modules that jdeps misses due to reflection
 # (jdk.unsupported → sun.misc.Unsafe, java.desktop → font metrics).
 RUN DETECTED_VERA=$(jdeps --ignore-missing-deps --print-module-deps /verapdf.jar \
-        2>/dev/null | grep -v '^$' || echo "") && \
+    2>/dev/null | grep -v '^$' || echo "") && \
     DETECTED_SAXON=$(jdeps --ignore-missing-deps --print-module-deps /saxon.jar \
-        2>/dev/null | grep -v '^$' || echo "") && \
+    2>/dev/null | grep -v '^$' || echo "") && \
     BASE="java.base,java.desktop,java.logging,java.management,java.naming,java.xml,java.xml.crypto,jdk.unsupported" && \
     ALL="${DETECTED_VERA:+${DETECTED_VERA},}${DETECTED_SAXON:+${DETECTED_SAXON},}${BASE}" && \
     UNIQUE=$(printf "%s" "$ALL" | tr ',' '\n' | grep -v '^$' | sort -u | tr '\n' ',' | sed 's/,$//') && \
     jlink \
-        --no-header-files \
-        --no-man-pages \
-        --compress=2 \
-        --strip-debug \
-        --module-path "${JAVA_HOME}/jmods" \
-        --add-modules "${UNIQUE}" \
-        --output /custom-jre
+    --no-header-files \
+    --no-man-pages \
+    --compress=2 \
+    --strip-debug \
+    --module-path "${JAVA_HOME}/jmods" \
+    --add-modules "${UNIQUE}" \
+    --output /custom-jre
 
 # ----------------------------------------
 # Stage 2: Runtime image

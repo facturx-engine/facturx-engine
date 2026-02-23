@@ -110,7 +110,7 @@ def test_xml_generation_invalid_json(client):
 
     assert response.status_code == 400
     data = response.json()
-    assert data["detail"]["error"] == "INVALID_JSON"
+    assert data["type"] == "urn:facturx:error:invalid_json"
 
 
 def test_xml_generation_missing_fields(client):
@@ -124,7 +124,7 @@ def test_xml_generation_missing_fields(client):
 
     assert response.status_code == 400
     data = response.json()
-    assert data["detail"]["error"] == "INVALID_METADATA"
+    assert data["type"] == "urn:facturx:error:invalid_metadata"
 
 
 if __name__ == "__main__":

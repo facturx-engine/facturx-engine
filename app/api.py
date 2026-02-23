@@ -486,7 +486,7 @@ async def serialize_facturx(
             # /v1/serialize is available for Evaluation, Business, and Enterprise tiers.
             # This allows full PoC testing during the 30-day evaluation period.
             is_pro_tier = has_tier(["Evaluation", "Business", "Enterprise"])
-            should_obfuscate = not is_pro_tier
+            should_obfuscate = not (is_pro_tier or is_trial)
 
             invoice_data = BusinessReadySerializer.serialize(
                 xml_data, 
