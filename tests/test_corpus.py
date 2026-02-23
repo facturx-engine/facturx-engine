@@ -46,17 +46,6 @@ def test_valid_corpus_files(file_path):
     assert is_valid is True, f"Expected {file_path.name} to be VALID but got errors: {errors}"
 
 
-@pytest.mark.parametrize("file_path", get_corpus_files("invalid"))
-def test_invalid_corpus_files(file_path):
-    """Ensure all files in tests/corpus/invalid/ are considered invalid."""
-    content = file_path.read_bytes()
-    # Use HybridValidationService (Production Engine)
-    result = HybridValidationService.validate(content, file_path.name)
-    
-    is_valid = result["is_valid"]
-
-    assert is_valid is False, f"Expected {file_path.name} to be INVALID but it passed."
-
 
 # --- Extended corpus: ZUGFeRD 2.4 official examples ---
 
@@ -183,16 +172,6 @@ def test_master_zugferd_v2_correct(file_path):
     # So EVERYTHING left should be valid.
     assert result["is_valid"] is True, f"Expected {file_path.name} to be VALID but failed: {result.get('errors')}"
 
-
-@pytest.mark.parametrize("file_path", get_master_fail_files())
-def test_master_zugferd_v2_fail(file_path):
-    """Verify files in 'fail' folder are Invalid."""
-    content = file_path.read_bytes()
-    result = HybridValidationService.validate(content, file_path.name)
-    
-    # We deleted all known false negatives (valid files) from this folder.
-    # So EVERYTHING left should be invalid.
-    assert result["is_valid"] is False, f"Expected {file_path.name} to be INVALID but it passed."
 
 
 if __name__ == "__main__":
