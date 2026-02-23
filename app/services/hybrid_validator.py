@@ -167,7 +167,8 @@ def validate_pdfa3(
                 [
                     "java",
                     "-Xms32m", "-Xmx256m",
-                    "-jar", verapdf_jar,
+                    "-cp", verapdf_jar,
+                    "org.verapdf.apps.GreenfieldCliWrapper",
                     "--flavour", "3b",   # PDF/A-3b — the Factur-X container profile
                     "--format", "mrr",   # Machine-Readable Report (XML)
                     tmp_path,
@@ -201,8 +202,8 @@ def validate_pdfa3(
                     )
                 ]
 
-            ns = {"vp": VERAPDF_MRR_NS}
-            vr = mrr_doc.find(".//vp:validationReport", ns)
+            # VeraPDF MRR output has no XML namespace — use plain element names
+            vr = mrr_doc.find(".//validationReport")
             if vr is None:
                 logger.warning("VeraPDF: validationReport element missing in MRR output")
                 return None, []
@@ -211,23 +212,23 @@ def validate_pdfa3(
             errors: List[ValidationError] = []
 
             if not is_compliant:
-                for rule in vr.findall(".//vp:rule[@status='failed']", ns):
+                for rule in vr.findall(".//rule[@status='failed']"):
                     clause = rule.get("clause", "")
                     test_num = rule.get("testNumber", "")
                     rule_id = f"PDFA-3B-{clause}.{test_num}".replace("/", "-")
 
-                    desc_el = rule.find("vp:description", ns)
+                    desc_el = rule.find("description")
                     description = (
                         desc_el.text.strip()
                         if desc_el is not None and desc_el.text
                         else "PDF/A-3b compliance violation"
                     )
 
-                    error_els = rule.findall("vp:error", ns)
+                    error_els = rule.findall("error")
                     if error_els:
                         for err_el in error_els:
                             err_msg = err_el.get("message", description)
-                            loc_el = err_el.find("vp:location", ns)
+                            loc_el = err_el.find("location")
                             location = (
                                 loc_el.text.strip()
                                 if loc_el is not None and loc_el.text
