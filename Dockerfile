@@ -17,11 +17,11 @@
 # ----------------------------------------
 FROM eclipse-temurin:17-jdk-jammy AS jlink-builder
 
-ARG VERAPDF_VERSION=1.26.2
+ARG VERAPDF_VERSION=1.26.5
 ARG VERAPDF_MAJOR_MINOR=1.26
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    wget ca-certificates && \
+    wget ca-certificates unzip && \
     rm -rf /var/lib/apt/lists/*
 
 # Write AutomatedInstallation XML for IzPack headless installer.
@@ -41,13 +41,16 @@ RUN printf '%s\n' \
     '</AutomatedInstallation>' \
     > /tmp/verapdf-auto-install.xml
 
-# Download the Greenfield installer from the official distribution server
-# and perform a fully headless installation to /opt/verapdf
+# Download the Greenfield installer ZIP from the official distribution server.
+# The ZIP contains the IzPack installer JAR at:
+#   verapdf-greenfield-VERSION/verapdf-izpack-installer-VERSION.jar
 RUN wget -q \
-    "https://software.verapdf.org/releases/${VERAPDF_MAJOR_MINOR}/verapdf-greenfield-${VERAPDF_VERSION}-installer.jar" \
-    -O /tmp/verapdf-installer.jar && \
-    java -jar /tmp/verapdf-installer.jar /tmp/verapdf-auto-install.xml && \
-    rm /tmp/verapdf-installer.jar /tmp/verapdf-auto-install.xml
+    "https://software.verapdf.org/releases/${VERAPDF_MAJOR_MINOR}/verapdf-greenfield-${VERAPDF_VERSION}-installer.zip" \
+    -O /tmp/verapdf-installer.zip && \
+    unzip -q /tmp/verapdf-installer.zip -d /tmp/verapdf-installer-dir && \
+    java -jar "/tmp/verapdf-installer-dir/verapdf-greenfield-${VERAPDF_VERSION}/verapdf-izpack-installer-${VERAPDF_VERSION}.jar" \
+        /tmp/verapdf-auto-install.xml && \
+    rm -rf /tmp/verapdf-installer.zip /tmp/verapdf-installer-dir /tmp/verapdf-auto-install.xml
 
 # Locate the installed CLI fat JAR and stage it at /verapdf.jar.
 # The IzPack installer places the executable JAR at /opt/verapdf/verapdf-<version>.jar.
