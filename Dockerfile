@@ -25,16 +25,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     rm -rf /var/lib/apt/lists/*
 
 # Write AutomatedInstallation XML for IzPack headless installer.
-# Panel IDs match the VeraPDF Greenfield 1.x installer specification.
+# Panel IDs are extracted from resources/panelsOrder inside the installer JAR.
+# Pack names are extracted from resources/packs.info (ZIP listing: pack-<name>).
 RUN printf '%s\n' \
     '<?xml version="1.0" encoding="UTF-8" standalone="no"?>' \
     '<AutomatedInstallation langpack="eng">' \
-    '    <com.izforge.izpack.panels.htmlhello.HTMLHelloPanel id="htmlhello"/>' \
-    '    <com.izforge.izpack.panels.target.TargetPanel id="target">' \
+    '    <com.izforge.izpack.panels.htmlhello.HTMLHelloPanel id="welcome"/>' \
+    '    <com.izforge.izpack.panels.target.TargetPanel id="install_dir">' \
     '        <installpath>/opt/verapdf</installpath>' \
     '    </com.izforge.izpack.panels.target.TargetPanel>' \
-    '    <com.izforge.izpack.panels.packs.PacksPanel id="packs">' \
-    '        <pack index="0" name="veraPDF software" selected="true"/>' \
+    '    <com.izforge.izpack.panels.packs.PacksPanel id="sdk_pack_select">' \
+    '        <pack name="veraPDF GUI" selected="true"/>' \
+    '        <pack name="veraPDF Validation model" selected="true"/>' \
+    '        <pack name="veraPDF Mac and *nix Scripts" selected="true"/>' \
+    '        <pack name="veraPDF Batch files" selected="false"/>' \
+    '        <pack name="veraPDF Documentation" selected="false"/>' \
+    '        <pack name="veraPDF Sample Plugins" selected="false"/>' \
     '    </com.izforge.izpack.panels.packs.PacksPanel>' \
     '    <com.izforge.izpack.panels.install.InstallPanel id="install"/>' \
     '    <com.izforge.izpack.panels.finish.FinishPanel id="finish"/>' \
@@ -53,10 +59,9 @@ RUN wget -q \
     rm -rf /tmp/verapdf-installer.zip /tmp/verapdf-installer-dir /tmp/verapdf-auto-install.xml
 
 # Locate the installed CLI fat JAR and stage it at /verapdf.jar.
-# The IzPack installer places the executable JAR at /opt/verapdf/verapdf-<version>.jar.
-# We exclude uninstaller JARs and take the highest version if multiple are found.
-RUN JAR=$(find /opt/verapdf -maxdepth 2 -name "verapdf-*.jar" \
-        ! -name "*uninstall*" \
+# The IzPack installer places the executable JAR in /opt/verapdf/bin/ as
+# greenfield-apps-<version>.jar (not verapdf-*.jar).
+RUN JAR=$(find /opt/verapdf/bin -maxdepth 1 -name "greenfield-apps-*.jar" \
         | sort -V | tail -1) && \
     test -n "$JAR" || { echo "ERROR: VeraPDF JAR not found after installation" >&2; exit 1; } && \
     echo "Packaging VeraPDF JAR: $JAR" && \
