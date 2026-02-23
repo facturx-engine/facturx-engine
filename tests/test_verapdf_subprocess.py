@@ -7,8 +7,6 @@ Suitable for CI environments without a JVM.
 import subprocess
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from app.services.hybrid_validator import ValidationLayer, validate_pdfa3
 
 FAKE_JAR = "/fake/verapdf.jar"
