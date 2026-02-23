@@ -67,6 +67,67 @@ app.include_router(router)
 app.include_router(diagnostics_router)
 
 
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from fastapi import HTTPException
+from app.schemas.errors import ProblemDetails
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """
+    Format standard FastAPI validation errors (e.g., missing fields, bad types) into RFC 9457 format.
+    """
+    errors = exc.errors()
+    # Simple formatting of the first validation error
+    detail_msg = ", ".join([f"{'.'.join(str(loc) for loc in err['loc'])}: {err['msg']}" for err in errors])
+    
+    problem = ProblemDetails(
+        type="about:blank",
+        title="Bad Request",
+        status=400,
+        detail=f"Validation failed: {detail_msg}",
+        instance=str(request.url.path),
+        extensions={"errors": errors}
+    )
+    return JSONResponse(status_code=400, content=problem.model_dump(exclude_none=True))
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    """
+    Format standard HTTPExceptions into RFC 9457 format.
+    """
+    # If the detail is already a dict (our old error format), extract message and error code
+    detail_str = str(exc.detail)
+    error_code = "urn:facturx:error:api"
+    
+    if isinstance(exc.detail, dict):
+        detail_str = exc.detail.get("message", detail_str)
+        error_code = f"urn:facturx:error:{exc.detail.get('error', '').lower()}" or error_code
+        
+    problem = ProblemDetails(
+        type=error_code,
+        title="API Error",
+        status=exc.status_code,
+        detail=detail_str,
+        instance=str(request.url.path)
+    )
+    return JSONResponse(status_code=exc.status_code, content=problem.model_dump(exclude_none=True))
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """
+    Format unhandled exceptions into RFC 9457 format.
+    """
+    logger.exception(f"Unhandled Global Exception: {exc}")
+    problem = ProblemDetails(
+        type="urn:facturx:error:internal",
+        title="Internal Server Error",
+        status=500,
+        detail="An unexpected error occurred processing the request.",
+        instance=str(request.url.path)
+    )
+    return JSONResponse(status_code=500, content=problem.model_dump(exclude_none=True))
+
 # Switch to on_event which is more robust for logging in some versions
 @app.on_event("startup")
 async def startup_event():
@@ -84,25 +145,40 @@ async def startup_event():
         sys.exit(1)
     logger.info("✅ Schema integrity verified (Factur-X 1.08).")
 
-    # 2. VERAPDF CHECK: Verify custom JRE + JAR are accessible
+    # 2. VERAPDF & SAXON CHECK: Verify custom JRE + JARs are accessible
     verapdf_jar = os.getenv("VERAPDF_JAR", "")
+    saxon_jar = os.getenv("SAXON_JAR", "")
+    
+    # Check JRE functionality if either is configured
+    if verapdf_jar or saxon_jar:
+        try:
+            result = subprocess.run(["java", "-version"], capture_output=True, timeout=10)
+            if result.returncode == 0:
+                logger.info("✅ Java JRE ready (functional).")
+            else:
+                logger.warning(f"⚠️  Java JRE check failed (exit {result.returncode}). Subprocess validation may not work.")
+        except FileNotFoundError:
+            logger.warning("⚠️  'java' not found in PATH. Subprocess validation disabled.")
+        except subprocess.TimeoutExpired:
+            logger.warning("⚠️  JRE check timed out at startup. Continuing anyway.")
+            
     if verapdf_jar:
         if not Path(verapdf_jar).exists():
             logger.warning(f"⚠️  VERAPDF_JAR configured but JAR not found: {verapdf_jar}")
             logger.warning("   PDF/A-3b validation will be skipped until the JAR is available.")
         else:
-            try:
-                result = subprocess.run(["java", "-version"], capture_output=True, timeout=10)
-                if result.returncode == 0:
-                    logger.info("✅ VeraPDF ready (custom JRE functional, JAR present).")
-                else:
-                    logger.warning(f"⚠️  VeraPDF JRE check failed (exit {result.returncode}). PDF/A-3b validation may not work.")
-            except FileNotFoundError:
-                logger.warning("⚠️  'java' not found in PATH. PDF/A-3b validation disabled.")
-            except subprocess.TimeoutExpired:
-                logger.warning("⚠️  JRE check timed out at startup. Continuing anyway.")
+            logger.info("✅ VeraPDF JAR present.")
     else:
-        logger.info("ℹ️  VERAPDF_JAR not set — PDF/A-3b validation disabled (XML validation active).")
+        logger.info("ℹ️  VERAPDF_JAR not set — PDF/A-3b validation disabled.")
+        
+    if saxon_jar:
+        if not Path(saxon_jar).exists():
+            logger.warning(f"⚠️  SAXON_JAR configured but JAR not found: {saxon_jar}")
+            logger.warning("   Schematron validation will fail until the JAR is available.")
+        else:
+            logger.info("✅ Saxon-HE JAR present.")
+    else:
+        logger.info("ℹ️  SAXON_JAR not set — Defaulting to skip Schematron evaluation.")
 
     # LICENSE CHECK: Fail Fast Strategy
     try:
@@ -132,8 +208,6 @@ async def startup_event():
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    from app.services.hybrid_validation_service import shutdown_executor
-    shutdown_executor()
     logger.info("Shutting down API...")
 
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -194,18 +268,20 @@ async def health_check():
 
     Returns the status of each critical subsystem:
     - API process (always healthy if this responds)
-    - VeraPDF / custom JRE (present and executable)
+    - VeraPDF / Saxon / custom JRE (present and executable)
     """
     verapdf_jar = os.getenv("VERAPDF_JAR", "")
+    saxon_jar = os.getenv("SAXON_JAR", "")
     verapdf_status: dict = {}
+    saxon_status: dict = {}
 
-    if not verapdf_jar:
-        verapdf_status = {"status": "not_configured"}
-    elif not os.path.exists(verapdf_jar):
-        verapdf_status = {"status": "jar_missing", "jar": verapdf_jar}
-    else:
+    def check_jar(jar_path: str) -> dict:
+        if not jar_path:
+            return {"status": "not_configured"}
+        if not os.path.exists(jar_path):
+            return {"status": "jar_missing", "jar": jar_path}
+        
         # Verify the custom JRE is functional by running java -version.
-        # Timeout of 5s is well within Docker's default health check timeout (10s).
         try:
             proc = subprocess.run(
                 ["java", "-version"],
@@ -213,23 +289,28 @@ async def health_check():
                 timeout=5,
             )
             if proc.returncode == 0:
-                verapdf_status = {"status": "available", "jar": verapdf_jar}
+                return {"status": "available", "jar": jar_path}
             else:
-                verapdf_status = {
+                return {
                     "status": "jre_error",
-                    "jar": verapdf_jar,
+                    "jar": jar_path,
                     "detail": proc.stderr.decode(errors="replace")[:200],
                 }
         except FileNotFoundError:
-            verapdf_status = {"status": "java_not_found"}
+            return {"status": "java_not_found"}
         except subprocess.TimeoutExpired:
-            verapdf_status = {"status": "jre_timeout"}
+            return {"status": "jre_timeout"}
         except Exception as exc:
-            verapdf_status = {"status": "error", "detail": str(exc)}
+            return {"status": "error", "detail": str(exc)}
 
-    # Overall status is degraded if VeraPDF is configured but broken
+    verapdf_status = check_jar(verapdf_jar)
+    saxon_status = check_jar(saxon_jar)
+
+    # Overall status is degraded if any configured plugin is broken
     overall = "healthy"
     if verapdf_status.get("status") not in ("available", "not_configured"):
+        overall = "degraded"
+    if saxon_status.get("status") not in ("available", "not_configured"):
         overall = "degraded"
 
     return {
@@ -237,6 +318,7 @@ async def health_check():
         "service": "factur-x-api",
         "version": __version__,
         "verapdf": verapdf_status,
+        "saxon": saxon_status,
     }
 
 @app.get("/metrics", tags=["observability"], include_in_schema=True)

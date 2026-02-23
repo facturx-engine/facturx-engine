@@ -1,0 +1,42 @@
+name: Continuous SBOM Generation (CRA Compliance)
+
+on:
+  schedule:
+    # Run at 02:00 UTC every Sunday 
+    - cron: '0 2 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  DOCKER_IMAGE: facturxengine/facturx-engine
+
+jobs:
+  generate-sbom:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate SBOM (CycloneDX)
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{ env.DOCKER_IMAGE }}:latest
+          format: cyclonedx-json
+          output-file: sbom.cyclonedx.json
+
+      - name: Upload SBOM Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-cyclonedx
+          path: sbom.cyclonedx.json
+
+      - name: Commit SBOM to Repository
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add sbom.cyclonedx.json
+          # Only commit if there are changes
+          git diff --quiet && git diff --staged --quiet || git commit -m "chore: update SBOM [skip ci]"
+          git push

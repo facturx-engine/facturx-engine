@@ -1,0 +1,14 @@
+{
+    "version": 2,
+    "rewrites": [
+        {
+            "source": "/(.*)",
+            "destination": "/deploy/lemon_squeezy_webhook.py"
+        }
+    ],
+    "functions": {
+        "deploy/lemon_squeezy_webhook.py": {
+            "runtime": "vercel-python@0.1.0"
+        }
+    }
+}

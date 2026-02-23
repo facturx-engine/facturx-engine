@@ -22,18 +22,19 @@ router = APIRouter(prefix="/v1", tags=["factur-x"])
 @router.post("/convert", 
              response_class=StreamingResponse,
              responses={
-                 200: {"description": "Factur-X PDF successfully generated"},
+                 200: {"description": "Factur-X PDF successfully generated from provided PDF"},
                  400: {"model": ErrorResponse, "description": "Invalid input"},
                  500: {"model": ErrorResponse, "description": "Server error"}
              })
 async def convert_to_facturx(
-    pdf: UploadFile = File(..., description="Original PDF invoice"),
+    pdf: UploadFile = File(..., description="Original PDF invoice (Bring Your Own PDF)"),
     metadata: str = Form(..., description="Invoice metadata as JSON")
 ):
     """
-    Convert a standard PDF invoice + JSON metadata into a Factur-X PDF.
+    Attach Factur-X/CII XML to an existing standard PDF invoice (BYOPDF).
     
-    The output PDF is PDF/A-3 compliant with embedded XML.
+    The input must be a valid PDF file (Max 20MB). The API will generate the XML 
+    from the metadata and embed it into the PDF to create a PDF/A-3 compliant Factur-X invoice.
     """
     import time
     from app.metrics import metrics
@@ -75,7 +76,7 @@ async def convert_to_facturx(
         
         # Generate Factur-X PDF
         try:
-            facturx_pdf = GeneratorService.generate_facturx_pdf(pdf_content, invoice_metadata)
+            facturx_pdf = GeneratorService.attach_xml_to_pdf(pdf_content, invoice_metadata)
         except ValueError as e:
             raise HTTPException(
                 status_code=400,
@@ -439,18 +440,16 @@ async def serialize_facturx(
 
         # LICENSE & TRIAL CHECK
         license_key = os.getenv("LICENSE_KEY", "").strip()
-        is_pro = False
         is_trial = False
         
         from app.services.trial_service import is_trial_file
         if is_trial_file(file_content):
             is_trial = True
-            is_pro = True
             logger.info("TRIAL Mode enabled for /serialize")
         elif license_key:
             try:
                 if is_licensed():
-                    is_pro = True
+                    logger.info("PRO License validated for /serialize")
             except Exception:
                 pass
 
@@ -482,12 +481,16 @@ async def serialize_facturx(
 
         # Serialize
         try:
-            # Obfuscate if NOT Pro AND NOT Trial
-            should_obfuscate = not is_pro
+            from app.license import has_tier
             
+            # /v1/serialize is available for Evaluation, Business, and Enterprise tiers.
+            # This allows full PoC testing during the 30-day evaluation period.
+            is_pro_tier = has_tier(["Evaluation", "Business", "Enterprise"])
+            should_obfuscate = not is_pro_tier
+
             invoice_data = BusinessReadySerializer.serialize(
                 xml_data, 
-                is_pro=is_pro, 
+                is_pro=is_pro_tier, 
                 obfuscate=should_obfuscate
             )
             
@@ -495,7 +498,7 @@ async def serialize_facturx(
                 success=True,
                 invoice=invoice_data,
                 trial_notice="Trial Mode: Reference file recognized. Full data unlocked." if is_trial else (
-                    "PROMO: Only Pro users get full precision. Community data is obfuscated (set to zero) for schema testing." if should_obfuscate else None
+                    "PROMO: Only Pro/Evaluation users get full precision. Community data is obfuscated (set to zero) for schema testing." if should_obfuscate else None
                 )
             )
         except Exception as e:

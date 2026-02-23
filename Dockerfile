@@ -58,6 +58,9 @@ RUN wget -q \
         /tmp/verapdf-auto-install.xml && \
     rm -rf /tmp/verapdf-installer.zip /tmp/verapdf-installer-dir /tmp/verapdf-auto-install.xml
 
+# Download Saxon-HE 12.5 JAR from Maven Central
+RUN wget -q "https://repo1.maven.org/maven2/net/sf/saxon/Saxon-HE/12.5/Saxon-HE-12.5.jar" -O /saxon.jar
+
 # Locate the installed CLI fat JAR and stage it at /verapdf.jar.
 # The IzPack installer places the executable JAR in /opt/verapdf/bin/ as
 # greenfield-apps-<version>.jar (not verapdf-*.jar).
@@ -69,13 +72,15 @@ RUN JAR=$(find /opt/verapdf/bin -maxdepth 1 -name "greenfield-apps-*.jar" \
 
 # Detect required JDK modules via jdeps, then merge with a known-good base set.
 # --ignore-missing-deps: tolerates non-modular (automatic module) dependencies
-# inside VeraPDF's fat JAR — outputs only JDK module names.
+# inside VeraPDF and Saxon fat JARs — outputs only JDK module names.
 # The hardcoded base set covers modules that jdeps misses due to reflection
 # (jdk.unsupported → sun.misc.Unsafe, java.desktop → font metrics).
-RUN DETECTED=$(jdeps --ignore-missing-deps --print-module-deps /verapdf.jar \
+RUN DETECTED_VERA=$(jdeps --ignore-missing-deps --print-module-deps /verapdf.jar \
+        2>/dev/null | grep -v '^$' || echo "") && \
+    DETECTED_SAXON=$(jdeps --ignore-missing-deps --print-module-deps /saxon.jar \
         2>/dev/null | grep -v '^$' || echo "") && \
     BASE="java.base,java.desktop,java.logging,java.management,java.naming,java.xml,java.xml.crypto,jdk.unsupported" && \
-    ALL="${DETECTED:+${DETECTED},}${BASE}" && \
+    ALL="${DETECTED_VERA:+${DETECTED_VERA},}${DETECTED_SAXON:+${DETECTED_SAXON},}${BASE}" && \
     UNIQUE=$(printf "%s" "$ALL" | tr ',' '\n' | grep -v '^$' | sort -u | tr '\n' ',' | sed 's/,$//') && \
     jlink \
         --no-header-files \
@@ -105,14 +110,17 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 # Inject the custom JRE and VeraPDF JAR from the builder stage
+# Inject the custom JRE, VeraPDF JAR, and Saxon JAR from the builder stage
 COPY --from=jlink-builder /custom-jre /opt/jre
 COPY --from=jlink-builder /verapdf.jar /app/bin/verapdf.jar
+COPY --from=jlink-builder /saxon.jar /app/bin/saxon.jar
 
 # Make the custom JRE the default java on PATH
 ENV PATH="/opt/jre/bin:${PATH}"
 
-# Tell the validation service where to find VeraPDF
+# Tell the validation service where to find VeraPDF and Saxon
 ENV VERAPDF_JAR=/app/bin/verapdf.jar
+ENV SAXON_JAR=/app/bin/saxon.jar
 
 # Install system dependencies for lxml/saxonc
 RUN apt-get update && apt-get install -y --no-install-recommends \
