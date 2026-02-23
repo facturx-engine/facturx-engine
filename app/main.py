@@ -4,6 +4,7 @@ Factur-X API - Main Application Entry Point
 import logging
 import multiprocessing
 import os
+import subprocess
 
 # For Windows multiprocessing support (spawn)
 if os.name == 'nt':
@@ -82,7 +83,27 @@ async def startup_event():
         logger.critical("   The application cannot start without EN16931 schemas.")
         sys.exit(1)
     logger.info("✅ Schema integrity verified (Factur-X 1.08).")
-    
+
+    # 2. VERAPDF CHECK: Verify custom JRE + JAR are accessible
+    verapdf_jar = os.getenv("VERAPDF_JAR", "")
+    if verapdf_jar:
+        if not Path(verapdf_jar).exists():
+            logger.warning(f"⚠️  VERAPDF_JAR configured but JAR not found: {verapdf_jar}")
+            logger.warning("   PDF/A-3b validation will be skipped until the JAR is available.")
+        else:
+            try:
+                result = subprocess.run(["java", "-version"], capture_output=True, timeout=10)
+                if result.returncode == 0:
+                    logger.info("✅ VeraPDF ready (custom JRE functional, JAR present).")
+                else:
+                    logger.warning(f"⚠️  VeraPDF JRE check failed (exit {result.returncode}). PDF/A-3b validation may not work.")
+            except FileNotFoundError:
+                logger.warning("⚠️  'java' not found in PATH. PDF/A-3b validation disabled.")
+            except subprocess.TimeoutExpired:
+                logger.warning("⚠️  JRE check timed out at startup. Continuing anyway.")
+    else:
+        logger.info("ℹ️  VERAPDF_JAR not set — PDF/A-3b validation disabled (XML validation active).")
+
     # LICENSE CHECK: Fail Fast Strategy
     try:
         # Try to import licensing module (Only in Pro)
@@ -168,11 +189,54 @@ async def root():
 
 @app.get("/health", tags=["health"])
 async def health_check():
-    """Detailed health check."""
+    """
+    Detailed health check.
+
+    Returns the status of each critical subsystem:
+    - API process (always healthy if this responds)
+    - VeraPDF / custom JRE (present and executable)
+    """
+    verapdf_jar = os.getenv("VERAPDF_JAR", "")
+    verapdf_status: dict = {}
+
+    if not verapdf_jar:
+        verapdf_status = {"status": "not_configured"}
+    elif not os.path.exists(verapdf_jar):
+        verapdf_status = {"status": "jar_missing", "jar": verapdf_jar}
+    else:
+        # Verify the custom JRE is functional by running java -version.
+        # Timeout of 5s is well within Docker's default health check timeout (10s).
+        try:
+            proc = subprocess.run(
+                ["java", "-version"],
+                capture_output=True,
+                timeout=5,
+            )
+            if proc.returncode == 0:
+                verapdf_status = {"status": "available", "jar": verapdf_jar}
+            else:
+                verapdf_status = {
+                    "status": "jre_error",
+                    "jar": verapdf_jar,
+                    "detail": proc.stderr.decode(errors="replace")[:200],
+                }
+        except FileNotFoundError:
+            verapdf_status = {"status": "java_not_found"}
+        except subprocess.TimeoutExpired:
+            verapdf_status = {"status": "jre_timeout"}
+        except Exception as exc:
+            verapdf_status = {"status": "error", "detail": str(exc)}
+
+    # Overall status is degraded if VeraPDF is configured but broken
+    overall = "healthy"
+    if verapdf_status.get("status") not in ("available", "not_configured"):
+        overall = "degraded"
+
     return {
-        "status": "healthy",
+        "status": overall,
         "service": "factur-x-api",
-        "version": __version__
+        "version": __version__,
+        "verapdf": verapdf_status,
     }
 
 @app.get("/metrics", tags=["observability"], include_in_schema=True)
