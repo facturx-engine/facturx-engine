@@ -36,21 +36,22 @@ class TestEndToEndWorkflows(unittest.TestCase):
         """Workflow for a user WITH a valid license key."""
         with patch.dict(os.environ, {"LICENSE_KEY": "PRO-VALID-KEY"}):
             with patch("app.license.is_licensed", return_value=True):
-                with patch("app.services.trial_service.is_trial_file", return_value=False):
-                    files = {"file": ("test.pdf", self.invoice_content, "application/pdf")}
-                    
-                    # 1. Test Validation
-                    response = self.client.post("/v1/validate", files=files)
-                    data = response.json()
-                    self.assertEqual(data["validation_mode"], "pro_smart_diagnostics")
-                    self.assertIn("diagnostics", data)
-                    self.assertIsNone(data.get("trial_notice"))
+                with patch("app.license.has_tier", return_value=True):
+                    with patch("app.services.trial_service.is_trial_file", return_value=False):
+                        files = {"file": ("test.pdf", self.invoice_content, "application/pdf")}
+                        
+                        # 1. Test Validation
+                        response = self.client.post("/v1/validate", files=files)
+                        data = response.json()
+                        self.assertEqual(data["validation_mode"], "pro_smart_diagnostics")
+                        self.assertIn("diagnostics", data)
+                        self.assertIsNone(data.get("trial_notice"))
 
-                    # 2. Test Serialization
-                    response = self.client.post("/v1/serialize", files=files)
-                    data = response.json()
-                    self.assertTrue(data["success"])
-                    self.assertIsNone(data.get("trial_notice"))
+                        # 2. Test Serialization
+                        response = self.client.post("/v1/serialize", files=files)
+                        data = response.json()
+                        self.assertTrue(data["success"])
+                        self.assertIsNone(data.get("trial_notice"))
 
     def test_trial_workflow(self):
         """Workflow for a user WITHOUT license but using a WHITELISTED file."""

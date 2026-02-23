@@ -115,8 +115,9 @@ class TestSerialization(unittest.TestCase):
             self.assertIn("PROMO", data.get("trial_notice", ""))
 
     @patch('app.license.is_licensed', return_value=True)
+    @patch('app.license.has_tier', return_value=True)
     @patch('app.metrics.metrics')
-    def test_serialize_ubl_xrechnung(self, mock_metrics, mock_is_licensed):
+    def test_serialize_ubl_xrechnung(self, mock_metrics, mock_has_tier, mock_is_licensed):
         """Pro users should be able to serialize UBL (XRechnung) files."""
         
         # We must simulate a License Key being present to trigger the is_licensed check
