@@ -16,25 +16,33 @@ FAKE_PDF = b"%PDF-1.4 1 0 obj<</Type/Catalog>>endobj"
 # Minimal VeraPDF Machine-Readable Report (MRR) XML fixtures
 # -------------------------------------------------------------------------
 
-_MRR_COMPLIANT = b"""<?xml version="1.0" encoding="UTF-8"?>
-<report xmlns="http://www.verapdf.org/MachineReadableReport">
-  <validationReport flavour="3b" isCompliant="true" statement="compliant"/>
+_MRR_COMPLIANT = b"""<?xml version="1.0" encoding="utf-8"?>
+<report>
+  <jobs>
+    <job>
+      <validationReport flavour="3b" isCompliant="true" statement="compliant"/>
+    </job>
+  </jobs>
 </report>"""
 
-_MRR_NON_COMPLIANT = b"""<?xml version="1.0" encoding="UTF-8"?>
-<report xmlns="http://www.verapdf.org/MachineReadableReport">
-  <validationReport flavour="3b" isCompliant="false" statement="not compliant">
-    <rule clause="6.1.2" testNumber="1" status="failed" passedChecks="0" failedChecks="1">
-      <description>PDF version mismatch</description>
-      <error message="Header version incorrect">
-        <location>document root</location>
-      </error>
-    </rule>
-  </validationReport>
+_MRR_NON_COMPLIANT = b"""<?xml version="1.0" encoding="utf-8"?>
+<report>
+  <jobs>
+    <job>
+      <validationReport flavour="3b" isCompliant="false" statement="not compliant">
+        <rule clause="6.1.2" testNumber="1" status="failed" passedChecks="0" failedChecks="1">
+          <description>PDF version mismatch</description>
+          <error message="Header version incorrect">
+            <location>document root</location>
+          </error>
+        </rule>
+      </validationReport>
+    </job>
+  </jobs>
 </report>"""
 
-_MRR_MISSING_REPORT = b"""<?xml version="1.0" encoding="UTF-8"?>
-<report xmlns="http://www.verapdf.org/MachineReadableReport">
+_MRR_MISSING_REPORT = b"""<?xml version="1.0" encoding="utf-8"?>
+<report>
   <jobs/>
 </report>"""
 
@@ -160,8 +168,9 @@ def test_subprocess_receives_correct_verapdf_flags(mock_run):
 
     called_cmd = mock_run.call_args[0][0]
     assert called_cmd[0] == "java"
-    assert "-jar" in called_cmd
+    assert "-cp" in called_cmd
     assert FAKE_JAR in called_cmd
+    assert "org.verapdf.apps.GreenfieldCliWrapper" in called_cmd
     assert "--flavour" in called_cmd
     assert "3b" in called_cmd
     assert "--format" in called_cmd
