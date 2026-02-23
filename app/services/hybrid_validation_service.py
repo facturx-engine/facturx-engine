@@ -3,29 +3,25 @@ HybridValidationService: Production-grade EN 16931 validation using the Hybrid A
 
 Uses:
 - lxml for XSD structure validation (fast, secure)
-- SaxonC-HE for Schematron business rules (XSLT 3.0 compliant)
-
-This service is designed for use with ProcessPoolExecutor in production
-to isolate SaxonC-HE and prevent memory issues.
+- Saxon-HE Subprocess for Schematron business rules (Zero memory leaks)
 """
 import logging
 import os
 from io import BytesIO
 from pathlib import Path
-from typing import Optional, Dict, Any
-from concurrent.futures import ProcessPoolExecutor, TimeoutError as FuturesTimeoutError
+from typing import Dict, Any
 import asyncio
 
 from app.services.validation_utils import detect_format
 from app.services.pdf_utils import get_xml_from_pdf
 from lxml import etree
+from app.services.hybrid_validator import HybridValidator
 
 logger = logging.getLogger(__name__)
 
 # Path configuration
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 # Validation artifacts - Factur-X 1.08 / ZUGFeRD 2.4 (January 2026)
-# Relocated to app/resources/schemas to avoid Windows MAX_PATH (260 chars) issues
 SCHEMA_ROOT = PROJECT_ROOT / "app" / "resources" / "schemas"
 XSD_PATH = SCHEMA_ROOT / "Factur-X_1.08_EN16931.xsd"
 XSLT_PATH = SCHEMA_ROOT / "_XSLT_EN16931" / "FACTUR-X_EN16931.xslt"
@@ -35,76 +31,11 @@ XRECHNUNG_30_ROOT = SCHEMA_ROOT / "xrechnung_3.0.2" / "cii"
 XRECHNUNG_30_XSD = XRECHNUNG_30_ROOT / "xsd" / "CrossIndustryInvoice_100pD16B.xsd"
 XRECHNUNG_30_XSLT = XRECHNUNG_30_ROOT / "xslt" / "XRechnung-CII-validation.xsl"
 
-# ProcessPool configuration
-_executor: Optional[ProcessPoolExecutor] = None
-MAX_WORKERS = int(os.getenv("FX_VALIDATION_WORKERS", "2"))
 VALIDATION_TIMEOUT = int(os.getenv("FX_VALIDATION_TIMEOUT", "30"))
-MAX_TASKS_PER_CHILD = int(os.getenv("FX_MAX_TASKS_PER_CHILD", "100"))
 
-# VeraPDF subprocess configuration
-# Set VERAPDF_JAR=/app/bin/verapdf.jar in the Docker image (via ENV in Dockerfile)
+# Subprocess Java configurations
 VERAPDF_JAR = os.getenv("VERAPDF_JAR", "")
-
-
-def _get_executor() -> ProcessPoolExecutor:
-    """Get or create the validation process pool."""
-    global _executor
-    if _executor is None:
-        _executor = ProcessPoolExecutor(
-            max_workers=MAX_WORKERS,
-            max_tasks_per_child=MAX_TASKS_PER_CHILD  # Recycle workers to prevent memory leaks
-        )
-        logger.info(f"Initialized HybridValidator ProcessPool with {MAX_WORKERS} workers (recycle every {MAX_TASKS_PER_CHILD} tasks)")
-    return _executor
-
-
-def _run_hybrid_validation(xml_content: bytes, xsd_path: str, xslt_path: str) -> Dict[str, Any]:
-    """
-    Worker function to run hybrid validation in an isolated process.
-    
-    This function is executed in a separate process to:
-    1. Isolate SaxonC-HE memory from main process
-    2. Prevent GIL contention
-    3. Allow process recycling on memory issues
-    """
-    import os
-    
-    from app.services.hybrid_validator import HybridValidator
-    
-    try:
-        validator = HybridValidator(
-            xsd_path=xsd_path if os.path.exists(xsd_path) else None,
-            xslt_path=xslt_path if os.path.exists(xslt_path) else None
-        )
-        
-        result = validator.validate(xml_content)
-        
-        return {
-            "is_valid": result.is_valid,
-            "xsd_valid": result.xsd_valid,
-            "schematron_valid": result.schematron_valid,
-            "error_count": result.error_count,
-            "warning_count": result.warning_count,
-            "errors": [
-                {
-                    "rule_id": e.rule_id,
-                    "message": e.message,
-                    "location": e.location,
-                    "severity": e.severity,
-                    "layer": e.layer.value
-                }
-                for e in result.errors
-            ]
-        }
-        
-    except Exception as e:
-        import traceback
-        return {
-            "is_valid": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }
-
+SAXON_JAR = os.getenv("SAXON_JAR", "")
 
 class HybridValidationService:
     """
@@ -112,8 +43,7 @@ class HybridValidationService:
     
     Features:
     - XSD validation via lxml (structure)
-    - Schematron validation via SaxonC-HE (business rules)
-    - Process isolation for stability
+    - Schematron validation via Saxon-HE subprocess (business rules)
     - Async-compatible for FastAPI
     
     Usage:
@@ -136,13 +66,6 @@ class HybridValidationService:
     def validate(cls, file_content: bytes, filename: str) -> Dict[str, Any]:
         """
         Validate a Factur-X PDF or XML file synchronously.
-        
-        Args:
-            file_content: Raw file bytes
-            filename: Original filename for type detection
-            
-        Returns:
-            Dict with validation results
         """
         result = {
             "is_valid": False,
@@ -208,18 +131,6 @@ class HybridValidationService:
                 return result
             
             # 4. Profile-aware schema selection
-            # The EN16931 XSD and Schematron rules only apply to the EN16931 and EXTENDED profiles.
-            # Applying them to MINIMUM/BASIC/BASICWL causes false negatives because those
-            # profiles intentionally omit fields that are mandatory in EN16931:
-            #   - XSD: requires IncludedSupplyChainTradeLineItem (absent in MINIMUM)
-            #   - XSLT: requires line-item totals, VAT breakdowns, etc.
-            # 
-            # CRITICAL (Parity): EXTENDED is a technical superset of EN16931. 
-            # Our current XSD (Factur-X_1.08_EN16931.xsd) is strictly EN16931 (Comfort) compliant.
-            # Applying this XSD to EXTENDED causes false negatives on valid Extended elements
-            # like TaxApplicableTradeCurrencyExchange (Fremdwährung).
-            # For EXTENDED: We skip XSD validation (structural) but KEEP Schematron (Business rules).
-            
             detected_profile = result.get("profile_detected", "").lower()
             detected_format = result.get("format_detected", "").lower()
             
@@ -228,15 +139,12 @@ class HybridValidationService:
             
             # 4.1 Handle UBL (Partial Support Note)
             if detected_format == "ubl":
-                # Currently we only have CII assets for XRechnung.
-                # UBL requires a different XSD/XSLT stack.
                 result["errors"].append({
                     "rule_id": "FX-UBL-PARTIAL",
                     "message": f"Format UBL ({detected_profile}) détecté. La validation des règles métier (Schematron) pour UBL n'est pas encore activée.",
                     "severity": "warning",
                     "layer": "system"
                 })
-                # We skip further hybrid validation to avoid applying CII rules to UBL
                 result["is_valid"] = True # Structure is valid if it parsed
                 return result
 
@@ -246,8 +154,6 @@ class HybridValidationService:
                 effective_xslt_path = str(XSLT_PATH)
                 logger.info(f"Profile '{detected_profile}': applying full EN16931 XSD + Schematron rules")
             elif detected_profile == "extended":
-                # Extended is a superset. We use the specific EXTENDED XSLT which includes
-                # the necessary relaxations for Extended features (Foreign Currency, etc.)
                 effective_xsd_path = "" # Still skip XSD as it is too strict (EN16931)
                 effective_xslt_path = str(SCHEMA_ROOT / "_XSLT_EXTENDED" / "FACTUR-X_EXTENDED.xslt")
                 logger.info(f"Profile '{detected_profile}': applying EXTENDED Schematron rules")
@@ -267,71 +173,67 @@ class HybridValidationService:
             else:
                 logger.info(f"Profile '{detected_profile}': no specific rules found (Structural Validation Only)")
             
-            # 5. Run hybrid validation in process pool
-            executor = _get_executor()
-            
+            # 5. Run hybrid validation directly (no ProcessPool)
             try:
-                future = executor.submit(
-                    _run_hybrid_validation,
-                    xml_content,
-                    effective_xsd_path,
-                    effective_xslt_path
+                validator = HybridValidator(
+                    xsd_path=effective_xsd_path if os.path.exists(effective_xsd_path) else None,
+                    xslt_path=effective_xslt_path if os.path.exists(effective_xslt_path) else None,
+                    saxon_jar=SAXON_JAR
                 )
-                validation_result = future.result(timeout=VALIDATION_TIMEOUT)
                 
-                if "error" in validation_result:
-                    result["errors"].append({
-                        "rule_id": "FX-HYBRID-ERROR",
-                        "message": validation_result["error"],
-                        "severity": "error",
-                        "layer": "system"
-                    })
-                    return result
+                validation_result = validator.validate(xml_content)
                 
-                result["is_valid"] = validation_result["is_valid"]
-                result["xsd_valid"] = validation_result["xsd_valid"]
-                result["schematron_valid"] = validation_result["schematron_valid"]
-                result["errors"] = validation_result["errors"]
+                result["is_valid"] = validation_result.is_valid
+                result["xsd_valid"] = validation_result.xsd_valid
+                result["schematron_valid"] = validation_result.schematron_valid
+                result["errors"].extend([
+                    {
+                        "rule_id": e.rule_id,
+                        "message": e.message,
+                        "location": e.location,
+                        "severity": e.severity,
+                        "layer": e.layer.value
+                    }
+                    for e in validation_result.errors
+                ])
                 
-            except FuturesTimeoutError:
-                result["errors"].append({
-                    "rule_id": "FX-TIMEOUT",
-                    "message": f"Validation timed out after {VALIDATION_TIMEOUT}s",
-                    "severity": "error",
-                    "layer": "system"
-                })
             except Exception as e:
                 result["errors"].append({
-                    "rule_id": "FX-POOL-ERROR",
-                    "message": f"Process pool error: {e}",
+                    "rule_id": "FX-HYBRID-ERROR",
+                    "message": f"Core validation failed: {str(e)}",
                     "severity": "error",
                     "layer": "system"
                 })
+                return result
 
             # 6. PDF/A-3b validation via VeraPDF subprocess (PDF inputs only)
-            # Runs in the main process as an isolated subprocess — no memory leaks.
-            # Skipped gracefully when VERAPDF_JAR is not configured (dev/test environments).
+            # VeraPDF is strictly a Pro feature (Evaluation, Business, Enterprise).
             if is_pdf:
-                if VERAPDF_JAR and os.path.exists(VERAPDF_JAR):
-                    try:
-                        from app.services.hybrid_validator import validate_pdfa3
-                        pdfa_valid, pdfa_errors = validate_pdfa3(file_content, VERAPDF_JAR)
-                        result["pdfa_valid"] = pdfa_valid
-                        for e in pdfa_errors:
-                            result["errors"].append({
-                                "rule_id": e.rule_id,
-                                "message": e.message,
-                                "location": e.location,
-                                "severity": e.severity,
-                                "layer": e.layer.value,
-                            })
-                        if pdfa_valid is False:
-                            result["is_valid"] = False
-                    except Exception as e:
-                        logger.error("VeraPDF integration error: %s", e)
-                        # pdfa_valid stays None — caller can distinguish from explicit False
-                elif VERAPDF_JAR:
-                    logger.warning("VERAPDF_JAR configured but not found: %s", VERAPDF_JAR)
+                from app.license import has_tier
+                if has_tier(["Evaluation", "Business", "Enterprise"]):
+                    if VERAPDF_JAR and os.path.exists(VERAPDF_JAR):
+                        try:
+                            from app.services.hybrid_validator import validate_pdfa3
+                            pdfa_valid, pdfa_errors = validate_pdfa3(file_content, VERAPDF_JAR)
+                            result["pdfa_valid"] = pdfa_valid
+                            for e in pdfa_errors:
+                                result["errors"].append({
+                                    "rule_id": e.rule_id,
+                                    "message": e.message,
+                                    "location": e.location,
+                                    "severity": e.severity,
+                                    "layer": e.layer.value,
+                                })
+                            if pdfa_valid is False:
+                                result["is_valid"] = False
+                        except Exception as e:
+                            logger.error("VeraPDF integration error: %s", e)
+                    elif VERAPDF_JAR:
+                        logger.warning("VERAPDF_JAR configured but not found: %s", VERAPDF_JAR)
+                else:
+                    logger.info("VeraPDF validation skipped: Requires Pro license.")
+                    result["pdfa_valid"] = None # Indicate it was not run
+                    
 
             return result
             
@@ -350,23 +252,14 @@ class HybridValidationService:
         """
         Validate a Factur-X PDF or XML file asynchronously.
         
-        Uses run_in_executor to offload to the process pool without blocking.
+        Uses run_in_executor with default ThreadPool to prevent blocking the event loop natively.
         """
         loop = asyncio.get_running_loop()
         
-        # Offload the entire validation to avoid blocking
+        # Offload validation to default ThreadPool since Java subprocess internally does the heavy lifting.
         return await loop.run_in_executor(
-            None,  # Default thread pool for the sync wrapper
+            None,
             cls.validate,
             file_content,
             filename
         )
-
-
-def shutdown_executor():
-    """Cleanup function to shutdown the process pool gracefully."""
-    global _executor
-    if _executor:
-        _executor.shutdown(wait=True)
-        _executor = None
-        logger.info("HybridValidator ProcessPool shutdown complete")

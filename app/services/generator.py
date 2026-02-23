@@ -53,9 +53,9 @@ class GeneratorService:
             raise ValueError(f"XML generation failed: {str(e)}")
 
     @staticmethod
-    def generate_facturx_pdf(pdf_content: bytes, metadata: InvoiceMetadata) -> bytes:
+    def attach_xml_to_pdf(pdf_content: bytes, metadata: InvoiceMetadata) -> bytes:
         """
-        Generate Factur-X PDF by embedding XML into a regular PDF.
+        Takes an existing PDF and attaches the Factur-X XML.
         
         Args:
             pdf_content: Original PDF bytes.

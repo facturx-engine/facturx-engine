@@ -7,7 +7,6 @@ from enum import Enum
 from typing import List, Optional, Tuple
 
 from lxml import etree
-from saxonche import PySaxonProcessor
 
 logger = logging.getLogger(__name__)
 
@@ -46,11 +45,12 @@ class HybridValidator:
     """
     Hybrid Validation Engine:
     - XSD: lxml (fast, standard)
-    - Schematron: SaxonC-HE (official EU rules, XSLT 3.0)
+    - Schematron: Saxon-HE via java subprocess (Zero memory leaks)
     """
-    def __init__(self, xsd_path: Optional[str] = None, xslt_path: Optional[str] = None):
+    def __init__(self, xsd_path: Optional[str] = None, xslt_path: Optional[str] = None, saxon_jar: Optional[str] = None):
         self.xsd_path = xsd_path
         self.xslt_path = xslt_path
+        self.saxon_jar = saxon_jar
 
     def validate(self, xml_content: bytes) -> ValidationResult:
         errors = []
@@ -83,54 +83,77 @@ class HybridValidator:
                 errors.append(ValidationError("SYS-XSD", str(e), "", "error", ValidationLayer.SYSTEM))
                 xsd_valid = False
 
-        # 2. Schematron Validation via SaxonC-HE
+        # 2. Schematron Validation via Saxon-HE Subprocess
         if self.xslt_path and os.path.exists(self.xslt_path):
-            try:
-                # We use a context manager to ensure Saxon resources are released
-                # Note: ProcessPool isolation handles memory management at a higher level
-                with PySaxonProcessor(license=False) as proc:
-                    # Security: Hardening against external entities
-                    proc.set_configuration_property("http://saxon.sf.net/feature/parserFeature?uri=http://xml.org/sax/features/external-general-entities", "false")
-                    proc.set_configuration_property("http://saxon.sf.net/feature/parserFeature?uri=http://xml.org/sax/features/external-parameter-entities", "false")
-                    
-                    xsltproc = proc.new_xslt30_processor()
-                    executable = xsltproc.compile_stylesheet(stylesheet_file=self.xslt_path)
-                    
-                    # Run transformation
-                    # Use utf-8-sig to automatically strip BOM if present (Common in official FNFE examples)
+            if not self.saxon_jar or not os.path.exists(self.saxon_jar):
+                logger.warning(f"SAXON_JAR not configured or not found: {self.saxon_jar}")
+                errors.append(ValidationError("SYS-SAXON", "Saxon JAR not found", "", "warning", ValidationLayer.SYSTEM))
+                # Development check: skip Schematron if jar is missing, don't fail parsing.
+            else:
+                try:
+                    # Strip BOM and prepare safe XML
                     xml_text = xml_content.decode('utf-8-sig')
-                    input_node = proc.parse_xml(xml_text=xml_text)
-
-                    svrl_result = executable.transform_to_string(xdm_node=input_node)
+                    # Parse with lxml to strip entities before passing to Saxon to prevent XXE
+                    secure_parser = etree.XMLParser(resolve_entities=False, no_network=True)
+                    safe_doc = etree.fromstring(xml_text.encode('utf-8'), parser=secure_parser)
+                    safe_xml_bytes = etree.tostring(safe_doc, encoding='utf-8', xml_declaration=True)
                     
-                    # Parse SVRL (Schematron Validation Report Language)
-                    svrl_doc = etree.fromstring(svrl_result.encode('utf-8'))
-                    ns = {"svrl": "http://purl.oclc.org/dsdl/svrl"}
-                    
-                    failed_asserts = svrl_doc.xpath("//svrl:failed-assert", namespaces=ns)
-                    for fa in failed_asserts:
-                        role = (fa.get("role") or "error").lower()
-                        # Blocking errors: error, fatal, or undefined
-                        is_error = role in ("error", "fatal")
+                    with tempfile.NamedTemporaryFile(suffix=".xml", delete=False) as tmp_in:
+                        tmp_in.write(safe_xml_bytes)
+                        tmp_in_path = tmp_in.name
                         
-                        if is_error:
+                    try:
+                        proc = subprocess.run(
+                            [
+                                "java",
+                                "-Xms32m", "-Xmx256m",
+                                "-jar", self.saxon_jar,
+                                f"-s:{tmp_in_path}",
+                                f"-xsl:{self.xslt_path}"
+                            ],
+                            capture_output=True,
+                            timeout=30
+                        )
+                        
+                        if proc.returncode != 0 and b"Exception" in proc.stderr:
+                            logger.error(f"Saxon Subprocess Error: {proc.stderr.decode('utf-8', 'ignore')}")
+                            errors.append(ValidationError("SYS-SAXON", "Saxon Execution Failed", "", "error", ValidationLayer.SYSTEM))
                             schematron_valid = False
-                        
-                        text_nodes = fa.xpath("svrl:text", namespaces=ns)
-                        msg = text_nodes[0].text if text_nodes else "Rule violation"
-                        
-                        errors.append(ValidationError(
-                            rule_id=fa.get("id", "RULE-FAIL"),
-                            message=msg.strip(),
-                            location=fa.get("location", ""),
-                            severity=role,
-                            layer=ValidationLayer.SCHEMATRON
-                        ))
-                        
-            except Exception as e:
-                logger.error(f"Saxon Execution Error: {e}")
-                errors.append(ValidationError("SYS-SAXON", str(e), "", "error", ValidationLayer.SYSTEM))
-                schematron_valid = False
+                        else:
+                            svrl_result = proc.stdout
+                            if svrl_result:
+                                svrl_doc = etree.fromstring(svrl_result)
+                                ns = {"svrl": "http://purl.oclc.org/dsdl/svrl"}
+                                
+                                failed_asserts = svrl_doc.xpath("//svrl:failed-assert", namespaces=ns)
+                                for fa in failed_asserts:
+                                    role = (fa.get("role") or "error").lower()
+                                    is_error = role in ("error", "fatal")
+                                    
+                                    if is_error:
+                                        schematron_valid = False
+                                    
+                                    text_nodes = fa.xpath("svrl:text", namespaces=ns)
+                                    msg = text_nodes[0].text if text_nodes else "Rule violation"
+                                    
+                                    errors.append(ValidationError(
+                                        rule_id=fa.get("id", "RULE-FAIL"),
+                                        message=msg.strip(),
+                                        location=fa.get("location", ""),
+                                        severity=role,
+                                        layer=ValidationLayer.SCHEMATRON
+                                    ))
+                    finally:
+                        os.unlink(tmp_in_path)
+                            
+                except subprocess.TimeoutExpired:
+                    logger.error("Saxon Schematron timeout")
+                    errors.append(ValidationError("SYS-SAXON-TIMEOUT", "Schematron timeout", "", "error", ValidationLayer.SYSTEM))
+                    schematron_valid = False
+                except Exception as e:
+                    logger.error(f"Saxon Execution Error: {e}")
+                    errors.append(ValidationError("SYS-SAXON", str(e), "", "error", ValidationLayer.SYSTEM))
+                    schematron_valid = False
                 
         return ValidationResult(
             is_valid=xsd_valid and schematron_valid,

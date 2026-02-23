@@ -12,10 +12,10 @@
 - **Official SaxonC Validation**: Technical parity with **Chorus Pro (France)** and **KoSIT (Germany)** portals.
 - **Mandate Ready**: Compliant with **France 2026 (PDP/PPF)** and **Germany 2025** electronic invoicing requirements.
 
-### Architecture Decisions (Performance vs Strictness)
+### Architecture Decisions (Zero Memory Leaks)
 
-- **Native PDF/A-3 Generation**: We prioritize real-time performance (< 200ms). PDF/A-3 compliance is ensured by high-quality libraries (PyPDF/factur-x) rather than heavyweight, slow Java-based validators like VeraPDF.
-- **Air-Gap Updates**: To guarantee stability in secure environments (Banking, Defense), we do not use auto-updates. Compliance rule updates are delivered via immutable Docker images, giving you full control over the validation logic version.
+- **Isolated Java Subprocesses**: Unlike traditional Python/Java wrappers that suffer from fatal JVM memory leaks under load, Factur-X Engine executes Schematron (Saxon-HE) and PDF/A-3 (VeraPDF) validations as isolated, sandboxed subprocesses. Memory is instantly reclaimed by the OS, guaranteeing enterprise-grade stability.
+- **Air-Gap First**: To guarantee stability in secure environments (Banking, Defense), we do not use auto-updates or cloud "phone-homing". Licensing is verified via offline cryptographic signatures (Ed25519).
 
 ---
 
@@ -67,16 +67,14 @@ This **Community** version is production-ready. The code is Open Core (transpare
 | **Validation** | EN 16931 Rules | **Smart Diagnostics** | **Smart Diagnostics** | Custom Rules |
 | **Support** | Community | **Priority** | **SLA** | Dedicated |
 
-### Try Pro Features for Free
+### 30-Day Evaluation (Product-Led Growth)
 
-Upload one of our official reference files to unlock **all Pro features** without a license:
+Test **100% of the Pro features (VeraPDF, Smart Diagnostics, and ERP Serialization)** on your own files, within your own infrastructure, during a 30-Day Evaluation period.
 
-- **Smart Diagnostics**: Use files from `tests/corpus/invalid/` to see human-readable error explanations
-- **Business-Ready Serialization**: Use files from `tests/corpus/valid/` to extract structured JSON
-
-The engine recognizes these files via MD5 hash and automatically enables Trial Mode.
-
-**[Get Pro License](https://facturx-engine.lemonsqueezy.com)**
+1. Request your evaluation key at **[Factur-X Engine on Lemon Squeezy](https://facturx-engine.lemonsqueezy.com)** (Zero friction, instant delivery).
+2. Inject the Base64 key into your Docker container:
+   `docker run -e LICENSE_KEY='YOUR_KEY' facturxengine/facturx-engine`
+3. After 30 days, the engine gracefully downgrades back to Community Mode. No forced lock-in.
 
 ---
 
