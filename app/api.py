@@ -412,7 +412,6 @@ async def serialize_facturx(
     **Community Mode**: Returns obfuscated (masked) data for schema testing.
     """
     import time
-    import os
     from app.metrics import metrics
     from app.license import is_licensed
     from app.services.business_serializer import BusinessReadySerializer
