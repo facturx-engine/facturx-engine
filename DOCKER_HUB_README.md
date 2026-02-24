@@ -44,15 +44,19 @@ curl -X POST "http://localhost:8000/v1/convert" \
 | Feature | Community Edition | Pro Edition | OEM Edition | Enterprise |
 | :--- | :--- | :--- | :--- | :--- |
 | **Usage** | Internal Use | Internal Use | **Redistribution** | High Volume |
-| **Extraction** | Full Data | **Business JSON** | **Business JSON** | Custom |
-| **Validation** | EN 16931 Rules | **Smart Diagnostics** | **Smart Diagnostics** | Custom Rules |
+| **Data Format** | Raw Extraction | **ERP-Ready JSON** | **ERP-Ready JSON** | Custom |
+| **XML Validation** | EN 16931 Rules | **Smart Diagnostics** | **Smart Diagnostics** | Custom Rules |
+| **PDF Compliance** | ❌ | **VeraPDF (PDF/A-3)** | **VeraPDF (PDF/A-3)** | **VeraPDF (PDF/A-3)** |
 | **Support** | Community | **Priority** | **SLA** | Dedicated |
 
-### Try Pro for Free
+### 30-Day Evaluation
 
-Upload files from `tests/corpus/` to unlock Pro features in Trial Mode (no license required).
+Test **100% of the Pro features (VeraPDF, Smart Diagnostics, and ERP Serialization)** on your own files, within your own infrastructure, during a 30-Day Evaluation period.
 
-**[Get Pro License](https://facturx-engine.lemonsqueezy.com)**
+1. Request your evaluation key at **[Factur-X Engine on Lemon Squeezy](https://facturx-engine.lemonsqueezy.com)** (Zero friction, instant delivery).
+2. Inject the Base64 key into your Docker container:
+   `docker run -e LICENSE_KEY='YOUR_KEY' facturxengine/facturx-engine`
+3. After 30 days, the engine gracefully downgrades back to Community Mode. No forced lock-in.
 
 ---
 

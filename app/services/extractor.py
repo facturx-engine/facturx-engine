@@ -1,6 +1,6 @@
 """
 Extraction service for Community Edition (Open Core).
-Parses Factur-X/ZUGFeRD XML and returns FULL invoice data (no obfuscation).
+Parses Factur-X/ZUGFeRD XML and returns FULL invoice data.
 Pro edition adds advanced validation and compliance features.
 """
 import logging
