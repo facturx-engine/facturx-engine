@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.1] - 2026-02-24
+
+### Changed
+
+- **Serialization**: Replaced obfuscation-based "Community Mode" with a strict Pro feature Hard-Gate (HTTP 403) on `/v1/serialize` to streamline product tiers.
+- **Documentation**: Overhauled READMEs to explicitly promote the "30-Day Evaluation" phase and added PDF/A-3 (VeraPDF) compliance to feature matrices.
+
+### Removed
+
+- **Codebase**: Deleted obsolete `app/services/trial_service.py` and 2 redundant integration test files (`trust_audit_validator.py`, `test_advanced_diagnostics.py`).
+- **Schemas**: Cleaned up legacy `trial_notice` and `is_obfuscated` properties from API models and OpenAPI specification.
+
 ## [1.6.0] - 2026-02-23
 
 ### Added
