@@ -101,7 +101,7 @@ LABEL description="Self-hosted Factur-X API with EN16931 + PDF/A-3b validation"
 LABEL org.opencontainers.image.title="Factur-X Engine"
 LABEL org.opencontainers.image.description="The Privacy-First Invoicing Engine (100% Air-gapped)"
 LABEL org.opencontainers.image.vendor="Factur-X Engine"
-LABEL org.opencontainers.image.version="1.6.0"
+LABEL org.opencontainers.image.version="1.6.1"
 LABEL org.opencontainers.image.licenses="FSL-1.1"
 
 WORKDIR /app
