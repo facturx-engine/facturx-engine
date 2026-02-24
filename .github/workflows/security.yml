@@ -11,14 +11,6 @@ name: Security Scan, Build & Release (EU Compliance)
 # Voir CONTEXT_FOR_AI.md Section "Deployment Procedures"
 
 on:
-  push:
-    branches: [ "main" ]
-    paths-ignore:
-      - 'README.md'
-      - 'DOCKER_HUB_README.md'
-      - 'docs/**'
-      - '_INTERNAL/**'
-      - 'examples/**'
   schedule:
     - cron: '0 0 * * *'  # DAILY Scan (Required for EU Cyber Resilience Act responsiveness)
   workflow_dispatch:      # Manual trigger for releases
@@ -32,7 +24,7 @@ jobs:
       # id-token: write   # Uncomment for OIDC/Cosign signing
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # ------------------------------------------------------------------
       # PHASE 1: PRE-BUILD SECURITY (Supply Chain Defense)

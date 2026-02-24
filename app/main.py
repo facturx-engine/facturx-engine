@@ -233,7 +233,8 @@ class LimitUploadSize(BaseHTTPMiddleware):
 
 # Configure Middlewares
 # 1. Size Limit (First line of defense)
-app.add_middleware(LimitUploadSize, max_upload_size=20 * 1024 * 1024) # 20MB
+MAX_UPLOAD_SIZE_MB = int(os.getenv("MAX_UPLOAD_SIZE_MB", 10))
+app.add_middleware(LimitUploadSize, max_upload_size=MAX_UPLOAD_SIZE_MB * 1024 * 1024) 
 
 # 2. Configure CORS (Secure by Default logic)
 cors_env = os.getenv("CORS_ORIGINS", "*")
@@ -248,8 +249,7 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(router)
-app.include_router(diagnostics_router)
+
 
 
 @app.get("/", include_in_schema=False)

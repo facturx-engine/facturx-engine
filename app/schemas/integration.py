@@ -75,12 +75,10 @@ class BusinessReadyInvoice(BaseModel):
     # Metadata
     format: str = Field(..., description="factur-x / zugferd / xrechnung / ubl")
     profile: str = Field(..., description="minimum / basic / en16931 / extended / xrechnung_3.0")
-    is_obfuscated: bool = Field(default=False, description="True if data is masked for trial users")
 
 
 class SerializationResponse(BaseModel):
     """Response model for the /serialize endpoint."""
     success: bool
     invoice: Optional[BusinessReadyInvoice] = None
-    trial_notice: Optional[str] = None
     errors: List[Dict[str, str]] = []

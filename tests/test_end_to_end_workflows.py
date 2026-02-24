@@ -27,10 +27,7 @@ class TestEndToEndWorkflows(unittest.TestCase):
 
                     # Test Serialization
                     response = self.client.post("/v1/serialize", files=files)
-                    data = response.json()
-                    self.assertEqual(response.status_code, 200)
-                    self.assertTrue(data["success"])
-                    self.assertIn("Community data", data.get("trial_notice", ""))
+                    self.assertEqual(response.status_code, 403)
 
     def test_pro_workflow(self):
         """Workflow for a user WITH a valid license key."""
@@ -45,32 +42,12 @@ class TestEndToEndWorkflows(unittest.TestCase):
                         data = response.json()
                         self.assertEqual(data["validation_mode"], "pro_smart_diagnostics")
                         self.assertIn("diagnostics", data)
-                        self.assertIsNone(data.get("trial_notice"))
-
                         # 2. Test Serialization
                         response = self.client.post("/v1/serialize", files=files)
                         data = response.json()
                         self.assertTrue(data["success"])
-                        self.assertIsNone(data.get("trial_notice"))
 
-    def test_trial_workflow(self):
-        """Workflow for a user WITHOUT license but using a WHITELISTED file."""
-        with patch.dict(os.environ, {"LICENSE_KEY": ""}):
-            with patch("app.license.is_licensed", return_value=False):
-                with patch("app.services.trial_service.is_trial_file", return_value=True):
-                    files = {"file": ("Facture_FR_MINIMUM.pdf", self.invoice_content, "application/pdf")}
-                    
-                    # 1. Test Validation
-                    response = self.client.post("/v1/validate", files=files)
-                    data = response.json()
-                    self.assertEqual(data["validation_mode"], "pro_smart_diagnostics") # Unlocked via trial
-                    self.assertIn("Trial Mode", data.get("trial_notice", ""))
 
-                    # 2. Test Serialization
-                    response = self.client.post("/v1/serialize", files=files)
-                    data = response.json()
-                    self.assertTrue(data["success"])
-                    self.assertIn("Trial Mode", data.get("trial_notice", ""))
 
 if __name__ == "__main__":
     unittest.main()
