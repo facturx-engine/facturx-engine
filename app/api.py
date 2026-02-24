@@ -9,6 +9,7 @@ from fastapi.responses import StreamingResponse
 from io import BytesIO
 
 from app.schemas.validation import InvoiceMetadata, ValidationResult, ProValidationResult, ErrorResponse
+from app.schemas.errors import ProblemDetails
 from app.schemas.extraction import ExtractionResult
 from app.schemas.integration import SerializationResponse
 from app.services.generator import GeneratorService
@@ -23,8 +24,8 @@ router = APIRouter(prefix="/v1", tags=["factur-x"])
              response_class=StreamingResponse,
              responses={
                  200: {"description": "Factur-X PDF successfully generated from provided PDF"},
-                 400: {"model": ErrorResponse, "description": "Invalid input"},
-                 500: {"model": ErrorResponse, "description": "Server error"}
+                 400: {"model": ProblemDetails, "description": "Invalid input"},
+                 500: {"model": ProblemDetails, "description": "Server error"}
              })
 async def convert_to_facturx(
     pdf: UploadFile = File(..., description="Original PDF invoice (Bring Your Own PDF)"),
@@ -111,8 +112,8 @@ async def convert_to_facturx(
              response_class=StreamingResponse,
              responses={
                  200: {"description": "Factur-X/CII XML successfully generated"},
-                 400: {"model": ErrorResponse, "description": "Invalid input"},
-                 500: {"model": ErrorResponse, "description": "Server error"}
+                 400: {"model": ProblemDetails, "description": "Invalid input"},
+                 500: {"model": ProblemDetails, "description": "Server error"}
              })
 async def generate_facturx_xml(
     metadata: str = Form(..., description="Invoice metadata as JSON")
@@ -182,8 +183,8 @@ async def generate_facturx_xml(
 @router.post("/validate",
              response_model=Union[ValidationResult, ProValidationResult],
              responses={
-                 400: {"model": ErrorResponse, "description": "Invalid input"},
-                 500: {"model": ErrorResponse, "description": "Server error"}
+                 400: {"model": ProblemDetails, "description": "Invalid input"},
+                 500: {"model": ProblemDetails, "description": "Server error"}
              })
 async def validate_facturx(
     file: UploadFile = File(..., description="Factur-X PDF or XML file to validate")
@@ -215,17 +216,12 @@ async def validate_facturx(
                 detail={"error": "EMPTY_FILE", "message": "File is empty"}
             )
         
-        # LICENSE & TRIAL CHECK
+        # LICENSE CHECK
         license_key = os.getenv("LICENSE_KEY", "").strip()
         is_pro = False
-        is_trial = False
         
-        from app.services.trial_service import is_trial_file
-        if is_trial_file(file_content):
-            is_trial = True
-            is_pro = True
-            logger.info("TRIAL Mode enabled - Reference file recognized")
-        elif license_key:
+        from app.license import is_licensed
+        if license_key:
             try:
                 if is_licensed():
                     is_pro = True
@@ -292,7 +288,6 @@ async def validate_facturx(
                 warning_count=len([d for d in diagnostics if d.severity == "warning"]),
                 diagnostics=diagnostic_details,
                 validation_mode="pro_smart_diagnostics",
-                trial_notice="Trial Mode: Reference file recognized. Pro features unlocked." if is_trial else None,
                 pdfa_valid=result.get("pdfa_valid"),
             )
         else:
@@ -333,8 +328,8 @@ async def validate_facturx(
 @router.post("/extract",
              response_model=ExtractionResult,
              responses={
-                 400: {"model": ErrorResponse, "description": "Invalid input"},
-                 500: {"model": ErrorResponse, "description": "Server error"}
+                 400: {"model": ProblemDetails, "description": "Invalid input"},
+                 500: {"model": ProblemDetails, "description": "Server error"}
              })
 async def extract_facturx(
     file: UploadFile = File(..., description="Factur-X PDF file to extract data from")
@@ -401,14 +396,12 @@ async def extract_facturx(
 @router.post("/serialize",
              response_model=SerializationResponse,
              responses={
-                 400: {"model": ErrorResponse, "description": "Invalid input"},
-                 500: {"model": ErrorResponse, "description": "Server error"}
+                 400: {"model": ProblemDetails, "description": "Invalid input"},
+                 500: {"model": ProblemDetails, "description": "Server error"}
              })
 async def serialize_facturx(
     file: UploadFile = File(..., description="Factur-X PDF or XML file to serialize")
 ):
-    import sys
-    sys.stderr.write(f"DEBUG_STDERR: Entering serialize_facturx with file {file.filename}\n")
     """
     Business-Ready JSON Serialization (Pro Feature).
     
@@ -438,20 +431,25 @@ async def serialize_facturx(
                 detail={"error": "EMPTY_FILE", "message": "File is empty"}
             )
 
-        # LICENSE & TRIAL CHECK
+        # LICENSE CHECK
         license_key = os.getenv("LICENSE_KEY", "").strip()
-        is_trial = False
+        from app.license import has_tier, is_licensed
         
-        from app.services.trial_service import is_trial_file
-        if is_trial_file(file_content):
-            is_trial = True
-            logger.info("TRIAL Mode enabled for /serialize")
-        elif license_key:
-            try:
-                if is_licensed():
-                    logger.info("PRO License validated for /serialize")
-            except Exception:
-                pass
+        try:
+            if is_licensed():
+                logger.info("PRO License validated for /serialize")
+        except Exception:
+            pass
+
+        is_pro_tier = has_tier(["Evaluation", "Business", "Enterprise"])
+        if not is_pro_tier:
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "error": "LICENSE_REQUIRED", 
+                    "message": "The Business-Ready Serialization is a Pro feature. Get your free 30-day evaluation key at https://facturx-engine.lemonsqueezy.com"
+                }
+            )
 
         # Extract XML if it's a PDF
         xml_data = None
@@ -481,25 +479,14 @@ async def serialize_facturx(
 
         # Serialize
         try:
-            from app.license import has_tier
-            
-            # /v1/serialize is available for Evaluation, Business, and Enterprise tiers.
-            # This allows full PoC testing during the 30-day evaluation period.
-            is_pro_tier = has_tier(["Evaluation", "Business", "Enterprise"])
-            should_obfuscate = not (is_pro_tier or is_trial)
-
             invoice_data = BusinessReadySerializer.serialize(
                 xml_data, 
-                is_pro=is_pro_tier, 
-                obfuscate=should_obfuscate
+                is_pro=is_pro_tier
             )
             
             return SerializationResponse(
                 success=True,
-                invoice=invoice_data,
-                trial_notice="Trial Mode: Reference file recognized. Full data unlocked." if is_trial else (
-                    "PROMO: Only Pro/Evaluation users get full precision. Community data is obfuscated (set to zero) for schema testing." if should_obfuscate else None
-                )
+                invoice=invoice_data
             )
         except Exception as e:
             logger.exception(f"Serialization failed: {e}")

@@ -158,9 +158,8 @@ class ValidationResult(BaseModel):
     valid: bool = Field(..., description="Whether the file is valid")
     format: Optional[str] = Field(None, description="Detected format (factur-x, zugferd, order-x)")
     flavor: Optional[str] = Field(None, description="Detected flavor/level")
-    errors: List[Union[str, ValidationErrorDetail]] = Field(default_factory=list, description="List of validation errors")
+    errors: List[ValidationErrorDetail] = Field(default_factory=list, description="List of validation errors")
     validation_mode: Optional[str] = Field(None, description="Validation mode")
-    trial_notice: Optional[str] = Field(None, description="Notice for trial use of Pro features")
     pdfa_valid: Optional[bool] = Field(None, description="PDF/A-3b compliance (null if input was raw XML or VeraPDF unavailable)")
 
 
@@ -183,7 +182,6 @@ class ProValidationResult(BaseModel):
     warning_count: int = Field(default=0, description="Total number of warnings")
     diagnostics: List[DiagnosticDetail] = Field(default_factory=list, description="Smart diagnostics with explanations")
     validation_mode: str = Field(default="pro_diagnostics", description="Always 'pro_diagnostics' for this response type")
-    trial_notice: Optional[str] = Field(None, description="Trial mode notice for reference files")
     pdfa_valid: Optional[bool] = Field(None, description="PDF/A-3b compliance (null if input was raw XML or VeraPDF unavailable)")
 
 

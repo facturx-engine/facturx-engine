@@ -42,14 +42,13 @@ class BusinessReadySerializer:
     }
 
     @staticmethod
-    def serialize(xml_bytes: bytes, is_pro: bool = False, obfuscate: bool = False) -> BusinessReadyInvoice:
+    def serialize(xml_bytes: bytes, is_pro: bool = False) -> BusinessReadyInvoice:
         """
         Main entry point for serialization.
         
         Args:
             xml_bytes: Raw XML bytes
             is_pro: Whether the user has a Pro license
-            obfuscate: Whether to mask sensitive data (for trial)
         """
         parser = etree.XMLParser(recover=True, resolve_entities=False, no_network=True)
         root = etree.fromstring(xml_bytes, parser=parser)
@@ -63,12 +62,8 @@ class BusinessReadySerializer:
             raise ValueError("Unsupported XML format. Must be CII (Factur-X) or UBL.")
             
         try:
-            if obfuscate:
-                return BusinessReadySerializer._obfuscate(invoice)
             return invoice
         except Exception as e:
-            import sys
-            sys.stderr.write(f"DEBUG_SERIALIZE_FINAL: {str(e)}\n")
             raise e
 
     @staticmethod
@@ -157,7 +152,7 @@ class BusinessReadySerializer:
             name=get_text('ram:Name') or "Unknown",
             vat_number=get_text('.//ram:SpecifiedTaxRegistration/ram:ID'),
             registration_id=get_text('ram:SpecifiedLegalOrganization/ram:ID'),
-            email=get_text('ram:DefinedTradeContact/ram:EmailURIAddress/ram:URIID'),
+            email=get_text('ram:DefinedTradeContact/ram:EmailURIUniversalCommunication/ram:URIID'),
             address=AddressSchema(
                 line1=get_text('.//ram:PostalTradeAddress/ram:LineOne') or "...",
                 city=get_text('.//ram:PostalTradeAddress/ram:CityName') or "...",
@@ -365,37 +360,4 @@ class BusinessReadySerializer:
 
         return breakdown
 
-    @staticmethod
-    def _obfuscate(invoice: BusinessReadyInvoice) -> BusinessReadyInvoice:
-        """Mask sensitive data for trial users."""
-        
-        def mask_string(s: str) -> str:
-            if not s or len(s) < 3:
-                return "***"
-            return s[:2] + "*" * (len(s) - 2)
 
-        # Mask Seller/Buyer
-        invoice.seller.name = mask_string(invoice.seller.name)
-        if invoice.seller.vat_number: 
-            invoice.seller.vat_number = mask_string(invoice.seller.vat_number)
-        
-        invoice.buyer.name = mask_string(invoice.buyer.name)
-        
-        # Mask Address
-        if invoice.seller.address:
-            invoice.seller.address.line1 = "REDACTED FOR TRIAL"
-            
-        # Mask Amounts (Set to 0.00 to show structure but no value)
-        invoice.total_net_amount = Decimal("0.00")
-        invoice.total_tax_amount = Decimal("0.00")
-        invoice.total_gross_amount = Decimal("0.00")
-        invoice.amount_due = Decimal("0.00")
-        
-        # Mask line items
-        for line in invoice.line_items:
-            line.name = mask_string(line.name)
-            line.net_price = Decimal("0.00")
-            line.line_total = Decimal("0.00")
-            
-        invoice.is_obfuscated = True
-        return invoice

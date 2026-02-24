@@ -22,6 +22,8 @@ class Buyer(BaseModel):
     line1: Optional[str] = None
     city: Optional[str] = None
     postcode: Optional[str] = None
+    country: Optional[str] = None
+    vat_number: Optional[str] = None
 
 class Totals(BaseModel):
     net_amount: Optional[str] = None
@@ -39,7 +41,7 @@ class LineItem(BaseModel):
 
 class TaxBreakdownItem(BaseModel):
     category: Optional[str] = None
-    rate: Optional[str] = None
+    vat_rate: Optional[str] = None
     basis_amount: Optional[str] = None
     tax_amount: Optional[str] = None
 

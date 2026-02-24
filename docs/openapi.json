@@ -2,8 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Factur-X Engine",
-    "description": "Production-ready REST API for Factur-X (ZUGFeRD 2.2) conversions and data extraction.",
-    "version": "1.0.0"
+    "description": "Production-ready REST API for Factur-X (ZUGFeRD 2.4) conversions and data extraction.",
+    "version": "1.6.0"
   },
   "paths": {
     "/v1/convert": {
@@ -12,7 +12,7 @@
           "factur-x"
         ],
         "summary": "Convert To Facturx",
-        "description": "Convert a standard PDF invoice + JSON metadata into a Factur-X PDF.\n\nThe output PDF is PDF/A-3 compliant with embedded XML.",
+        "description": "Attach Factur-X/CII XML to an existing standard PDF invoice (BYOPDF).\n\nThe input must be a valid PDF file (Max 20MB). The API will generate the XML \nfrom the metadata and embed it into the PDF to create a PDF/A-3 compliant Factur-X invoice.",
         "operationId": "convert_to_facturx_v1_convert_post",
         "requestBody": {
           "content": {
@@ -26,14 +26,14 @@
         },
         "responses": {
           "200": {
-            "description": "Factur-X PDF successfully generated"
+            "description": "Factur-X PDF successfully generated from provided PDF"
           },
           "400": {
             "description": "Invalid input",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -43,7 +43,62 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/xml": {
+      "post": {
+        "tags": [
+          "factur-x"
+        ],
+        "summary": "Generate Facturx Xml",
+        "description": "Generate the Factur-X/CII XML content directly from JSON metadata.\n\nThis endpoint returns raw XML (Cross Industry Invoice D22B) \nwithout the PDF wrapper.",
+        "operationId": "generate_facturx_xml_v1_xml_post",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_generate_facturx_xml_v1_xml_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Factur-X/CII XML successfully generated"
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -67,7 +122,7 @@
           "factur-x"
         ],
         "summary": "Validate Facturx",
-        "description": "Validate a Factur-X PDF or XML file against EN 16931 standards.\n\nReturns a validation report with detected format, flavor, and any errors.",
+        "description": "Validate a Factur-X PDF or XML file against EN 16931 standards.\n\nReturns a validation report with detected format, flavor, and any errors.\n\n**Pro Edition**: Smart Diagnostics with actionable human-readable fixes.\n**Community Edition**: Full raw validation report (Standard EN16931 error codes).",
         "operationId": "validate_facturx_v1_validate_post",
         "requestBody": {
           "content": {
@@ -85,7 +140,15 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ValidationResult"
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationResult"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ProValidationResult"
+                    }
+                  ],
+                  "title": "Response Validate Facturx V1 Validate Post"
                 }
               }
             }
@@ -95,7 +158,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -105,7 +168,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -157,7 +220,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -167,69 +230,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/v1/xml": {
-      "post": {
-        "tags": [
-          "factur-x"
-        ],
-        "summary": "Generate XML Only",
-        "description": "Generate Cross Industry Invoice (CII) XML from JSON metadata without creating a PDF.\n\nIdeal for headless/API-first workflows where only structured XML is needed:\n- Backend integrations\n- Microservice architectures\n- Data transformation pipelines\n\nUse cases:\n- Generate XML for external validation\n- Create structured data for B2B platforms\n- Prepare invoice data for custom PDF renderers",
-        "operationId": "generate_xml_v1_xml_post",
-        "requestBody": {
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "$ref": "#/components/schemas/Body_generate_xml_v1_xml_post"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "XML successfully generated",
-            "content": {
-              "application/xml": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid input",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -250,10 +251,10 @@
     "/v1/serialize": {
       "post": {
         "tags": [
-          "factur-x-pro"
+          "factur-x"
         ],
-        "summary": "Serialize to Business JSON",
-        "description": "Transform Factur-X PDF or XML into business-ready flat JSON (Pro Edition).\n\nDesigned for direct ERP/database integration:\n- Flattened structure (no deep nesting)\n- Typed fields (amounts as numbers, not strings)\n- Normalized data ready for SQL INSERT\n\nUse cases:\n- Automated invoice processing\n- Direct database insertion\n- ERP system integration\n- Business intelligence pipelines\n\nNote: Requires Pro license or use reference files from tests/corpus/valid/ for Trial Mode.",
+        "summary": "Serialize Facturx",
+        "description": "Business-Ready JSON Serialization (Pro Feature).\n\nTransforms XML data into a normalized, high-precision JSON format \ndesigned for ERP and accounting system integration.\n\n**Trial Mode**: Available for reference files.\n**Community Mode**: Returns obfuscated (masked) data for schema testing.",
         "operationId": "serialize_facturx_v1_serialize_post",
         "requestBody": {
           "content": {
@@ -271,7 +272,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SerializationResult"
+                  "$ref": "#/components/schemas/SerializationResponse"
                 }
               }
             }
@@ -281,7 +282,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -291,7 +292,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -331,36 +332,34 @@
         }
       }
     },
-    "/": {
-      "get": {
-        "tags": [
-          "health"
-        ],
-        "summary": "Root",
-        "description": "Landing Page for Factur-X Engine.",
-        "operationId": "root__get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "text/html": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/health": {
       "get": {
         "tags": [
           "health"
         ],
         "summary": "Health Check",
-        "description": "Detailed health check.",
+        "description": "Detailed health check.\n\nReturns the status of each critical subsystem:\n- API process (always healthy if this responds)\n- VeraPDF / Saxon / custom JRE (present and executable)",
         "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/metrics": {
+      "get": {
+        "tags": [
+          "observability"
+        ],
+        "summary": "Metrics Endpoint",
+        "description": "Prometheus-compatible metrics endpoint.\n\nCommunity: Basic metrics (uptime, requests, latency).\nPro: Full metrics including business labels (profiles, error types, teaser conversion).",
+        "operationId": "metrics_endpoint_metrics_get",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -376,13 +375,53 @@
   },
   "components": {
     "schemas": {
+      "AddressSchema": {
+        "properties": {
+          "line1": {
+            "type": "string",
+            "title": "Line1"
+          },
+          "line2": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Line2"
+          },
+          "city": {
+            "type": "string",
+            "title": "City"
+          },
+          "postcode": {
+            "type": "string",
+            "title": "Postcode"
+          },
+          "country_code": {
+            "type": "string",
+            "title": "Country Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "line1",
+          "city",
+          "postcode",
+          "country_code"
+        ],
+        "title": "AddressSchema",
+        "description": "Normalized physical address."
+      },
       "Body_convert_to_facturx_v1_convert_post": {
         "properties": {
           "pdf": {
             "type": "string",
             "format": "binary",
             "title": "Pdf",
-            "description": "Original PDF invoice"
+            "description": "Original PDF invoice (Bring Your Own PDF)"
           },
           "metadata": {
             "type": "string",
@@ -412,7 +451,7 @@
         ],
         "title": "Body_extract_facturx_v1_extract_post"
       },
-      "Body_generate_xml_v1_xml_post": {
+      "Body_generate_facturx_xml_v1_xml_post": {
         "properties": {
           "metadata": {
             "type": "string",
@@ -424,7 +463,7 @@
         "required": [
           "metadata"
         ],
-        "title": "Body_generate_xml_v1_xml_post"
+        "title": "Body_generate_facturx_xml_v1_xml_post"
       },
       "Body_serialize_facturx_v1_serialize_post": {
         "properties": {
@@ -456,6 +495,123 @@
         ],
         "title": "Body_validate_facturx_v1_validate_post"
       },
+      "BusinessReadyInvoice": {
+        "properties": {
+          "invoice_number": {
+            "type": "string",
+            "title": "Invoice Number"
+          },
+          "invoice_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Invoice Date"
+          },
+          "due_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due Date"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency",
+            "default": "EUR"
+          },
+          "buyer_reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Buyer Reference",
+            "description": "Buyer reference (BT-10)"
+          },
+          "contract_reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contract Reference",
+            "description": "Contract reference (BT-12)"
+          },
+          "seller": {
+            "$ref": "#/components/schemas/PartySchema"
+          },
+          "buyer": {
+            "$ref": "#/components/schemas/PartySchema"
+          },
+          "line_items": {
+            "items": {
+              "$ref": "#/components/schemas/LineItemSchema"
+            },
+            "type": "array",
+            "title": "Line Items"
+          },
+          "tax_breakdown": {
+            "items": {
+              "$ref": "#/components/schemas/TaxBreakdownSchema"
+            },
+            "type": "array",
+            "title": "Tax Breakdown"
+          },
+          "total_net_amount": {
+            "type": "string",
+            "title": "Total Net Amount"
+          },
+          "total_tax_amount": {
+            "type": "string",
+            "title": "Total Tax Amount"
+          },
+          "total_gross_amount": {
+            "type": "string",
+            "title": "Total Gross Amount"
+          },
+          "amount_due": {
+            "type": "string",
+            "title": "Amount Due"
+          },
+          "format": {
+            "type": "string",
+            "title": "Format",
+            "description": "factur-x / zugferd / xrechnung / ubl"
+          },
+          "profile": {
+            "type": "string",
+            "title": "Profile",
+            "description": "minimum / basic / en16931 / extended / xrechnung_3.0"
+          }
+        },
+        "type": "object",
+        "required": [
+          "invoice_number",
+          "invoice_date",
+          "seller",
+          "buyer",
+          "line_items",
+          "tax_breakdown",
+          "total_net_amount",
+          "total_tax_amount",
+          "total_gross_amount",
+          "amount_due",
+          "format",
+          "profile"
+        ],
+        "title": "BusinessReadyInvoice",
+        "description": "The 'Killer Feature' Pro Schema.\nFlattened, typed, and normalized for direct ERP consumption."
+      },
       "Buyer": {
         "properties": {
           "name": {
@@ -468,6 +624,83 @@
               }
             ],
             "title": "Name"
+          },
+          "registration_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Registration Id"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "line1": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Line1"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "postcode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Postcode"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
+          },
+          "vat_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vat Number"
           }
         },
         "type": "object",
@@ -491,6 +724,57 @@
         ],
         "title": "DependencyVersion",
         "description": "Dependency version info."
+      },
+      "DiagnosticDetail": {
+        "properties": {
+          "rule_id": {
+            "type": "string",
+            "title": "Rule Id",
+            "description": "EN 16931 rule ID (e.g., BR-CO-10)"
+          },
+          "severity": {
+            "type": "string",
+            "title": "Severity",
+            "description": "Severity: error, warning, info"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "description": "Short, actionable title"
+          },
+          "explanation": {
+            "type": "string",
+            "title": "Explanation",
+            "description": "Detailed explanation of the issue"
+          },
+          "suggestion": {
+            "type": "string",
+            "title": "Suggestion",
+            "description": "How to fix this issue"
+          },
+          "context": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context",
+            "description": "Extracted values for debugging"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rule_id",
+          "severity",
+          "title",
+          "explanation",
+          "suggestion"
+        ],
+        "title": "DiagnosticDetail",
+        "description": "A single diagnostic with human-readable explanation (Pro Feature)."
       },
       "DiagnosticsResponse": {
         "properties": {
@@ -615,39 +899,6 @@
         ],
         "title": "ErrorDetail"
       },
-      "ErrorResponse": {
-        "properties": {
-          "error": {
-            "type": "string",
-            "title": "Error",
-            "description": "Error type/code"
-          },
-          "message": {
-            "type": "string",
-            "title": "Message",
-            "description": "Human-readable error message"
-          },
-          "details": {
-            "anyOf": [
-              {
-                "type": "object"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Details",
-            "description": "Additional error details"
-          }
-        },
-        "type": "object",
-        "required": [
-          "error",
-          "message"
-        ],
-        "title": "ErrorResponse",
-        "description": "Standard error response."
-      },
       "ExtractionResult": {
         "properties": {
           "format_detected": {
@@ -738,6 +989,17 @@
             ],
             "title": "Invoice Date"
           },
+          "due_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due Date"
+          },
           "document_type_code": {
             "anyOf": [
               {
@@ -759,6 +1021,28 @@
               }
             ],
             "title": "Currency"
+          },
+          "buyer_reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Buyer Reference"
+          },
+          "contract_reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contract Reference"
           },
           "seller": {
             "anyOf": [
@@ -789,6 +1073,14 @@
                 "type": "null"
               }
             ]
+          },
+          "tax_breakdown": {
+            "items": {
+              "$ref": "#/components/schemas/TaxBreakdownItem"
+            },
+            "type": "array",
+            "title": "Tax Breakdown",
+            "default": []
           },
           "line_items": {
             "items": {
@@ -827,6 +1119,17 @@
             ],
             "title": "Quantity"
           },
+          "unit_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Code"
+          },
           "unit_price": {
             "anyOf": [
               {
@@ -837,6 +1140,17 @@
               }
             ],
             "title": "Unit Price"
+          },
+          "vat_rate": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vat Rate"
           },
           "line_total": {
             "anyOf": [
@@ -852,6 +1166,78 @@
         },
         "type": "object",
         "title": "LineItem"
+      },
+      "LineItemSchema": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "quantity": {
+            "type": "string",
+            "title": "Quantity"
+          },
+          "unit_code": {
+            "type": "string",
+            "title": "Unit Code",
+            "description": "UN/ECE Rec 20 unit code (e.g., C62, HUR)"
+          },
+          "unit_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Label",
+            "description": "Human readable unit (e.g., piece, hour)"
+          },
+          "net_price": {
+            "type": "string",
+            "title": "Net Price",
+            "description": "Net unit price"
+          },
+          "line_total": {
+            "type": "string",
+            "title": "Line Total",
+            "description": "Net line total (Qty * Price)"
+          },
+          "vat_rate": {
+            "type": "string",
+            "title": "Vat Rate",
+            "description": "VAT percentage (e.g., 20.00)"
+          },
+          "vat_category": {
+            "type": "string",
+            "title": "Vat Category",
+            "description": "VAT category code (EN 16931)",
+            "default": "S"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "quantity",
+          "unit_code",
+          "net_price",
+          "line_total",
+          "vat_rate"
+        ],
+        "title": "LineItemSchema",
+        "description": "High-precision invoice line item."
       },
       "MemoryStatus": {
         "properties": {
@@ -886,6 +1272,206 @@
         "title": "MemoryStatus",
         "description": "Memory usage approximation."
       },
+      "PartySchema": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Legal company name"
+          },
+          "vat_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vat Number",
+            "description": "VAT ID with country prefix"
+          },
+          "registration_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Registration Id",
+            "description": "Trade registration number"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AddressSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "PartySchema",
+        "description": "Normalized party (Seller/Buyer) representation."
+      },
+      "ProValidationResult": {
+        "properties": {
+          "valid": {
+            "type": "boolean",
+            "title": "Valid",
+            "description": "Whether the file is valid"
+          },
+          "format": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Format",
+            "description": "Detected format"
+          },
+          "flavor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Flavor",
+            "description": "Detected profile"
+          },
+          "error_count": {
+            "type": "integer",
+            "title": "Error Count",
+            "description": "Total number of errors"
+          },
+          "warning_count": {
+            "type": "integer",
+            "title": "Warning Count",
+            "description": "Total number of warnings",
+            "default": 0
+          },
+          "diagnostics": {
+            "items": {
+              "$ref": "#/components/schemas/DiagnosticDetail"
+            },
+            "type": "array",
+            "title": "Diagnostics",
+            "description": "Smart diagnostics with explanations"
+          },
+          "validation_mode": {
+            "type": "string",
+            "title": "Validation Mode",
+            "description": "Always 'pro_diagnostics' for this response type",
+            "default": "pro_diagnostics"
+          },
+          "pdfa_valid": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pdfa Valid",
+            "description": "PDF/A-3b compliance (null if input was raw XML or VeraPDF unavailable)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "valid",
+          "error_count"
+        ],
+        "title": "ProValidationResult",
+        "description": "Enhanced validation result with Smart Diagnostics (Pro Feature)."
+      },
+      "ProblemDetails": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "title": "Type",
+            "description": "A URI reference that identifies the problem type.",
+            "default": "about:blank"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "description": "A short, human-readable summary of the problem type."
+          },
+          "status": {
+            "type": "integer",
+            "title": "Status",
+            "description": "The HTTP status code generated by the origin server for this occurrence of the problem."
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail",
+            "description": "A human-readable explanation specific to this occurrence of the problem."
+          },
+          "instance": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instance",
+            "description": "A URI reference that identifies the specific occurrence of the problem."
+          },
+          "extensions": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Extensions",
+            "description": "Additional problem details specific to the API."
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "status"
+        ],
+        "title": "ProblemDetails",
+        "description": "RFC 9457 standard error response format.\nhttps://www.rfc-editor.org/rfc/rfc9457.html"
+      },
       "RuntimeConfig": {
         "properties": {
           "mode": {
@@ -913,53 +1499,6 @@
         "title": "RuntimeConfig",
         "description": "Runtime configuration."
       },
-      "SerializationResult": {
-        "properties": {
-          "success": {
-            "type": "boolean",
-            "title": "Success",
-            "description": "Whether serialization succeeded"
-          },
-          "invoice_data": {
-            "anyOf": [
-              {
-                "type": "object"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Invoice Data",
-            "description": "Business-ready flattened JSON data"
-          },
-          "metadata": {
-            "anyOf": [
-              {
-                "type": "object"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Metadata",
-            "description": "Additional metadata (format, profile detected)"
-          },
-          "errors": {
-            "items": {
-              "$ref": "#/components/schemas/ErrorDetail"
-            },
-            "type": "array",
-            "title": "Errors",
-            "default": []
-          }
-        },
-        "type": "object",
-        "required": [
-          "success"
-        ],
-        "title": "SerializationResult",
-        "description": "Serialization result with flattened business data."
-      },
       "Seller": {
         "properties": {
           "name": {
@@ -972,6 +1511,61 @@
               }
             ],
             "title": "Name"
+          },
+          "registration_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Registration Id"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "line1": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Line1"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "postcode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Postcode"
           },
           "country": {
             "anyOf": [
@@ -998,6 +1592,120 @@
         },
         "type": "object",
         "title": "Seller"
+      },
+      "SerializationResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "invoice": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BusinessReadyInvoice"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "errors": {
+            "items": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Errors",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "title": "SerializationResponse",
+        "description": "Response model for the /serialize endpoint."
+      },
+      "TaxBreakdownItem": {
+        "properties": {
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "vat_rate": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vat Rate"
+          },
+          "basis_amount": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Basis Amount"
+          },
+          "tax_amount": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tax Amount"
+          }
+        },
+        "type": "object",
+        "title": "TaxBreakdownItem"
+      },
+      "TaxBreakdownSchema": {
+        "properties": {
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "rate": {
+            "type": "string",
+            "title": "Rate"
+          },
+          "basis_amount": {
+            "type": "string",
+            "title": "Basis Amount"
+          },
+          "tax_amount": {
+            "type": "string",
+            "title": "Tax Amount"
+          }
+        },
+        "type": "object",
+        "required": [
+          "category",
+          "rate",
+          "basis_amount",
+          "tax_amount"
+        ],
+        "title": "TaxBreakdownSchema",
+        "description": "Normalized tax breakdown per category/rate."
       },
       "Totals": {
         "properties": {
@@ -1082,6 +1790,39 @@
         ],
         "title": "ValidationError"
       },
+      "ValidationErrorDetail": {
+        "properties": {
+          "rule_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rule Id",
+            "description": "Rule identifier (e.g. BR-CO-10)"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Error message"
+          },
+          "severity": {
+            "type": "string",
+            "title": "Severity",
+            "description": "error or warning",
+            "default": "error"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "ValidationErrorDetail",
+        "description": "Structured validation error for Community Edition."
+      },
       "ValidationResult": {
         "properties": {
           "valid": {
@@ -1115,11 +1856,35 @@
           },
           "errors": {
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/ValidationErrorDetail"
             },
             "type": "array",
             "title": "Errors",
             "description": "List of validation errors"
+          },
+          "validation_mode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Validation Mode",
+            "description": "Validation mode"
+          },
+          "pdfa_valid": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pdfa Valid",
+            "description": "PDF/A-3b compliance (null if input was raw XML or VeraPDF unavailable)"
           }
         },
         "type": "object",
