@@ -8,7 +8,7 @@ from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from fastapi.responses import StreamingResponse
 from io import BytesIO
 
-from app.schemas.validation import InvoiceMetadata, ValidationResult, ProValidationResult, ErrorResponse
+from app.schemas.validation import InvoiceMetadata, ValidationResult, ProValidationResult
 from app.schemas.errors import ProblemDetails
 from app.schemas.extraction import ExtractionResult
 from app.schemas.integration import SerializationResponse
@@ -431,8 +431,6 @@ async def serialize_facturx(
                 detail={"error": "EMPTY_FILE", "message": "File is empty"}
             )
 
-        # LICENSE CHECK
-        license_key = os.getenv("LICENSE_KEY", "").strip()
         from app.license import has_tier, is_licensed
         
         try:
