@@ -133,7 +133,15 @@ def run_tests(base_url: str):
             "country_code": "FR",
             "vat_number": "FR999999999"
         },
-        "buyer": {"name": "Test Client"},
+        "buyer": {
+            "name": "Test Client",
+            "address": {
+                "line1": "123 Buyer St",
+                "city": "Paris",
+                "postcode": "75001",
+                "country_code": "FR"
+            }
+        },
         "lines": [
             {"name": "Test Item", "quantity": 1, "net_price": 100, "net_total": 100, "vat_rate": 20}
         ],
@@ -145,7 +153,8 @@ def run_tests(base_url: str):
         },
         "tax_details": [
             {"calculated_amount": "20.00", "basis_amount": "100.00", "rate": "20.00", "category_code": "S"}
-        ]
+        ],
+        "payment_terms": "Paiement à réception"
     }
     
     # helper handles mixed data (fields) and files

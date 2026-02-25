@@ -69,4 +69,13 @@ While we provide mandatory legal updates, this license **DOES NOT** include:
 Updates are distributed as a new Docker Image archive via the purchase platform (LemonSqueezy). Licensee is responsible for applying these updates to ensure security.
 
 ---
+
+## 6. VENDOR LEGAL INFORMATION
+
+* **Commercial Name:** NexaFlow
+* **Registration Number (SIREN):** 999 899 834
+* **SIRET:** 999 899 834 00017
+* **Contact Entity:** Factur-X Engine Team
+
+---
 **By purchasing, you accept these terms which balance our legal obligations with our "Low Touch" support model.**
