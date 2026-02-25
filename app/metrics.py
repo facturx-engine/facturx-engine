@@ -46,8 +46,6 @@ class MetricsCollector:
             "validation_profile": {},
             # validation_error_type{rule_id="BR-01|BR-CO-17|..."}
             "validation_error_type": {},
-            # teaser_errors_hidden (histogram of how many errors we hide per request)
-            "teaser_hidden_errors": {},
         }
         
         self._start_time = time.time()
@@ -125,14 +123,9 @@ class MetricsCollector:
             if error_rules:
                 for rule_id in error_rules[:5]:  # Top 5 errors per request
                     self._inc_labeled_unlocked("validation_error_type", rule_id)
-
-            # Teaser conversion opportunity tracking
-            if mode == "teaser" and hidden_count > 0:
-                bucket = "1" if hidden_count == 1 else "2-5" if hidden_count <= 5 else "6+"
-                self._inc_labeled_unlocked("teaser_hidden_errors", bucket)
     
-    def get_basic_prometheus_format(self) -> str:
-        """Export BASIC metrics only (Community tier)."""
+    def get_prometheus_format(self) -> str:
+        """Export ALL metrics including Pro-tier business metrics."""
         lines = []
         
         # App info
@@ -169,13 +162,7 @@ class MetricsCollector:
                 lines.append("# HELP facturx_request_duration_seconds_count Total observations")
                 lines.append("# TYPE facturx_request_duration_seconds_count counter")
                 lines.append(f"facturx_request_duration_seconds_count {len(durations)}")
-        
-        return "\n".join(lines)
-    
-    def get_prometheus_format(self) -> str:
-        """Export ALL metrics including Pro-tier business metrics."""
-        # Start with basic metrics
-        lines = [self.get_basic_prometheus_format()]
+                lines.append("")
         
         # === PRO-TIER LABELED METRICS ===
         with self._lock:
