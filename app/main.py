@@ -72,15 +72,36 @@ from fastapi.responses import JSONResponse
 from fastapi import HTTPException
 from app.schemas.errors import ProblemDetails
 
+def _sanitize_validation_errors(errors: list) -> list:
+    """
+    Sanitize FastAPI validation error dicts before JSON serialisation.
+
+    FastAPI includes the raw input value in each error dict.  When the input
+    is an UploadFile object (multipart/form-data endpoint), that object is not
+    JSON-serialisable and causes a secondary TypeError → HTTP 500.  Replace
+    any non-primitive input value with a safe string representation.
+    """
+    sanitized = []
+    for err in errors:
+        safe_err = dict(err)
+        raw_input = safe_err.get("input")
+        if raw_input is not None and not isinstance(raw_input, (str, int, float, bool, list, dict, type(None))):
+            # UploadFile, SpooledTemporaryFile, or any other non-primitive
+            filename = getattr(raw_input, "filename", None)
+            safe_err["input"] = f"<UploadFile: {filename}>" if filename else f"<{type(raw_input).__name__}>"
+        sanitized.append(safe_err)
+    return sanitized
+
+
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     """
     Format standard FastAPI validation errors (e.g., missing fields, bad types) into RFC 9457 format.
     """
-    errors = exc.errors()
+    errors = _sanitize_validation_errors(exc.errors())
     # Simple formatting of the first validation error
     detail_msg = ", ".join([f"{'.'.join(str(loc) for loc in err['loc'])}: {err['msg']}" for err in errors])
-    
+
     problem = ProblemDetails(
         type="about:blank",
         title="Bad Request",
@@ -210,42 +231,123 @@ async def startup_event():
 async def shutdown_event():
     logger.info("Shutting down API...")
 
-from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
+from starlette.types import ASGIApp, Receive, Scope, Send
 
-# SECURITY: DoS Protection via Max Upload Size (20MB)
-class LimitUploadSize(BaseHTTPMiddleware):
-    def __init__(self, app, max_upload_size: int) -> None:
-        super().__init__(app)
+# SECURITY: DoS Protection via Max Upload Size
+class LimitUploadSize:
+    """
+    Pure ASGI middleware enforcing a maximum request body size.
+
+    Two-layer defence:
+    1. Fast-path: reject immediately when Content-Length header exceeds the limit
+       (no body read required).
+    2. Streaming fallback: buffer the body chunk-by-chunk from the ASGI `receive`
+       callable and abort once the accumulated size exceeds the limit.  This covers
+       chunked transfer encoding (Transfer-Encoding: chunked) where no Content-Length
+       header is sent.
+
+    Unlike BaseHTTPMiddleware, this pure ASGI implementation wraps the `receive`
+    callable directly so that downstream handlers (FastAPI form parsers, UploadFile)
+    can still read the cached body after the size check passes.
+    """
+
+    def __init__(self, app: ASGIApp, max_upload_size: int) -> None:
+        self.app = app
         self.max_upload_size = max_upload_size
 
-    async def dispatch(self, request: Request, call_next):
-        if request.method == 'POST':
-            if 'content-length' in request.headers:
-                try:
-                    content_length = int(request.headers['content-length'])
-                    if content_length > self.max_upload_size:
-                        logger.warning(f"Blocked upload exceeding size limit: {content_length} bytes")
-                        return Response("File too large. Max size is 20MB.", status_code=413)
-                except ValueError:
-                    pass # Invalid header, let it proceed or fail later
-        return await call_next(request)
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http" or scope["method"] not in ("POST", "PUT", "PATCH"):
+            await self.app(scope, receive, send)
+            return
+
+        headers = dict(scope.get("headers", []))
+
+        # Layer 1 — Content-Length fast-path (no body buffering needed)
+        raw_cl = headers.get(b"content-length")
+        if raw_cl is not None:
+            try:
+                content_length = int(raw_cl)
+                if content_length > self.max_upload_size:
+                    logger.warning(
+                        f"Blocked upload (Content-Length): {content_length} bytes "
+                        f"> limit {self.max_upload_size} bytes"
+                    )
+                    response = Response(
+                        f"File too large. Maximum allowed size is "
+                        f"{self.max_upload_size // (1024 * 1024)} MB.",
+                        status_code=413,
+                    )
+                    await response(scope, receive, send)
+                    return
+            except ValueError:
+                pass  # Malformed Content-Length — fall through to Layer 2
+
+        # Layer 2 — Buffer body and check size (handles chunked / no Content-Length)
+        chunks: list[bytes] = []
+        received = 0
+        more_body = True
+
+        while more_body:
+            message = await receive()
+            body_chunk = message.get("body", b"")
+            received += len(body_chunk)
+
+            if received > self.max_upload_size:
+                logger.warning(
+                    f"Blocked upload (streaming): received {received} bytes "
+                    f"> limit {self.max_upload_size} bytes"
+                )
+                response = Response(
+                    f"File too large. Maximum allowed size is "
+                    f"{self.max_upload_size // (1024 * 1024)} MB.",
+                    status_code=413,
+                )
+                await response(scope, receive, send)
+                return
+
+            chunks.append(body_chunk)
+            more_body = message.get("more_body", False)
+
+        cached_body = b"".join(chunks)
+
+        # Wrap receive so downstream ASGI apps read the cached body, not the
+        # already-exhausted original stream.
+        body_sent = False
+
+        async def cached_receive() -> dict:
+            nonlocal body_sent
+            if not body_sent:
+                body_sent = True
+                return {"type": "http.request", "body": cached_body, "more_body": False}
+            # After body is delivered, forward any subsequent messages (e.g. disconnect)
+            return await receive()
+
+        await self.app(scope, cached_receive, send)
 
 # Configure Middlewares
 # 1. Size Limit (First line of defense)
 MAX_UPLOAD_SIZE_MB = int(os.getenv("MAX_UPLOAD_SIZE_MB", 10))
 app.add_middleware(LimitUploadSize, max_upload_size=MAX_UPLOAD_SIZE_MB * 1024 * 1024) 
 
-# 2. Configure CORS (Secure by Default logic)
-cors_env = os.getenv("CORS_ORIGINS", "*")
-allow_origins = [origin.strip() for origin in cors_env.split(",")]
+# 2. Configure CORS (Secure by Default)
+# CORS_ORIGINS must be an explicit comma-separated list of allowed origins.
+# Defaulting to "*" (wildcard) combined with allow_credentials=True violates the
+# CORS specification (RFC 6454 / Fetch Spec) and is rejected by all modern browsers.
+# In self-hosted / air-gapped deployments the default is an empty list (no CORS),
+# which is safe. Set CORS_ORIGINS explicitly when a browser-based UI needs access.
+cors_env = os.getenv("CORS_ORIGINS", "").strip()
+if cors_env:
+    allow_origins = [origin.strip() for origin in cors_env.split(",") if origin.strip()]
+else:
+    allow_origins = []  # No cross-origin requests allowed by default
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allow_origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_credentials=bool(allow_origins),  # credentials only when origins are explicit
+    allow_methods=["POST", "GET", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 # Include routers

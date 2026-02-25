@@ -71,6 +71,11 @@ def _verify_license_crypto(license_key_b64: str) -> Optional[Dict]:
             # Flexible date parsing: try ISO format first, fallback to YYYY-MM-DD
             try:
                 expiry_date = datetime.fromisoformat(expiry_str.replace('Z', '+00:00'))
+                # In Python 3.11+, fromisoformat("YYYY-MM-DD") succeeds but returns a
+                # naive datetime (no tzinfo). The except ValueError below is never
+                # reached for plain dates, so we must normalise here instead.
+                if expiry_date.tzinfo is None:
+                    expiry_date = expiry_date.replace(tzinfo=timezone.utc)
             except ValueError:
                 expiry_date = datetime.strptime(expiry_str, "%Y-%m-%d")
                 # Make naive datetime timezone-aware (assume UTC)

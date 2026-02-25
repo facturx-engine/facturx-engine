@@ -53,13 +53,30 @@ RUN printf '%s\n' \
 RUN wget -q \
     "https://software.verapdf.org/releases/${VERAPDF_MAJOR_MINOR}/verapdf-greenfield-${VERAPDF_VERSION}-installer.zip" \
     -O /tmp/verapdf-installer.zip && \
+    if [ -n "$VERAPDF_INSTALLER_SHA256" ]; then \
+        echo "${VERAPDF_INSTALLER_SHA256}  /tmp/verapdf-installer.zip" | sha256sum -c - || \
+        { echo "ERROR: VeraPDF installer SHA-256 mismatch — possible supply-chain attack!" >&2; exit 1; }; \
+    fi && \
     unzip -q /tmp/verapdf-installer.zip -d /tmp/verapdf-installer-dir && \
     java -jar "/tmp/verapdf-installer-dir/verapdf-greenfield-${VERAPDF_VERSION}/verapdf-izpack-installer-${VERAPDF_VERSION}.jar" \
     /tmp/verapdf-auto-install.xml && \
     rm -rf /tmp/verapdf-installer.zip /tmp/verapdf-installer-dir /tmp/verapdf-auto-install.xml
 
+# Supply-chain integrity: expected SHA-256 digests.
+# Set these ARGs in CI (--build-arg) to enforce checksum verification.
+# Leave empty to skip verification (development / first-time bootstrap only).
+# Obtain the correct values with:
+#   sha256sum verapdf-greenfield-<VERSION>-installer.zip
+#   sha256sum Saxon-HE-<VERSION>.jar
+ARG VERAPDF_INSTALLER_SHA256=""
+ARG SAXON_JAR_SHA256=""
+
 # Download Saxon-HE 10.8 JAR from Maven Central (10.8 natively includes xmlresolver)
-RUN wget -q "https://repo1.maven.org/maven2/net/sf/saxon/Saxon-HE/10.8/Saxon-HE-10.8.jar" -O /saxon.jar
+RUN wget -q "https://repo1.maven.org/maven2/net/sf/saxon/Saxon-HE/10.8/Saxon-HE-10.8.jar" -O /saxon.jar && \
+    if [ -n "$SAXON_JAR_SHA256" ]; then \
+        echo "${SAXON_JAR_SHA256}  /saxon.jar" | sha256sum -c - || \
+        { echo "ERROR: Saxon JAR SHA-256 mismatch — possible supply-chain attack!" >&2; exit 1; }; \
+    fi
 
 # Locate the installed CLI fat JAR and stage it at /verapdf.jar.
 # The IzPack installer places the executable JAR in /opt/verapdf/bin/ as
@@ -149,4 +166,7 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
 
-CMD ["gunicorn", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "--max-requests", "1000", "--max-requests-jitter", "50", "--bind", "0.0.0.0:8000", "app.main:app"]
+# WORKERS: number of Gunicorn worker processes (default: 4).
+# Override at runtime: docker run -e WORKERS=8 ...
+# Rule of thumb: 2 × CPU cores + 1 for CPU-bound workloads.
+CMD ["sh", "-c", "exec gunicorn -w ${WORKERS:-4} -k uvicorn.workers.UvicornWorker --max-requests 1000 --max-requests-jitter 50 --bind 0.0.0.0:8000 app.main:app"]

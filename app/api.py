@@ -8,6 +8,19 @@ from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from fastapi.responses import StreamingResponse
 from io import BytesIO
 
+# Magic-byte signatures for supported file types
+_PDF_MAGIC = b"%PDF-"
+_XML_MAGIC_BYTES = (b"<?xml", b"\xef\xbb\xbf<?xml", b"<rsm:", b"<ubl:")  # UTF-8 BOM + common root elements
+
+def _check_pdf_magic(content: bytes) -> bool:
+    """Return True if content starts with the PDF magic bytes (%PDF-)."""
+    return content[:5] == _PDF_MAGIC
+
+def _check_xml_magic(content: bytes) -> bool:
+    """Return True if content looks like XML (starts with <?xml or a known root element)."""
+    stripped = content.lstrip(b"\xef\xbb\xbf \t\r\n")  # strip UTF-8 BOM + whitespace
+    return stripped[:5] == b"<?xml" or stripped[:4] in (b"<rsm", b"<ubl", b"<Cro")
+
 from app.schemas.validation import InvoiceMetadata, ValidationResult, ProValidationResult
 from app.schemas.errors import ProblemDetails
 from app.schemas.extraction import ExtractionResult
@@ -45,19 +58,26 @@ async def convert_to_facturx(
     metrics.inc_gauge("active_requests")
     
     try:
-        # Validate file type
+        # Validate file extension (first pass)
         if not pdf.filename.lower().endswith('.pdf'):
             raise HTTPException(
                 status_code=400,
                 detail={"error": "INVALID_FILE_TYPE", "message": "Only PDF files are accepted"}
             )
-        
-        # Read PDF content (Sync read for sync route)
-        pdf_content = pdf.file.read()
+
+        # Read PDF content (async I/O — avoids blocking the event loop)
+        pdf_content = await pdf.read()
         if not pdf_content:
             raise HTTPException(
                 status_code=400,
                 detail={"error": "EMPTY_FILE", "message": "PDF file is empty"}
+            )
+
+        # Validate magic bytes (second pass — catches renamed non-PDF files)
+        if not _check_pdf_magic(pdf_content):
+            raise HTTPException(
+                status_code=400,
+                detail={"error": "INVALID_FILE_TYPE", "message": "File does not appear to be a valid PDF (bad magic bytes)"}
             )
         
         # Parse and validate metadata
@@ -208,14 +228,35 @@ async def validate_facturx(
     metrics.inc_gauge("active_requests")
     
     try:
-        # Read file content (Sync read)
-        file_content = file.file.read()
+        # Read file content (async I/O — avoids blocking the event loop)
+        file_content = await file.read()
         if not file_content:
             raise HTTPException(
                 status_code=400,
                 detail={"error": "EMPTY_FILE", "message": "File is empty"}
             )
-        
+
+        # Validate magic bytes: accept PDF or XML only
+        filename_lower = (file.filename or "").lower()
+        is_pdf_ext = filename_lower.endswith(".pdf")
+        is_xml_ext = filename_lower.endswith(".xml")
+
+        if is_pdf_ext and not _check_pdf_magic(file_content):
+            raise HTTPException(
+                status_code=400,
+                detail={"error": "INVALID_FILE_TYPE", "message": "File does not appear to be a valid PDF (bad magic bytes)"}
+            )
+        if is_xml_ext and not _check_xml_magic(file_content):
+            raise HTTPException(
+                status_code=400,
+                detail={"error": "INVALID_FILE_TYPE", "message": "File does not appear to be valid XML (bad magic bytes)"}
+            )
+        if not is_pdf_ext and not is_xml_ext:
+            raise HTTPException(
+                status_code=400,
+                detail={"error": "INVALID_FILE_TYPE", "message": "Only PDF or XML files are accepted for validation"}
+            )
+
         # LICENSE CHECK
         license_key = os.getenv("LICENSE_KEY", "").strip()
         is_pro = False
@@ -355,14 +396,21 @@ async def extract_facturx(
     metrics.inc_gauge("active_requests")
     
     try:
-        # Read file content (Sync read)
-        file_content = file.file.read()
+        # Read file content (async I/O — avoids blocking the event loop)
+        file_content = await file.read()
         if not file_content:
             raise HTTPException(
                 status_code=400,
                 detail={"error": "EMPTY_FILE", "message": "File is empty"}
             )
-        
+
+        # Validate magic bytes: /extract only accepts PDF files
+        if not _check_pdf_magic(file_content):
+            raise HTTPException(
+                status_code=400,
+                detail={"error": "INVALID_FILE_TYPE", "message": "Only PDF files are accepted for extraction (bad magic bytes)"}
+            )
+
         # Extract invoice data
         # Extraction: Always use the full ExtractionService (Open Core Policy)
         # Pro features are now strictly on Validation and Metrics.
@@ -422,12 +470,25 @@ async def serialize_facturx(
     metrics.inc_gauge("active_requests")
     
     try:
-        # Read file content
-        file_content = file.file.read()
+        # Read file content (async I/O — avoids blocking the event loop)
+        file_content = await file.read()
         if not file_content:
             raise HTTPException(
                 status_code=400,
                 detail={"error": "EMPTY_FILE", "message": "File is empty"}
+            )
+
+        # Validate magic bytes before licence check (no point wasting CPU on garbage)
+        filename_lower = (file.filename or "").lower()
+        if filename_lower.endswith(".pdf") and not _check_pdf_magic(file_content):
+            raise HTTPException(
+                status_code=400,
+                detail={"error": "INVALID_FILE_TYPE", "message": "File does not appear to be a valid PDF (bad magic bytes)"}
+            )
+        if filename_lower.endswith(".xml") and not _check_xml_magic(file_content):
+            raise HTTPException(
+                status_code=400,
+                detail={"error": "INVALID_FILE_TYPE", "message": "File does not appear to be valid XML (bad magic bytes)"}
             )
 
         from app.license import has_tier, is_licensed
