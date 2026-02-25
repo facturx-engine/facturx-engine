@@ -85,7 +85,34 @@ Test **100% of the Pro features (VeraPDF, Smart Diagnostics, and ERP Serializati
 | :--- | :--- | :--- |
 | `PORT` | API Listening Port | `8000` |
 | `LICENSE_KEY` | Pro License Key (Base64) | - |
-| `WORKERS` | Number of Gunicorn Workers | `1` |
+| `WORKERS` | Number of Gunicorn Workers | `4` |
+| `METRICS_ENABLED` | Enable Prometheus `/metrics` (Pro) | `false` |
+| `METRICS_TOKEN` | Bearer Token for `/metrics` (Pro) | - |
+
+---
+
+## Security Hardening (Prometheus Metrics)
+
+The `/metrics` endpoint (Pro Edition) requires explicit activation and authentication to prevent business intelligence leakage.
+
+1. **Activation**: Must set `METRICS_ENABLED=true`
+2. **Authentication**: Must define `METRICS_TOKEN=your_secure_random_string`
+3. **Scraping**: Configure Prometheus to pass the Authorization header: `Authorization: Bearer your_secure_random_string`
+
+### Recommended Reverse-Proxy Configuration
+
+Even with token authentication, it is an industry best practice to restrict access to the `/metrics` endpoint to your internal monitoring infrastructure (e.g., `127.0.0.1` or a specific VPC subnet).
+
+**Nginx Example:**
+
+```nginx
+location /metrics {
+    allow 127.0.0.1;
+    allow 10.0.0.0/8;
+    deny all;
+    proxy_pass http://facturx-engine:8000;
+}
+```
 
 ---
 

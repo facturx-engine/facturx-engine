@@ -424,24 +424,71 @@ async def health_check():
     }
 
 @app.get("/metrics", tags=["observability"], include_in_schema=True)
-async def metrics_endpoint():
+async def metrics_endpoint(request: Request):
     """
     Prometheus-compatible metrics endpoint.
     
-    Community: Basic metrics (uptime, requests, latency).
-    Pro: Full metrics including business labels (profiles, error types, teaser conversion).
+    Security:
+    - Community Edition: Disabled (HTTP 403).
+    - Pro Edition: Disabled by default. Requires METRICS_ENABLED=true and METRICS_TOKEN=<secret>.
     """
-    from fastapi.responses import PlainTextResponse
+    from fastapi.responses import PlainTextResponse, JSONResponse
     from app.metrics import metrics
     from app.license import is_licensed
     import os
     
     is_pro = os.getenv("LICENSE_KEY") and is_licensed()
     
-    if is_pro:
-        content = metrics.get_prometheus_format()
-    else:
-        content = metrics.get_basic_prometheus_format()
+    if not is_pro:
+        # Community Mode: Metrics disabled with upsell message
+        return JSONResponse(
+            status_code=403,
+            content={
+                "error": "PRO_FEATURE_REQUIRED",
+                "message": "Prometheus metrics integration is a Pro feature. Get your evaluation key at https://facturx-engine.lemonsqueezy.com"
+            }
+        )
+        
+    # Pro Mode: Check if explicitly enabled
+    metrics_enabled = os.getenv("METRICS_ENABLED", "false").lower() == "true"
+    if not metrics_enabled:
+        return JSONResponse(
+            status_code=404,
+            content={"error": "NOT_FOUND", "message": "Metrics endpoint is disabled. Set METRICS_ENABLED=true to enable."}
+        )
+        
+    # Pro Mode: Check Authentication Token
+    expected_token = os.getenv("METRICS_TOKEN", "").strip()
+    if not expected_token:
+        # If enabled but no token is set, it's a misconfiguration. Fail secure.
+        logger.error("METRICS_ENABLED is true but METRICS_TOKEN is not set. Denying access.")
+        return JSONResponse(
+            status_code=500,
+            content={"error": "CONFIGURATION_ERROR", "message": "Metrics token is not configured on the server."}
+        )
+        
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        return JSONResponse(
+            status_code=401,
+            headers={"WWW-Authenticate": "Bearer"},
+            content={"error": "UNAUTHORIZED", "message": "Missing or invalid Authorization header"}
+        )
+        
+    provided_token = auth_header.split(" ")[1]
+    
+    # Use constant-time comparison to prevent timing attacks, though simple string 
+    # equality is usually acceptable here it's best practice.
+    import hmac
+    if not hmac.compare_digest(provided_token.encode(), expected_token.encode()):
+        return JSONResponse(
+            status_code=401,
+            headers={"WWW-Authenticate": "Bearer"},
+            content={"error": "UNAUTHORIZED", "message": "Invalid metrics token"}
+        )
+    
+    # Authorized Pro User
+    content = metrics.get_prometheus_format()
     
     return PlainTextResponse(
         content=content,
