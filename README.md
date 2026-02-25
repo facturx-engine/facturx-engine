@@ -32,14 +32,18 @@ curl -X POST "http://localhost:8000/v1/convert" \
   --output invoice_compliant.pdf
 
 # Validate compliance
-curl -X POST "http://localhost:8000/v1/validate" \
-  -F "file=@invoice_compliant.pdf"
+# curl -X POST "http://localhost:8000/v1/validate" \
+#   -F "file=@invoice_compliant.pdf"
 
 # Extract Data (Community)
 # curl -X POST "http://localhost:8000/v1/extract" -F "file=@invoice.pdf"
 
 # Serialize for ERP (Pro)
-# curl -X POST "http://localhost:8000/v1/serialize" -F "file=@invoice.pdf"
+```bash
+# Example
+curl -X POST http://localhost:8000/v1/validate \
+    -F "file=@your_invoice.pdf" \
+    -F "validate_pdfa=true"
 ```
 
 **Windows users:** Replace `curl` with `curl.exe` and use PowerShell syntax for file reading.
@@ -75,19 +79,20 @@ Test **100% of the Pro features (VeraPDF, Smart Diagnostics, and ERP Serializati
 1. Request your evaluation key at **[Factur-X Engine on Lemon Squeezy](https://facturx-engine.lemonsqueezy.com)** (Zero friction, instant delivery).
 2. Inject the Base64 key into your Docker container:
    `docker run -e LICENSE_KEY='YOUR_KEY' facturxengine/facturx-engine`
-3. After 30 days, the engine gracefully downgrades back to Community Mode. No forced lock-in.
+3. After 30 days, the engine### Configuration (Environment Variables)
 
----
+The API behaves according to standard Linux paradigms. It accepts the following variables:
 
-## Configuration
-
-| Variable | Description | Default |
+| Variable | Default | Description |
 | :--- | :--- | :--- |
-| `PORT` | API Listening Port | `8000` |
-| `LICENSE_KEY` | Pro License Key (Base64) | - |
-| `WORKERS` | Number of Gunicorn Workers | `4` |
-| `METRICS_ENABLED` | Enable Prometheus `/metrics` (Pro) | `false` |
-| `METRICS_TOKEN` | Bearer Token for `/metrics` (Pro) | - |
+| `LICENSE_KEY` | *(empty)* | Activates Pro Features. Leave empty for Community Edition. |
+| `MAX_UPLOAD_SIZE_MB` | `10` | Defence-in-depth size limit for payload processing. |
+| `FX_VALIDATION_TIMEOUT` | `30` | Timeout in seconds for subprocess validators (Saxon/VeraPDF). |
+| `VERAPDF_ENABLED` | `true` | System-wide toggle for PDF/A-3b validation (if `VERAPDF_JAR` is set). |
+| `VERAPDF_JAR` | *(empty)* | **REQUIRED FOR PRO**: Absolute path to the VeraPDF Greenfield JAR. |
+| `SAXON_JAR` | *(empty)* | Absolute path to the Saxon-HE JAR for Schematron evaluation. |
+| `METRICS_ENABLED` | `false` | Enables the `/metrics` endpoint in Pro Mode. |
+| `METRICS_TOKEN` | *(empty)* | Bearer token required for `/metrics` access in Pro Mode. |
 
 ---
 

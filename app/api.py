@@ -207,7 +207,8 @@ async def generate_facturx_xml(
                  500: {"model": ProblemDetails, "description": "Server error"}
              })
 async def validate_facturx(
-    file: UploadFile = File(..., description="Factur-X PDF or XML file to validate")
+    file: UploadFile = File(..., description="Factur-X PDF or XML file to validate"),
+    validate_pdfa: bool = Form(True, description="Run PDF/A-3b validation (VeraPDF). Allows bypassing for speed if PDF structure is already trusted. Pro only.")
 ):
     """
     Validate a Factur-X PDF or XML file against EN 16931 standards.
@@ -273,7 +274,7 @@ async def validate_facturx(
         # ALWAYS run Hybrid Validation (Teaser Mode for Community)
         try:
             from app.services.hybrid_validation_service import HybridValidationService
-            result = HybridValidationService.validate(file_content, file.filename)
+            result = HybridValidationService.validate(file_content, file.filename, validate_pdfa)
         except ImportError:
             # Fallback to basic validation if hybrid not available
             logger.warning("HybridValidationService not available, falling back to lite")
