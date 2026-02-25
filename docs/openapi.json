@@ -3,7 +3,7 @@
   "info": {
     "title": "Factur-X Engine",
     "description": "Production-ready REST API for Factur-X (ZUGFeRD 2.4) conversions and data extraction.",
-    "version": "1.6.1"
+    "version": "1.6.2"
   },
   "paths": {
     "/v1/convert": {
