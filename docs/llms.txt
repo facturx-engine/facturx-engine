@@ -14,11 +14,13 @@
 - [Python Tutorial](https://facturx-engine.github.io/facturx-engine/tutorials/python-facturx.html)
 - [Node.js Tutorial](https://facturx-engine.github.io/facturx-engine/tutorials/nodejs-facturx.html)
 - [PHP Tutorial](https://facturx-engine.github.io/facturx-engine/tutorials/php-facturx.html)
+- [XML Validator Guide](https://facturx-engine.github.io/facturx-engine/tools/validator.html)
 - [Full Context for LLMs](llms-full.txt)
 
 ## Integration
 The engine exposes a REST API on port 8000.
-- POST `/v1/convert`: PDF + JSON -> Factur-X PDF
-- POST `/v1/validate`: File -> JSON Compliance Report
-- POST `/v1/extract`: File -> JSON Invoice Data
-- POST `/v1/xml`: JSON -> CII XML
+- POST `/v1/convert`: PDF + JSON -> Factur-X PDF (Community)
+- POST `/v1/validate`: File -> JSON Compliance Report (Community)
+- POST `/v1/extract`: File -> Standard JSON Data + XML (Community)
+- POST `/v1/serialize`: File -> Business-Ready JSON (Pro)
+- POST `/v1/xml`: JSON -> CII XML (Community)
