@@ -62,8 +62,11 @@ class HybridValidationService:
         recover=False
     )
     
+    # Global Ops Switch for VeraPDF (Default: True)
+    VERAPDF_ENABLED_GLOBAL = os.getenv("VERAPDF_ENABLED", "true").lower() == "true"
+    
     @classmethod
-    def validate(cls, file_content: bytes, filename: str) -> Dict[str, Any]:
+    def validate(cls, file_content: bytes, filename: str, validate_pdfa: bool = True) -> Dict[str, Any]:
         """
         Validate a Factur-X PDF or XML file synchronously.
         """
@@ -211,7 +214,14 @@ class HybridValidationService:
             if is_pdf:
                 from app.license import has_tier
                 if has_tier(["Evaluation", "Business", "Enterprise"]):
-                    if VERAPDF_JAR and os.path.exists(VERAPDF_JAR):
+                    # Check both global (Ops) and request-level (Dev) toggles
+                    if not cls.VERAPDF_ENABLED_GLOBAL:
+                        logger.info("VeraPDF validation skipped: Globally disabled via VERAPDF_ENABLED=false")
+                        result["pdfa_valid"] = None
+                    elif not validate_pdfa:
+                        logger.info("VeraPDF validation skipped: Disabled per-request via validate_pdfa=false")
+                        result["pdfa_valid"] = None
+                    elif VERAPDF_JAR and os.path.exists(VERAPDF_JAR):
                         try:
                             from app.services.hybrid_validator import validate_pdfa3
                             pdfa_valid, pdfa_errors = validate_pdfa3(file_content, VERAPDF_JAR)
@@ -248,7 +258,7 @@ class HybridValidationService:
             return result
     
     @classmethod
-    async def validate_async(cls, file_content: bytes, filename: str) -> Dict[str, Any]:
+    async def validate_async(cls, file_content: bytes, filename: str, validate_pdfa: bool = True) -> Dict[str, Any]:
         """
         Validate a Factur-X PDF or XML file asynchronously.
         
@@ -261,5 +271,6 @@ class HybridValidationService:
             None,
             cls.validate,
             file_content,
-            filename
+            filename,
+            validate_pdfa
         )
