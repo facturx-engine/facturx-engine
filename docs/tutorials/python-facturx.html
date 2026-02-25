@@ -4,9 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generate Factur-X Invoices with Python (The Easy Way) | Factur-X Engine</title>
+    <title>Factur-X Python Library Alternative (API) | Factur-X Engine</title>
     <meta name="description"
-        content="Stop struggling with XML. Generate compliant Factur-X/ZUGFeRD invoices in seconds using Python requests and Docker. Full tutorial and code examples.">
+        content="Looking for a Python Factur-X library? Discover why a self-hosted Docker API is a safer alternative to generate compliant Factur-X & ZUGFeRD invoices.">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -57,11 +57,13 @@
         <div class="max-w-3xl mx-auto px-6">
             <div class="mb-12">
                 <div class="text-amber-500 font-mono text-sm tracking-widest uppercase mb-4">Tutorials / Python</div>
-                <h1 class="text-4xl md:text-5xl font-bold text-white tracking-tight mb-6">Generate Factur-X with Python
+                <h1 class="text-4xl md:text-5xl font-bold text-white tracking-tight mb-6">Factur-X Python Library
+                    Alternative (API)
                 </h1>
                 <p class="text-lg text-slate-400 leading-relaxed">
-                    Integrate <strong>Factur-X Engine</strong> into your FastAPI, Django, or script-based workflows
-                    using the standard `requests` library.
+                    Looking for a robust <strong>Factur-X Python library</strong>? Integrate the <strong>Factur-X Engine
+                        API</strong> into your FastAPI, Django, or script-based workflows using the standard `requests`
+                    library to avoid XML parsing nightmares.
                 </p>
             </div>
 
@@ -116,13 +118,19 @@ generate_invoice("input.pdf", metadata)</code></pre>
                     </div>
                 </div>
 
-                <!-- Why -->
-                <div class="bg-white/5 border-l-4 border-amber-500 p-6 rounded-r-lg">
-                    <h3 class="text-xl font-bold text-white mb-2">Why use the API?</h3>
+                <!-- Python Library vs Docker API -->
+                <div class="space-y-4">
+                    <h2 class="text-2xl font-bold text-white">Python Library vs Factur-X Docker API</h2>
                     <p class="text-slate-400">
-                        Using the engine avoids dependency hell. You don't need to manage <code>lxml</code> versions,
-                        <code>SaxoC</code> binaries, or JVM heaps in your Python environment. The Docker container
-                        handles the strict EN16931 validation logic in an isolated "Iso-Prod" environment.
+                        When searching for a <strong>Python Factur-X library</strong>, developers often encounter
+                        fragile XML parsers that break on edge cases or lack strict <strong>EN16931 /
+                            E-Rechnung</strong> validation. Native Python XML generation is tedious to maintain against
+                        evolving European mandates.
+                    </p>
+                    <p class="text-slate-400">
+                        By using the Engine's Docker API as a "black box" microservice, you avoid dependency hell. You
+                        don't need to manage <code>lxml</code> versions, <code>SaxonC</code> binaries, or JVM heaps in
+                        your Python environment. The isolated "Iso-Prod" container guarantees compliance out-of-the-box.
                     </p>
                 </div>
 

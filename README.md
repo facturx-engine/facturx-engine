@@ -39,12 +39,10 @@ curl -X POST "http://localhost:8000/v1/convert" \
 # curl -X POST "http://localhost:8000/v1/extract" -F "file=@invoice.pdf"
 
 # Serialize for ERP (Pro)
-```bash
-# Example
-curl -X POST http://localhost:8000/v1/validate \
-    -F "file=@your_invoice.pdf" \
-    -F "validate_pdfa=true"
+# curl -X POST "http://localhost:8000/v1/serialize" -F "file=@invoice.pdf"
 ```
+
+**Windows users:** Replace `curl` with `curl.exe` and use PowerShell syntax for file reading.
 
 **Windows users:** Replace `curl` with `curl.exe` and use PowerShell syntax for file reading.
 
@@ -65,7 +63,7 @@ This **Community** version is production-ready. The code is Open Core (transpare
 
 | Feature | Community Edition | Pro Edition | OEM Edition | Enterprise |
 | :--- | :--- | :--- | :--- | :--- |
-| **Pricing** | **Free** (FSL 1.1) | **490€ / year** | **2490€ / year** | **Contact Us** |
+| **Pricing** | **Free** (FSL 1.1) | **990€ / year** | **2490€ / year** | **Contact Us** |
 | **Usage** | Internal Use | Internal Use | **Redistribution** | High Volume |
 | **Data Format** | Raw Extraction | **ERP-Ready JSON** | **ERP-Ready JSON** | Custom |
 | **XML Validation** | EN 16931 Rules | **Smart Diagnostics** | **Smart Diagnostics** | Custom Rules |
@@ -79,7 +77,9 @@ Test **100% of the Pro features (VeraPDF, Smart Diagnostics, and ERP Serializati
 1. Request your evaluation key at **[Factur-X Engine on Lemon Squeezy](https://facturx-engine.lemonsqueezy.com)** (Zero friction, instant delivery).
 2. Inject the Base64 key into your Docker container:
    `docker run -e LICENSE_KEY='YOUR_KEY' facturxengine/facturx-engine`
-3. After 30 days, the engine### Configuration (Environment Variables)
+3. After 30 days, the engine smoothly transitions back to the Community Edition. No aggressive locks, your internal validation flows continue to operate.
+
+### Configuration (Environment Variables)
 
 The API behaves according to standard Linux paradigms. It accepts the following variables:
 
@@ -129,7 +129,7 @@ location /metrics {
 
 ## Legal & Compliance
 
-**Vendor**: Factur-X Engine (Paris, France)  
+**Vendor**: NexaFlow (SIREN: 999 899 834)  
 **License**: FSL 1.1 (Community) / Commercial (Pro)  
 **Compliance**: Designed to respect the EU **Cyber Resilience Act (CRA)**  
 

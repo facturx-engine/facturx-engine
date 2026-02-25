@@ -4,8 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Node.js Factur-X Tutorial | Factur-X Engine</title>
-    <meta name="description" content="Generate EN16931 compliant e-invoices with Node.js, Axios, and Factur-X Engine.">
+    <title>Node.js Factur-X API & "factur-x" NPM Alternative | Factur-X Engine</title>
+    <meta name="description"
+        content="Looking for a factur-x NPM package? Generate EN 16931 compliant E-Rechnung and XRechnung e-invoices safely with Node.js, Axios, and our Docker API.">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -76,10 +77,12 @@
         <div class="max-w-3xl mx-auto px-6">
             <div class="mb-12">
                 <div class="text-amber-500 font-mono text-sm tracking-widest uppercase mb-4">Tutorials / Node.js</div>
-                <h1 class="text-4xl md:text-5xl font-bold text-white tracking-tight mb-6">Generate Factur-X with Node.js
+                <h1 class="text-4xl md:text-5xl font-bold text-white tracking-tight mb-6">Node.js Factur-X & E-Rechnung
+                    API
                 </h1>
                 <p class="text-lg text-slate-400 leading-relaxed">
-                    Standard integration for NestJS, Express, or serverless functions using `axios`.
+                    A robust alternative to fragile <strong>factur-x NPM packages</strong>. Integrate the XRechnung and
+                    Factur-X Engine API into NestJS, Express, or serverless functions using `axios`.
                 </p>
             </div>
 
@@ -131,7 +134,18 @@ convertToFacturX('./input.pdf', myMetadata);</code></pre>
                     </div>
                 </div>
 
-                <div class="bg-white/5 border-l-4 border-amber-500 p-6 rounded-r-lg">
+                <!-- NPM Package vs Docker API -->
+                <div class="space-y-4">
+                    <h2 class="text-2xl font-bold text-white">NPM Packages vs Docker API</h2>
+                    <p class="text-slate-400">
+                        Instead of relying on an outdated <strong>factur-x npm</strong> or <strong>xrechnung
+                            npm</strong> package that might fail strict German E-Rechnung 2025 mandates, outsourcing the
+                        heavy XML validation (via SaxonC) to an isolated Docker container ensures your Node.js backend
+                        remains lightweight and fully compliant.
+                    </p>
+                </div>
+
+                <div class="bg-white/5 border-l-4 border-amber-500 p-6 rounded-r-lg mt-8">
                     <h3 class="text-xl font-bold text-white mb-2">AI Tip</h3>
                     <p class="text-slate-400">
                         If you are using Copilot or GPT to generate your frontend code, provide the

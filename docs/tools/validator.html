@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Factur-X & ZUGFeRD XML Validator | EN16931 Compliance</title>
+    <meta name="description"
+        content="Validate your Factur-X, ZUGFeRD, and E-Rechnung XML files instantly. Our Docker API provides strict EN16931 Schematron validation with clear error messages.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        amber: { 500: '#f59e0b', 600: '#d97706' },
+                        slate: { 950: '#020617' }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+
+    <!-- Breadcrumb Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [{
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://facturx-engine.github.io/facturx-engine/"
+      },{
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Tools",
+        "item": "https://facturx-engine.github.io/facturx-engine/tools/"
+      },{
+        "@type": "ListItem",
+        "position": 3,
+        "name": "XML Validator",
+        "item": "https://facturx-engine.github.io/facturx-engine/tools/validator.html"
+      }]
+    }
+    </script>
+</head>
+
+<body class="bg-slate-950 text-slate-300 font-sans selection:bg-amber-500 selection:text-black">
+
+    <nav
+        class="fixed top-0 w-full z-50 border-b border-white/5 bg-slate-950/80 backdrop-blur-md h-20 flex items-center">
+        <div class="max-w-7xl mx-auto px-6 w-full flex items-center justify-between">
+            <a href="../" class="flex items-center gap-3">
+                <div
+                    class="w-10 h-10 border-2 border-amber-500 flex items-center justify-center rounded-sm bg-slate-900">
+                    <span class="font-mono font-bold text-amber-500">FX</span>
+                </div>
+                <span class="text-xl font-bold tracking-tighter text-white uppercase">Factur-X <span
+                        class="text-amber-500">Engine</span></span>
+            </a>
+            <div class="flex items-center gap-4">
+                <a href="https://github.com/facturx-engine/facturx-engine"
+                    class="text-slate-400 hover:text-white transition-colors text-sm font-bold uppercase tracking-widest">GitHub</a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="pt-40 pb-20">
+        <div class="max-w-3xl mx-auto px-6">
+            <div class="mb-12">
+                <div class="text-amber-500 font-mono text-sm tracking-widest uppercase mb-4">Tools</div>
+                <h1 class="text-4xl md:text-5xl font-bold text-white tracking-tight mb-6">Factur-X XML Validator
+                </h1>
+                <p class="text-lg text-slate-400 leading-relaxed">
+                    Ensure your e-invoices are strictly compliant with the European <strong>EN16931</strong> standard.
+                    Validate Factur-X, ZUGFeRD, XRechnung and Chorus Pro XML files seamlessly using the Factur-X Engine
+                    API.
+                </p>
+            </div>
+
+            <div class="space-y-12">
+
+                <!-- The Problem -->
+                <div class="space-y-4">
+                    <h2 class="text-2xl font-bold text-white">Why XML Validation is Painful</h2>
+                    <p class="text-slate-400">
+                        Generating an XML file named <code>factur-x.xml</code> is only 10% of the work. The real
+                        challenge for developers is ensuring that this XML passes <strong>Schematron
+                            validation</strong>.
+                    </p>
+                    <p class="text-slate-400">
+                        A simple XSD check is not enough for modern E-Rechnung mandates. You must validate hundreds of
+                        business rules (like `BR-CO-10` or `BR-S-08`) which natively requires fragile Java binaries
+                        (like SaxonC) and immense memory overhead in your application.
+                    </p>
+                </div>
+
+                <!-- The Solution -->
+                <div class="space-y-4">
+                    <h2 class="text-2xl font-bold text-white">The Factur-X Engine Solution</h2>
+                    <p class="text-slate-400">
+                        Don't build your own validator. Run the <strong>Factur-X Engine</strong> via Docker and
+                        instantly validate pure XML files or full PDF/A-3 documents via a simple REST API.
+                    </p>
+
+                    <div class="bg-black border border-white/10 rounded-lg p-6 overflow-x-auto mt-6">
+                        <div class="text-xs text-slate-500 font-mono mb-2 uppercase tracking-widest">cURL Example -
+                            Validating a PDF</div>
+                        <pre class="font-mono text-sm text-slate-300"><code>curl -X 'POST' \
+  'http://localhost:8000/v1/validate' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: multipart/form-data' \
+  -F 'file=@invoice.pdf;type=application/pdf'</code></pre>
+                    </div>
+
+                    <div class="bg-black border border-white/10 rounded-lg p-6 overflow-x-auto mt-4">
+                        <div class="text-xs text-slate-500 font-mono mb-2 uppercase tracking-widest">Response - Clean
+                            JSON Errors</div>
+                        <pre class="font-mono text-sm text-green-400"><code>{
+  "is_valid": false,
+  "errors": [
+    {
+      "code": "BR-CO-16",
+      "message": "Payment means IBAN is missing."
+    }
+  ]
+}</code></pre>
+                    </div>
+                </div>
+
+                <!-- Pro diagnostics -->
+                <div
+                    class="bg-amber-500/10 border border-amber-500/30 rounded-lg p-8 mt-12 relative overflow-hidden group">
+                    <div class="absolute inset-0 bg-amber-500/5 group-hover:bg-amber-500/10 transition-colors"></div>
+                    <h3 class="text-2xl font-bold text-white mb-4 relative z-10">Struggling with cryptic errors?</h3>
+                    <p class="text-slate-400 relative z-10 mb-6">
+                        Errors like <code>[BR-CO-17]</code> or <code>[BT-1-FORMAT]</code> are notoriously difficult to
+                        debug.
+                        The <strong>Factur-X Engine Pro</strong> edition includes an embedded <em>Smart Diagnostics
+                            Engine</em> that translates rigid Schematron errors into human-readable, actionable advice
+                        for developers.
+                    </p>
+                    <div class="flex gap-4 relative z-10">
+                        <a href="https://github.com/facturx-engine/facturx-engine#pro-edition"
+                            class="px-6 py-3 bg-amber-500 text-black font-bold text-sm uppercase tracking-widest hover:bg-amber-400 transition-colors rounded shadow-lg shadow-amber-500/20">Get
+                            Evaluation Key</a>
+                        <a href="../guides/error-codes.html"
+                            class="px-6 py-3 bg-transparent border border-white/20 text-white font-bold text-sm uppercase tracking-widest hover:bg-white/5 transition-colors rounded">Read
+                            Error Guide</a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <footer class="py-12 border-t border-white/5 bg-slate-900">
+        <div class="max-w-7xl mx-auto px-6 text-center text-slate-600 font-mono text-xs uppercase tracking-widest">
+            &copy; 2026 Factur-X Engine. All rights reserved.
+        </div>
+    </footer>
+
+</body>
+
+</html>
