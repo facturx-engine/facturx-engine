@@ -27,8 +27,7 @@ class TestMetricsUnit:
             mode="teaser",
             is_valid=False,
             profile="en16931",
-            error_rules=error_rules,
-            hidden_count=3
+            error_rules=error_rules
         )
 
         with self.collector._lock:
@@ -38,7 +37,6 @@ class TestMetricsUnit:
             assert self.collector._labeled_counters["validation_error_type"]["BR-01"] == 1
             assert self.collector._labeled_counters["validation_error_type"]["BR-05"] == 1
             assert "BR-06" not in self.collector._labeled_counters["validation_error_type"]
-            assert self.collector._labeled_counters["teaser_hidden_errors"]["2-5"] == 1
 
     def test_record_validation_minimal(self):
         self.collector.record_validation(
@@ -50,4 +48,3 @@ class TestMetricsUnit:
             assert self.collector._labeled_counters["validation_outcome"]["pro:valid"] == 1
             assert self.collector._labeled_counters["validation_profile"] == {}
             assert self.collector._labeled_counters["validation_error_type"] == {}
-            assert self.collector._labeled_counters["teaser_hidden_errors"] == {}
