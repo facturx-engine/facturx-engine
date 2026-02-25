@@ -99,7 +99,7 @@ class MetricsCollector:
             self._inc_labeled_unlocked(metric, label, value)
     
     def record_validation(self, mode: str, is_valid: bool, profile: str = None, 
-                          error_rules: list = None, hidden_count: int = 0):
+                          error_rules: list = None):
         """
         Record a validation event with business metrics (Pro feature).
         
@@ -108,7 +108,6 @@ class MetricsCollector:
             is_valid: Whether validation passed
             profile: Detected Factur-X profile (en16931, minimum, etc.)
             error_rules: List of rule IDs that failed (e.g., ["BR-CO-17", "BR-01"])
-            hidden_count: Number of errors hidden in teaser mode
         """
         with self._lock:
             # Outcome by mode
