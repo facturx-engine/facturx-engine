@@ -96,4 +96,11 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+  <!-- Tools -->
+  <url>
+    <loc>https://facturx-engine.github.io/facturx-engine/tools/validator.html</loc>
+    <lastmod>2026-02-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>
