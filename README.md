@@ -31,8 +31,8 @@ curl -X POST "http://localhost:8000/v1/convert" \
   -F "metadata=$(cat examples/simple_invoice.json)" \
   --output invoice_compliant.pdf
 
-# Validate compliance
-# curl -X POST "http://localhost:8000/v1/validate" \
+# Validate compliance (skip PDF/A-3b verification for speed using validate_pdfa=false)
+# curl -X POST "http://localhost:8000/v1/validate?validate_pdfa=false" \
 #   -F "file=@invoice_compliant.pdf"
 
 # Extract Data (Community)
@@ -40,6 +40,14 @@ curl -X POST "http://localhost:8000/v1/convert" \
 
 # Serialize for ERP (Pro)
 # curl -X POST "http://localhost:8000/v1/serialize" -F "file=@invoice.pdf"
+
+# Generate XML only (without PDF)
+# curl -X POST "http://localhost:8000/v1/xml" \
+#   -H "Content-Type: application/json" \
+#   -d @examples/simple_invoice.json
+
+# Check System Diagnostics
+# curl "http://localhost:8000/diagnostics"
 ```
 
 **Windows users:** Replace `curl` with `curl.exe` and use PowerShell syntax for file reading.
@@ -66,7 +74,7 @@ This **Community** version is production-ready. The code is Open Core (transpare
 | **Pricing** | **Free** (FSL 1.1) | **990€ / year** | **2490€ / year** | **Contact Us** |
 | **Usage** | Internal Use | Internal Use | **Redistribution** | High Volume |
 | **Data Format** | Raw Extraction | **ERP-Ready JSON** | **ERP-Ready JSON** | Custom |
-| **XML Validation** | EN 16931 Rules | **Smart Diagnostics** | **Smart Diagnostics** | Custom Rules |
+| **XML Validation** | Structural & Business Rules (Raw) | **Smart Diagnostics** (Actionable Fixes) | **Smart Diagnostics** (Actionable Fixes) | Custom Rules |
 | **PDF Compliance** | ❌ | **VeraPDF (PDF/A-3)** | **VeraPDF (PDF/A-3)** | **VeraPDF (PDF/A-3)** |
 | **Support** | Community | **Priority** | **SLA** | Dedicated |
 
@@ -93,12 +101,25 @@ The API behaves according to standard Linux paradigms. It accepts the following 
 | `SAXON_JAR` | *(empty)* | Absolute path to the Saxon-HE JAR for Schematron evaluation. |
 | `METRICS_ENABLED` | `false` | Enables the `/metrics` endpoint in Pro Mode. |
 | `METRICS_TOKEN` | *(empty)* | Bearer token required for `/metrics` access in Pro Mode. |
+| `CORS_ORIGINS` | *(empty)* | Comma-separated list of allowed origins (e.g., `http://localhost:3000,https://app.example.com`). |
+| `WORKERS` | `4` | Number of Gunicorn worker processes (adjust based on CPU cores). |
 
 ---
 
-## Security Hardening (Prometheus Metrics)
+## Operations & Monitoring
 
-The `/metrics` endpoint (Pro Edition) requires explicit activation and authentication to prevent business intelligence leakage.
+The container exposes endpoints designed for DevOps and infrastructure teams:
+
+| Endpoint | Purpose | Availability |
+| :--- | :--- | :--- |
+| `GET /health` | Liveness probe (Kubernetes). Returns 200 OK immediately if the HTTP server is up. | All Editions |
+| `GET /healthz` | Readiness probe. Also checks internal dependencies (Java, Saxon). | All Editions |
+| `GET /diagnostics` | Full system dump (versions, memory, config). | All Editions |
+| `GET /metrics` | Prometheus metrics scrape target. | Pro Edition Only |
+
+### Security Hardening (Prometheus Metrics)
+
+The `/metrics` endpoint requires explicit activation and authentication to prevent business intelligence leakage.
 
 1. **Activation**: Must set `METRICS_ENABLED=true`
 2. **Authentication**: Must define `METRICS_TOKEN=your_secure_random_string`

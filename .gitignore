@@ -52,3 +52,4 @@ validate_*.py
 generate_*.py
 .vercel
 .env*.local
+.claude/
