@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.3] - 2026-02-27
+
+### Fixed
+
+- **Documentation**: Massive audit of `README.md` to perfectly align with code reality (removed ghost `/generate` references, added `/xml`, clarified validation rules, and added DevOps probes `/health`, `/diagnostics`, `/metrics`).
+- **Licensing**: Added `OEM` tier support to the verification engine (`app/license.py`).
+- **Deprecation**: Officially dropped "Batch processing" from the roadmap.
+
 ## [1.6.2] - 2026-02-25
 
 ### Added
@@ -332,7 +340,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Enhanced extraction for EN 16931 and Extended profiles
 - Line items extraction for all profiles
-- Batch conversion API
+- Batch conversion API (❌ dropped)
 - Async processing for large PDFs
 
 ### Planned for 2.0.0
