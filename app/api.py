@@ -500,7 +500,7 @@ async def serialize_facturx(
         except Exception:
             pass
 
-        is_pro_tier = has_tier(["Evaluation", "Business", "Enterprise", "OEM"])
+        is_pro_tier = has_tier(["Evaluation", "Pro"])
         if not is_pro_tier:
             raise HTTPException(
                 status_code=403,
