@@ -25,28 +25,29 @@
 # Start the engine
 docker run -d -p 8000:8000 --name facturx-engine facturxengine/facturx-engine:latest
 
-# Validate compliance (XML business rules + structural checks)
-curl -X POST "http://localhost:8000/v1/validate" \
-  -F "file=@invoice_compliant.pdf"
+# ── STEP 1 · Generate compliant XML from your ERP data ────────────────────
+curl -X POST "http://localhost:8000/v1/xml" \
+  -H "Content-Type: application/json" \
+  -d @examples/simple_invoice.json \
+  -o invoice.xml
 
-# Generate compliant Factur-X invoice
+# ── STEP 2 · Validate before sending to PDP/PPF ───────────────────────────
+curl -X POST "http://localhost:8000/v1/validate" \
+  -F "file=@invoice.xml"
+
+# ── STEP 3 · Embed XML into a PDF/A-3b container ──────────────────────────
 # curl -X POST "http://localhost:8000/v1/convert" \
 #   -F "pdf=@examples/invoice_raw.pdf" \
 #   -F "metadata=$(cat examples/simple_invoice.json)" \
 #   --output invoice_compliant.pdf
 
-# Extract Data (Community)
+# ── OPTIONAL · Extract structured data from a received invoice ────────────
 # curl -X POST "http://localhost:8000/v1/extract" -F "file=@invoice.pdf"
 
-# Serialize for ERP (Pro)
+# ── OPTIONAL · ERP-ready JSON (Pro) ───────────────────────────────────────
 # curl -X POST "http://localhost:8000/v1/serialize" -F "file=@invoice.pdf"
 
-# Generate XML only (without PDF)
-# curl -X POST "http://localhost:8000/v1/xml" \
-#   -H "Content-Type: application/json" \
-#   -d @examples/simple_invoice.json
-
-# Check System Diagnostics
+# ── OPTIONAL · Check system diagnostics ───────────────────────────────────
 # curl "http://localhost:8000/diagnostics"
 ```
 
@@ -60,6 +61,7 @@ curl -X POST "http://localhost:8000/v1/validate" \
 **[Integration Recipes](https://facturx-engine.github.io/facturx-engine/#api)** - Python, Node.js, PHP integration guides  
 **[FAQ & Troubleshooting](https://facturx-engine.github.io/facturx-engine/guides/error-codes.html)** - Common issues and error codes  
 **[OpenAPI Specification](https://raw.githubusercontent.com/facturx-engine/facturx-engine/main/docs/openapi.json)** - Machine-readable API spec
+**[Changelog](https://github.com/facturx-engine/facturx-engine/releases)** - Version history and release notes
 
 ---
 
@@ -75,6 +77,34 @@ This **Community** version is production-ready. The code is Open Core (transpare
 | **XML Validation** | Structural & Business Rules (Raw) | **Smart Diagnostics** (Actionable Fixes) | **Smart Diagnostics** (Actionable Fixes) | Custom Rules |
 | **PDF Compliance** | ❌ | **VeraPDF (PDF/A-3)** | **VeraPDF (PDF/A-3)** | **VeraPDF (PDF/A-3)** |
 | **Support** | Community | **Priority** | **SLA** | Dedicated |
+
+#### `/v1/serialize` — ERP-Ready JSON (Pro)
+
+Unlike raw XML extraction, `/v1/serialize` returns a normalized, typed JSON object ready to import directly into any ERP or accounting system:
+
+```json
+{
+  "success": true,
+  "invoice": {
+    "invoice_number": "INV-2025-0042",
+    "invoice_date": "2025-03-01",
+    "due_date": "2025-03-31",
+    "currency": "EUR",
+    "seller": { "name": "ACME SAS", "vat_number": "FR12345678901", "siret": "12345678900012" },
+    "buyer": { "name": "Client Corp", "buyer_reference": "PO-9981" },
+    "line_items": [
+      { "name": "Consulting services", "quantity": 5, "unit_code": "HUR", "net_price": 150.00, "line_total": 750.00, "vat_rate": 20.0 }
+    ],
+    "tax_breakdown": [{ "category": "S", "rate": 20.0, "basis_amount": 750.00, "tax_amount": 150.00 }],
+    "total_net_amount": 750.00,
+    "total_tax_amount": 150.00,
+    "total_gross_amount": 900.00,
+    "amount_due": 900.00,
+    "format": "factur-x",
+    "profile": "en16931"
+  }
+}
+```
 
 ### 30-Day Evaluation (Product-Led Growth)
 
@@ -148,6 +178,7 @@ location /metrics {
 
 ## Roadmap
 
+- **v1.x (Planned)**: `/v1/render` endpoint — transform Factur-X XML into a human-readable PDF using official Factur-X XSLT stylesheets (Chorus Pro parity).
 - **v2.0 (Planned)**: Full E-Reporting Support (Flux 10) and Lifecycle Management (Flux 11) for direct PDP integration.
 
 ---
@@ -155,7 +186,7 @@ location /metrics {
 ## Legal & Compliance
 
 **Vendor**: NexaFlow
-**License**: FSL 1.1 (Community) / Commercial (Pro)
+**License**: [FSL 1.1](https://fsl.software) (Community) / Commercial (Pro)
 **Compliance**: Designed to respect the EU **Cyber Resilience Act (CRA)**
 
 > **IMPORTANT**: This software is a technical tool for data formatting. It does not replace professional tax advice. Users retain full responsibility for fiscal accuracy. See [full legal disclaimer](https://facturx-engine.github.io/facturx-engine/).
