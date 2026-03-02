@@ -54,8 +54,8 @@ RUN wget -q \
     "https://software.verapdf.org/releases/${VERAPDF_MAJOR_MINOR}/verapdf-greenfield-${VERAPDF_VERSION}-installer.zip" \
     -O /tmp/verapdf-installer.zip && \
     if [ -n "$VERAPDF_INSTALLER_SHA256" ]; then \
-        echo "${VERAPDF_INSTALLER_SHA256}  /tmp/verapdf-installer.zip" | sha256sum -c - || \
-        { echo "ERROR: VeraPDF installer SHA-256 mismatch — possible supply-chain attack!" >&2; exit 1; }; \
+    echo "${VERAPDF_INSTALLER_SHA256}  /tmp/verapdf-installer.zip" | sha256sum -c - || \
+    { echo "ERROR: VeraPDF installer SHA-256 mismatch — possible supply-chain attack!" >&2; exit 1; }; \
     fi && \
     unzip -q /tmp/verapdf-installer.zip -d /tmp/verapdf-installer-dir && \
     java -jar "/tmp/verapdf-installer-dir/verapdf-greenfield-${VERAPDF_VERSION}/verapdf-izpack-installer-${VERAPDF_VERSION}.jar" \
@@ -74,8 +74,8 @@ ARG SAXON_JAR_SHA256=""
 # Download Saxon-HE 10.8 JAR from Maven Central (10.8 natively includes xmlresolver)
 RUN wget -q "https://repo1.maven.org/maven2/net/sf/saxon/Saxon-HE/10.8/Saxon-HE-10.8.jar" -O /saxon.jar && \
     if [ -n "$SAXON_JAR_SHA256" ]; then \
-        echo "${SAXON_JAR_SHA256}  /saxon.jar" | sha256sum -c - || \
-        { echo "ERROR: Saxon JAR SHA-256 mismatch — possible supply-chain attack!" >&2; exit 1; }; \
+    echo "${SAXON_JAR_SHA256}  /saxon.jar" | sha256sum -c - || \
+    { echo "ERROR: Saxon JAR SHA-256 mismatch — possible supply-chain attack!" >&2; exit 1; }; \
     fi
 
 # Locate the installed CLI fat JAR and stage it at /verapdf.jar.
@@ -118,7 +118,7 @@ LABEL description="Self-hosted Factur-X API with EN16931 + PDF/A-3b validation"
 LABEL org.opencontainers.image.title="Factur-X Engine"
 LABEL org.opencontainers.image.description="The Privacy-First Invoicing Engine (100% Air-gapped)"
 LABEL org.opencontainers.image.vendor="Factur-X Engine"
-LABEL org.opencontainers.image.version="1.6.3"
+LABEL org.opencontainers.image.version="1.6.4"
 LABEL org.opencontainers.image.licenses="FSL-1.1"
 
 WORKDIR /app

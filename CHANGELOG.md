@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.4] - 2026-03-02
+
+### Changed
+
+- **Licensing**: Simplified tier system from 4 tiers (`Evaluation`, `Business`, `Enterprise`, `OEM`) to 2 tiers (`Evaluation`, `Pro`) across all license-gated endpoints (`/v1/serialize`, VeraPDF validation).
+- **Demo**: Upgraded Hugging Face demo to showcase Pro Engine endpoints and branding.
+
+### Fixed
+
+- **Hugging Face**: Backend subprocess now correctly inherits environment variables (including `LICENSE_KEY`) from the host process.
+
 ## [1.6.3] - 2026-02-27
 
 ### Fixed
