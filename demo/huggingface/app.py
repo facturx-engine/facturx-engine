@@ -56,7 +56,8 @@ def extract_xml(file):
     try:
         with open(file.name, "rb") as f:
             files = {"file": (os.path.basename(file.name), f, "application/pdf")}
-            response = httpx.post("http://127.0.0.1:8000/v1/extract", files=files, timeout=30.0)
+            # Pro Endpoint: Serialization instead of raw extraction
+            response = httpx.post("http://127.0.0.1:8000/v1/serialize", files=files, timeout=30.0)
             
         if response.status_code == 200:
             return response.json()
@@ -140,7 +141,7 @@ with gr.Blocks(title="Factur-X Engine", theme=theme, css=css) as demo:
         gr.Markdown(
             """
             <div class="center-content">
-                <h1>⚡ Factur-X Engine</h1>
+                <h1>⚡ Factur-X Engine <span style="color: #f59e0b; font-size: 0.6em; vertical-align: middle;">PRO</span></h1>
                 <p><b>Official SaxonC Validation</b> | Air-Gapped | Python</p>
             </div>
             """
@@ -167,16 +168,16 @@ with gr.Blocks(title="Factur-X Engine", theme=theme, css=css) as demo:
         
         btn_val.click(validate_pdf_wrapper, inputs=in_file_val, outputs=[out_html_val, out_json_val])
 
-    with gr.Tab("📄 Extract Data"):
-        gr.Markdown("Extracts the XML data embedded in the PDF into a structured **JSON** format.")
+    with gr.Tab("📄 Serialize Data (Pro)"):
+        gr.Markdown("Transforms complex Factur-X XML directly into a **normalized, flat JSON** schema for ERPs.")
         
         with gr.Row():
             with gr.Column(scale=1, min_width=280):
                 in_file_ext = gr.File(label="📄 Upload PDF Invoice", file_types=[".pdf"])
-                btn_ext = gr.Button("🔍 Extract Data", variant="primary", size="lg")
+                btn_ext = gr.Button("⚙️ Serialize JSON", variant="primary", size="lg")
             with gr.Column(scale=2):
                 gr.Markdown(
-                    '<div style="background-color: #f8fafc; padding: 32px; border-radius: 8px; text-align: center; color: #94a3b8; border: 1px dashed #cbd5e1;">Upload a PDF and click "Extract Data"</div>'
+                    '<div style="background-color: #f8fafc; padding: 32px; border-radius: 8px; text-align: center; color: #94a3b8; border: 1px dashed #cbd5e1;">Upload a PDF and click "Serialize JSON"</div>'
                 )
         
         with gr.Row():
