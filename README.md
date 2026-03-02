@@ -1,15 +1,15 @@
 # Factur-X Engine
 
-> **The Privacy-First Invoicing Engine.** 100% Air-gapped, Official SaxonC Validation (Chorus Pro / KoSIT Parity). Generate and Validate Factur-X, ZUGFeRD 2.x, and XRechnung without cloud dependencies.
+> **The Privacy-First Invoicing Engine.** 100% Air-gapped, Official Saxon-HE Validation (Chorus Pro / KoSIT Parity). Generate and Validate Factur-X, ZUGFeRD 2.x, and XRechnung without cloud dependencies.
 
-![Docker Pulls](https://img.shields.io/docker/pulls/facturxengine/facturx-engine) [![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Live%20Demo-blue)](https://huggingface.co/spaces/Facturx-engine/factur-x-engine-demo) [![GitHub](https://img.shields.io/badge/github-repo-181717?logo=github)](https://github.com/facturx-engine/facturx-engine) ![License](https://img.shields.io/badge/license-Community-blue.svg) ![Standard](https://img.shields.io/badge/standard-EN16931-green.svg) ![Privacy First](https://img.shields.io/badge/Privacy-Air_Gapped-success?logo=shield-dog) ![SaxonC](https://img.shields.io/badge/Powered_By-SaxonC_HE-blue)
+![Docker Pulls](https://img.shields.io/docker/pulls/facturxengine/facturx-engine) [![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Live%20Demo-blue)](https://huggingface.co/spaces/Facturx-engine/factur-x-engine-demo) [![GitHub](https://img.shields.io/badge/github-repo-181717?logo=github)](https://github.com/facturx-engine/facturx-engine) ![License](https://img.shields.io/badge/license-Community-blue.svg) ![Standard](https://img.shields.io/badge/standard-EN16931-green.svg) ![Privacy First](https://img.shields.io/badge/Privacy-Air_Gapped-success?logo=shield-dog) ![Saxon-HE](https://img.shields.io/badge/Powered_By-Saxon--HE-blue)
 
 ---
 
 ## Why Factur-X Engine?
 
 - **Air-Gapped by Design**: 100% offline execution. No outbound network calls. GDPR/DORA compliant.
-- **Official SaxonC Validation**: Technical parity with **Chorus Pro (France)** and **KoSIT (Germany)** portals.
+- **Official Saxon-HE Validation**: Technical parity with **Chorus Pro (France)** and **KoSIT (Germany)** portals.
 - **Mandate Ready**: Compliant with **France 2026 (PDP/PPF)** and **Germany 2025** electronic invoicing requirements.
 
 ### Architecture Decisions (Zero Memory Leaks)
@@ -25,15 +25,15 @@
 # Start the engine
 docker run -d -p 8000:8000 --name facturx-engine facturxengine/facturx-engine:latest
 
-# Generate compliant Factur-X invoice
-curl -X POST "http://localhost:8000/v1/convert" \
-  -F "pdf=@examples/invoice_raw.pdf" \
-  -F "metadata=$(cat examples/simple_invoice.json)" \
-  --output invoice_compliant.pdf
+# Validate compliance (XML business rules + structural checks)
+curl -X POST "http://localhost:8000/v1/validate" \
+  -F "file=@invoice_compliant.pdf"
 
-# Validate compliance (skip PDF/A-3b verification for speed using validate_pdfa=false)
-# curl -X POST "http://localhost:8000/v1/validate?validate_pdfa=false" \
-#   -F "file=@invoice_compliant.pdf"
+# Generate compliant Factur-X invoice
+# curl -X POST "http://localhost:8000/v1/convert" \
+#   -F "pdf=@examples/invoice_raw.pdf" \
+#   -F "metadata=$(cat examples/simple_invoice.json)" \
+#   --output invoice_compliant.pdf
 
 # Extract Data (Community)
 # curl -X POST "http://localhost:8000/v1/extract" -F "file=@invoice.pdf"
@@ -49,8 +49,6 @@ curl -X POST "http://localhost:8000/v1/convert" \
 # Check System Diagnostics
 # curl "http://localhost:8000/diagnostics"
 ```
-
-**Windows users:** Replace `curl` with `curl.exe` and use PowerShell syntax for file reading.
 
 **Windows users:** Replace `curl` with `curl.exe` and use PowerShell syntax for file reading.
 
@@ -83,8 +81,14 @@ This **Community** version is production-ready. The code is Open Core (transpare
 Test **100% of the Pro features (VeraPDF, Smart Diagnostics, and ERP Serialization)** on your own files, within your own infrastructure, during a 30-Day Evaluation period.
 
 1. Request your evaluation key at **[Factur-X Engine on Lemon Squeezy](https://facturx-engine.lemonsqueezy.com)** (Zero friction, instant delivery).
-2. Inject the Base64 key into your Docker container:
-   `docker run -e LICENSE_KEY='YOUR_KEY' facturxengine/facturx-engine`
+2. Download the [VeraPDF Greenfield JAR](https://github.com/veraPDF/veraPDF-validation/releases) (v1.26.x recommended) and mount it into the container:
+   ```bash
+   docker run -d -p 8000:8000 \
+     -e LICENSE_KEY='YOUR_KEY' \
+     -v /path/to/verapdf-greenfield-1.26.x.jar:/opt/verapdf.jar \
+     -e VERAPDF_JAR=/opt/verapdf.jar \
+     facturxengine/facturx-engine:latest
+   ```
 3. After 30 days, the engine smoothly transitions back to the Community Edition. No aggressive locks, your internal validation flows continue to operate.
 
 ### Configuration (Environment Variables)
@@ -96,7 +100,7 @@ The API behaves according to standard Linux paradigms. It accepts the following 
 | `LICENSE_KEY` | *(empty)* | Activates Pro Features. Leave empty for Community Edition. |
 | `MAX_UPLOAD_SIZE_MB` | `10` | Defence-in-depth size limit for payload processing. |
 | `FX_VALIDATION_TIMEOUT` | `30` | Timeout in seconds for subprocess validators (Saxon/VeraPDF). |
-| `VERAPDF_ENABLED` | `true` | System-wide toggle for PDF/A-3b validation (if `VERAPDF_JAR` is set). |
+| `VERAPDF_ENABLED` | `true` | System-wide toggle for PDF/A-3b validation (**Pro only**, requires `VERAPDF_JAR`). Has no effect in Community Edition. |
 | `VERAPDF_JAR` | *(empty)* | **REQUIRED FOR PRO**: Absolute path to the VeraPDF Greenfield JAR. |
 | `SAXON_JAR` | *(empty)* | Absolute path to the Saxon-HE JAR for Schematron evaluation. |
 | `METRICS_ENABLED` | `false` | Enables the `/metrics` endpoint in Pro Mode. |
@@ -150,9 +154,9 @@ location /metrics {
 
 ## Legal & Compliance
 
-**Vendor**: NexaFlow (SIREN: 999 899 834)  
-**License**: FSL 1.1 (Community) / Commercial (Pro)  
-**Compliance**: Designed to respect the EU **Cyber Resilience Act (CRA)**  
+**Vendor**: NexaFlow
+**License**: FSL 1.1 (Community) / Commercial (Pro)
+**Compliance**: Designed to respect the EU **Cyber Resilience Act (CRA)**
 
 > **IMPORTANT**: This software is a technical tool for data formatting. It does not replace professional tax advice. Users retain full responsibility for fiscal accuracy. See [full legal disclaimer](https://facturx-engine.github.io/facturx-engine/).
 
