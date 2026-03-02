@@ -23,7 +23,7 @@ from app.constants import LICENSE_SALT
 
 # Public Key for license verification (XOR obfuscated)
 _XOR_SEED = hashlib.sha256(LICENSE_SALT).digest()
-_OBFUSCATED_KEY_HEX = "5dd317b84a4b3146042dc88ee835225bd34755163b87a0e3290166bbf37cde40"
+_OBFUSCATED_KEY_HEX = "7fd1630e5f5a90228cfd243234ec497c1e174dca9aacb5d5f596666197b54985"
 
 
 def _deobfuscate_key() -> str:
