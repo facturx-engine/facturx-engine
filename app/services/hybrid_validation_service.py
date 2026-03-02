@@ -213,7 +213,7 @@ class HybridValidationService:
             # VeraPDF is strictly a Pro feature (Evaluation, Business, Enterprise).
             if is_pdf:
                 from app.license import has_tier
-                if has_tier(["Evaluation", "Business", "Enterprise"]):
+                if has_tier(["Evaluation", "Pro"]):
                     # Check both global (Ops) and request-level (Dev) toggles
                     if not cls.VERAPDF_ENABLED_GLOBAL:
                         logger.info("VeraPDF validation skipped: Globally disabled via VERAPDF_ENABLED=false")
