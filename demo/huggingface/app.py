@@ -6,12 +6,14 @@ import os
 import sys
 
 # 1. Start the Backend (FastAPI) in a subprocess
+# Forward the environment so that LICENSE_KEY is picked up from Hugging Face Settings
 backend_process = subprocess.Popen(
     ["uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", "8000"],
     cwd="/app",  # The original app code is here in the base image
     stdout=subprocess.PIPE,
     stderr=subprocess.PIPE,
-    text=True
+    text=True,
+    env=os.environ.copy()
 )
 
 print("Starting Factur-X Engine Backend...")
