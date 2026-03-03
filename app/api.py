@@ -3,7 +3,7 @@ FastAPI route handlers for Factur-X API.
 """
 import logging
 import json
-from typing import Union
+from typing import Optional, Union
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from fastapi.responses import StreamingResponse
 from io import BytesIO
@@ -26,6 +26,7 @@ from app.schemas.errors import ProblemDetails
 from app.schemas.extraction import ExtractionResult
 from app.schemas.integration import SerializationResponse
 from app.services.generator import GeneratorService
+from app.services.pdf_utils import get_xml_from_pdf, is_pdfa3b
 from app.services.validator import ValidationService
 
 logger = logging.getLogger(__name__)
@@ -560,6 +561,110 @@ async def serialize_facturx(
     except Exception as e:
         metrics.inc("errors_total")
         logger.exception(f"Unexpected error in serialize endpoint: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail={"error": "INTERNAL_ERROR", "message": "An unexpected error occurred"}
+        )
+    finally:
+        metrics.dec_gauge("active_requests")
+        metrics.observe("request_duration_seconds", time.time() - start_time)
+
+
+@router.post("/merge",
+             response_class=StreamingResponse,
+             responses={
+                 200: {"description": "Factur-X PDF with embedded XML"},
+                 400: {"model": ProblemDetails, "description": "Invalid file type"},
+                 409: {"model": ProblemDetails, "description": "PDF already contains Factur-X XML"},
+                 422: {"model": ProblemDetails, "description": "Not PDF/A-3b or invalid XML"},
+                 500: {"model": ProblemDetails, "description": "Server error"},
+             })
+async def merge_facturx(
+    pdf: UploadFile = File(..., description="PDF/A-3b input (without embedded XML)"),
+    xml: UploadFile = File(..., description="Factur-X/ZUGFeRD/XRechnung XML to embed"),
+    format: Optional[str] = Form(None, description="Optional format override: factur-x, zugferd, or xrechnung"),
+):
+    """
+    Embed an existing XML (Factur-X/ZUGFeRD/XRechnung) into a PDF/A-3b.
+
+    **Community endpoint** — no license required.
+
+    Errors:
+    - **400** Bad file (not PDF or not XML)
+    - **409** PDF already contains embedded Factur-X XML
+    - **422** PDF is not PDF/A-3b compliant, or XML fails EN 16931 validation
+    """
+    import time
+    from app.metrics import metrics
+    start_time = time.time()
+    metrics.inc("requests_total")
+    metrics.inc("requests_merge")
+    metrics.inc_gauge("active_requests")
+
+    try:
+        pdf_content = await pdf.read()
+        xml_content = await xml.read()
+
+        # Validate magic bytes
+        if not _check_pdf_magic(pdf_content):
+            raise HTTPException(
+                status_code=400,
+                detail={"error": "INVALID_FILE_TYPE", "message": "First upload must be a valid PDF file"}
+            )
+        if not _check_xml_magic(xml_content):
+            raise HTTPException(
+                status_code=400,
+                detail={"error": "INVALID_FILE_TYPE", "message": "Second upload must be a valid XML file"}
+            )
+
+        # 409 — PDF already has embedded Factur-X XML
+        _, existing_xml = get_xml_from_pdf(BytesIO(pdf_content), check_xsd=False)
+        if existing_xml is not None:
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "error": "ALREADY_FACTURX",
+                    "message": "This PDF already contains embedded Factur-X XML. Use /validate to inspect it.",
+                }
+            )
+
+        # 422 — PDF is not PDF/A-3b (XMP metadata check)
+        if not is_pdfa3b(pdf_content):
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "error": "NOT_PDFA3",
+                    "message": "Input PDF is not PDF/A-3b compliant. Only PDF/A-3b PDFs are supported for merge.",
+                }
+            )
+
+        # Merge: validate XML + embed
+        try:
+            result_pdf, detected_format, detected_profile = GeneratorService.merge_xml_to_pdf(
+                pdf_content, xml_content, force_format=format
+            )
+        except ValueError as e:
+            raise HTTPException(
+                status_code=422,
+                detail={"error": "MERGE_FAILED", "message": str(e)}
+            )
+
+        return StreamingResponse(
+            BytesIO(result_pdf),
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": 'attachment; filename="facturx_merged.pdf"',
+                "X-Facturx-Format": detected_format,
+                "X-Facturx-Profile": detected_profile,
+            },
+        )
+
+    except HTTPException:
+        metrics.inc("errors_total")
+        raise
+    except Exception as e:
+        metrics.inc("errors_total")
+        logger.exception(f"Unexpected error in merge endpoint: {e}")
         raise HTTPException(
             status_code=500,
             detail={"error": "INTERNAL_ERROR", "message": "An unexpected error occurred"}

@@ -3,6 +3,7 @@ Factur-X PDF generation service using Jinja2 templating and factur-x library.
 """
 import logging
 from pathlib import Path
+from typing import Optional, Tuple
 from jinja2 import FileSystemLoader, select_autoescape
 from jinja2.sandbox import SandboxedEnvironment # SECURITY: Prevents SSTI/RCE
 from facturx import generate_from_binary
@@ -111,3 +112,69 @@ class GeneratorService:
         except Exception as e:
             logger.error(f"Failed to generate Factur-X PDF: {e}")
             raise ValueError(f"Factur-X PDF generation failed: {str(e)}")
+
+    @staticmethod
+    def merge_xml_to_pdf(
+        pdf_content: bytes,
+        xml_content: bytes,
+        force_format: Optional[str] = None,
+    ) -> Tuple[bytes, str, str]:
+        """
+        Embed an existing XML into a PDF/A-3b to produce a Factur-X PDF.
+
+        Args:
+            pdf_content: Original PDF/A-3b bytes.
+            xml_content: Valid Factur-X/ZUGFeRD/XRechnung XML bytes.
+            force_format: Optional override for format detection (e.g. "factur-x").
+
+        Returns:
+            Tuple of (pdf_bytes, detected_format, detected_profile).
+
+        Raises:
+            ValueError: If XML parsing or validation fails.
+        """
+        from lxml import etree
+        from app.services.validation_utils import detect_format
+        from app.services.hybrid_validation_service import HybridValidationService
+
+        # 1. Parse XML securely and detect format
+        secure_parser = etree.XMLParser(resolve_entities=False, no_network=True, recover=False)
+        try:
+            xml_tree = etree.fromstring(xml_content, parser=secure_parser)
+        except etree.XMLSyntaxError as e:
+            raise ValueError(f"XML parsing failed: {e}")
+
+        if force_format:
+            parts = force_format.split(":", 1)
+            fmt: Optional[str] = parts[0] or None
+            profile: Optional[str] = parts[1] if len(parts) > 1 else "en16931"
+        else:
+            try:
+                fmt, profile = detect_format(xml_tree)
+            except Exception as e:
+                raise ValueError(f"Unable to detect XML format: {e}")
+
+        # 2. Validate XML (Community scope: XSD + Schematron, no VeraPDF)
+        validation = HybridValidationService.validate(
+            xml_content, "merge_input.xml", validate_pdfa=False
+        )
+        if not validation["is_valid"]:
+            errors = [e["message"] for e in validation.get("errors", [])]
+            raise ValueError(f"XML validation failed: {'; '.join(errors[:3])}")
+
+        # 3. Map profile for xrechnung_3.0 (same convention as attach_xml_to_pdf)
+        lib_level = "en16931" if profile == "xrechnung_3.0" else (profile or "en16931")
+
+        # UBL format: embed as factur-x container (library does not handle ubl flavor directly)
+        lib_flavor = "factur-x" if fmt == "ubl" else (fmt or "factur-x")
+
+        # 4. Embed XML — library sets AFRelationship=/Data internally
+        logger.info(f"Merging XML into PDF: flavor={lib_flavor}, level={lib_level}")
+        result_bytes = generate_from_binary(
+            pdf_content,
+            xml_content,
+            flavor=lib_flavor,
+            level=lib_level,
+        )
+
+        return result_bytes, fmt or "factur-x", profile or "en16931"

@@ -9,6 +9,7 @@ import logging
 from io import BytesIO
 from typing import Tuple, Optional
 
+import pypdf
 from facturx import get_xml_from_pdf as _upstream_get_xml_from_pdf
 
 logger = logging.getLogger(__name__)
@@ -19,6 +20,24 @@ _FALLBACK_ATTACHMENT_NAMES = [
     "xrechnung.xml",
     "order-x.xml",
 ]
+
+
+def is_pdfa3b(pdf_bytes: bytes) -> bool:
+    """
+    Lightweight heuristic: returns True if the PDF declares PDF/A-3b conformance
+    in its XMP metadata (pdfaid:part=3, pdfaid:conformance=B).
+
+    Not a substitute for VeraPDF (Pro). Used to gate /merge for Community.
+    Returns False on any error or missing metadata.
+    """
+    try:
+        reader = pypdf.PdfReader(BytesIO(pdf_bytes))
+        xmp = reader.xmp_metadata
+        if xmp is None:
+            return False
+        return str(xmp.pdfaid_part) == "3" and str(xmp.pdfaid_conformance).upper() == "B"
+    except Exception:
+        return False
 
 
 def get_xml_from_pdf(pdf_input, **kwargs) -> Tuple[Optional[str], Optional[bytes]]:
@@ -61,7 +80,6 @@ def get_xml_from_pdf(pdf_input, **kwargs) -> Tuple[Optional[str], Optional[bytes
         pdf_input.seek(0)
 
     try:
-        import pypdf
         reader = pypdf.PdfReader(pdf_input)
 
         for attach_name in _FALLBACK_ATTACHMENT_NAMES:
@@ -78,8 +96,6 @@ def get_xml_from_pdf(pdf_input, **kwargs) -> Tuple[Optional[str], Optional[bytes
                 logger.info(f"Fallback: found unexpected XML attachment '{name}' ({len(items[0])} bytes)")
                 return name, items[0]
 
-    except ImportError:
-        logger.warning("pypdf not installed — fallback attachment extraction unavailable")
     except Exception as e:
         logger.warning(f"Fallback attachment extraction failed: {e}")
 
