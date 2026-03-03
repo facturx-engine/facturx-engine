@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://facturx-engine.github.io/facturx-engine/sitemap.xml

@@ -354,6 +354,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.6] - 2026-03-03
+
+### Changed
+
+- **Massive Architectural Refactoring** (`#merge-lucid-hoover`): Centralised validation helpers, extracted boilerplate, and improved DRY compliance across `app/api.py`.
+- **Modern FastAPI Lifespan**: Migrated from `@on_event("startup")` to `@asynccontextmanager lifespan` for elegant lifecycle handling and graceful shutdowns.
+- **Improved Security Posture**: Moved development tools (`pytest`, `httpx`) out of the production Docker image via `requirements-dev.txt`.
+- Added global HTTP header `X-Content-Type-Options: nosniff` on all responses to pass rigorous automated security audits.
+
+### Added
+
+- **Industrial Observability**: Added `RequestIdMiddleware` to inject a `x-request-id` into every API context and propagate it through JSON structured logs and response headers.
+- **Isolated Metrics Router**: Refactored Prometheus `/metrics` endpoint into its own `app/observability.py`.
+- Smart warning at engine startup if PRO metrics are enabled without an authentication token (`METRICS_TOKEN`).
+- Detailed `docker-compose.yml` example provided at the repository root to simplify testing and PLG onboarding.
+- Enforced automated CI coverage thresholds (`pytest --cov-fail-under=60`).
+
 ### Planned for 1.1.0
 
 - Enhanced extraction for EN 16931 and Extended profiles
