@@ -41,6 +41,12 @@ curl -X POST "http://localhost:8000/v1/validate" \
 #   -F "metadata=$(cat examples/simple_invoice.json)" \
 #   --output invoice_compliant.pdf
 
+# ── OR · Merge existing XML into a PDF/A-3b container (Bring Your Own XML) ─
+# curl -X POST "http://localhost:8000/v1/merge" \
+#   -F "pdf=@examples/invoice_raw.pdf" \
+#   -F "xml=@invoice.xml" \
+#   --output invoice_compliant.pdf
+
 # ── OPTIONAL · Extract structured data from a received invoice ────────────
 # curl -X POST "http://localhost:8000/v1/extract" -F "file=@invoice.pdf"
 
@@ -112,6 +118,7 @@ Test **100% of the Pro features (VeraPDF, Smart Diagnostics, and ERP Serializati
 
 1. Request your evaluation key at **[Factur-X Engine on Lemon Squeezy](https://facturx-engine.lemonsqueezy.com)** (Zero friction, instant delivery).
 2. Download the [VeraPDF Greenfield JAR](https://github.com/veraPDF/veraPDF-validation/releases) (v1.26.x recommended) and mount it into the container:
+
    ```bash
    docker run -d -p 8000:8000 \
      -e LICENSE_KEY='YOUR_KEY' \
@@ -119,6 +126,7 @@ Test **100% of the Pro features (VeraPDF, Smart Diagnostics, and ERP Serializati
      -e VERAPDF_JAR=/opt/verapdf.jar \
      facturxengine/facturx-engine:latest
    ```
+
 3. After 30 days, the engine smoothly transitions back to the Community Edition. No aggressive locks, your internal validation flows continue to operate.
 
 ### Configuration (Environment Variables)
