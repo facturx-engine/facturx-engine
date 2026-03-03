@@ -20,10 +20,16 @@
 # Start the engine
 docker run -d -p 8000:8000 --name facturx-engine facturxengine/facturx-engine:latest
 
-# Generate compliant Factur-X invoice
-curl -X POST "http://localhost:8000/v1/convert" \
+# Generate compliant Factur-X XML
+curl -X POST "http://localhost:8000/v1/xml" \
+  -H "Content-Type: application/json" \
+  -d @examples/simple_invoice.json \
+  -o invoice.xml
+
+# Merge XML into a PDF/A-3b container
+curl -X POST "http://localhost:8000/v1/merge" \
   -F "pdf=@examples/invoice_raw.pdf" \
-  -F "metadata=$(cat examples/simple_invoice.json)" \
+  -F "xml=@invoice.xml" \
   --output invoice_compliant.pdf
 ```
 

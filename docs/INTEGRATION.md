@@ -33,6 +33,28 @@ def generate_invoice(pdf_path, metadata):
 generate_invoice("invoice.pdf", {"invoice_id": "INV-001"})
 ```
 
+### Factur-X from existing XML (`/v1/merge`)
+
+If your ERP already generates standard XML (Factur-X, ZUGFeRD, XRechnung), you can merge it directly:
+
+```python
+import requests
+
+def merge_invoice(pdf_path, xml_path):
+    url = "http://localhost:8000/v1/merge"
+    
+    files = {
+        'pdf': open(pdf_path, 'rb'),
+        'xml': open(xml_path, 'rb'),
+    }
+
+    response = requests.post(url, files=files)
+    response.raise_for_status()
+    
+    with open("output_factur_x.pdf", "wb") as f:
+        f.write(response.content)
+```
+
 [View Full Recipe](https://facturx-engine.github.io/facturx-engine/tutorials/python-facturx.html)
 
 ---
