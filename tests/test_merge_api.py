@@ -5,7 +5,6 @@ Happy-path success tests mock is_pdfa3b() and get_xml_from_pdf() because the tes
 corpus does not contain a PDF/A-3b file without embedded XML (all corpus PDF/A-3b
 files are already Factur-X). Error-path tests use real corpus files.
 """
-import pytest
 from unittest.mock import patch
 from fastapi.testclient import TestClient
 from app.main import app
