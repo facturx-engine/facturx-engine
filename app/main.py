@@ -366,7 +366,25 @@ async def root():
 @app.get("/health", tags=["health"])
 async def health_check():
     """
-    Detailed health check.
+    Liveness probe (Kubernetes).
+
+    Returns 200 OK immediately if the HTTP server is responsive.
+    This endpoint is intentionally lightweight — no subprocess calls,
+    no disk I/O — so it can be polled frequently without overhead.
+
+    Use `/healthz` for a deeper readiness check.
+    """
+    return {
+        "status": "healthy",
+        "service": "factur-x-api",
+        "version": __version__,
+    }
+
+
+@app.get("/healthz", tags=["health"])
+async def readiness_check():
+    """
+    Readiness probe (Kubernetes).
 
     Returns the status of each critical subsystem:
     - API process (always healthy if this responds)
@@ -374,16 +392,13 @@ async def health_check():
     """
     verapdf_jar = os.getenv("VERAPDF_JAR", "")
     saxon_jar = os.getenv("SAXON_JAR", "")
-    verapdf_status: dict = {}
-    saxon_status: dict = {}
 
     def check_jar(jar_path: str) -> dict:
         if not jar_path:
             return {"status": "not_configured"}
         if not os.path.exists(jar_path):
             return {"status": "jar_missing", "jar": jar_path}
-        
-        # Verify the custom JRE is functional by running java -version.
+
         try:
             proc = subprocess.run(
                 ["java", "-version"],
@@ -408,20 +423,25 @@ async def health_check():
     verapdf_status = check_jar(verapdf_jar)
     saxon_status = check_jar(saxon_jar)
 
-    # Overall status is degraded if any configured plugin is broken
     overall = "healthy"
     if verapdf_status.get("status") not in ("available", "not_configured"):
         overall = "degraded"
     if saxon_status.get("status") not in ("available", "not_configured"):
         overall = "degraded"
 
-    return {
-        "status": overall,
-        "service": "factur-x-api",
-        "version": __version__,
-        "verapdf": verapdf_status,
-        "saxon": saxon_status,
-    }
+    status_code = 200 if overall == "healthy" else 503
+
+    from fastapi.responses import JSONResponse
+    return JSONResponse(
+        status_code=status_code,
+        content={
+            "status": overall,
+            "service": "factur-x-api",
+            "version": __version__,
+            "verapdf": verapdf_status,
+            "saxon": saxon_status,
+        },
+    )
 
 @app.get("/metrics", tags=["observability"], include_in_schema=True)
 async def metrics_endpoint(request: Request):
