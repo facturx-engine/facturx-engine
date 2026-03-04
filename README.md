@@ -2,7 +2,7 @@
 
 > **The Privacy-First Invoicing Engine.** 100% Air-gapped, Official Saxon-HE Validation (Chorus Pro / KoSIT Parity). Generate and Validate Factur-X, ZUGFeRD 2.x, and XRechnung without cloud dependencies.
 
-![Docker Pulls](https://img.shields.io/docker/pulls/facturxengine/facturx-engine) [![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Live%20Demo-blue)](https://huggingface.co/spaces/Facturx-engine/factur-x-engine-demo) [![GitHub](https://img.shields.io/badge/github-repo-181717?logo=github)](https://github.com/facturx-engine/facturx-engine) ![License](https://img.shields.io/badge/license-Community-blue.svg) ![Standard](https://img.shields.io/badge/standard-EN16931-green.svg) ![Privacy First](https://img.shields.io/badge/Privacy-Air_Gapped-success?logo=shield-dog) ![Saxon-HE](https://img.shields.io/badge/Powered_By-Saxon--HE-blue)
+![Docker Pulls](https://img.shields.io/docker/pulls/facturxengine/facturx-engine) [![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Live%20Demo-blue)](https://huggingface.co/spaces/Facturx-engine/factur-x-engine-demo) [![GitHub](https://img.shields.io/badge/github-repo-181717?logo=github)](https://github.com/facturx-engine/facturx-engine) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT) ![Standard](https://img.shields.io/badge/standard-EN16931-green.svg) ![Privacy First](https://img.shields.io/badge/Privacy-Air_Gapped-success?logo=shield-dog) ![Saxon-HE](https://img.shields.io/badge/Powered_By-Saxon--HE-blue)
 
 ---
 
@@ -77,7 +77,7 @@ This **Community** version is production-ready. The code is Open Core (transpare
 
 | Feature | Community Edition | Pro Edition | OEM Edition | Enterprise |
 | :--- | :--- | :--- | :--- | :--- |
-| **Pricing** | **Free** (FSL 1.1) | **990€ / year** | **2490€ / year** | **Contact Us** |
+| **Pricing** | **Free** (MIT) | **990€ / year** | **2490€ / year** | **Contact Us** |
 | **Usage** | Internal Use | Internal Use | **Redistribution** | High Volume |
 | **Data Format** | Raw Extraction | **ERP-Ready JSON** | **ERP-Ready JSON** | Custom |
 | **XML Validation** | Structural & Business Rules (Raw) | **Smart Diagnostics** (Actionable Fixes) | **Smart Diagnostics** (Actionable Fixes) | Custom Rules |
@@ -194,7 +194,7 @@ location /metrics {
 ## Legal & Compliance
 
 **Vendor**: NexaFlow
-**License**: [FSL 1.1](https://fsl.software) (Community) / Commercial (Pro)
+**License**: [MIT](https://opensource.org/licenses/MIT) (Community) / Commercial (Pro)
 **Compliance**: Designed to respect the EU **Cyber Resilience Act (CRA)**
 
 > **IMPORTANT**: This software is a technical tool for data formatting. It does not replace professional tax advice. Users retain full responsibility for fiscal accuracy. See [full legal disclaimer](https://facturx-engine.github.io/facturx-engine/).
