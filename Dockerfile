@@ -119,14 +119,13 @@ LABEL org.opencontainers.image.title="Factur-X Engine"
 LABEL org.opencontainers.image.description="The Privacy-First Invoicing Engine (100% Air-gapped)"
 LABEL org.opencontainers.image.vendor="Factur-X Engine"
 LABEL org.opencontainers.image.version="1.6.6"
-LABEL org.opencontainers.image.licenses="FSL-1.1"
+LABEL org.opencontainers.image.licenses="MIT"
 
 WORKDIR /app
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# Inject the custom JRE and VeraPDF JAR from the builder stage
 # Inject the custom JRE, VeraPDF JAR, and Saxon JAR from the builder stage
 COPY --from=jlink-builder /custom-jre /opt/jre
 COPY --from=jlink-builder /verapdf.jar /app/bin/verapdf.jar
@@ -139,7 +138,7 @@ ENV PATH="/opt/jre/bin:${PATH}"
 ENV VERAPDF_JAR=/app/bin/verapdf.jar
 ENV SAXON_JAR=/app/bin/saxon.jar
 
-# Install system dependencies for lxml/saxonc
+# Install system dependencies for lxml
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libxml2 libxslt1.1 && \
     rm -rf /var/lib/apt/lists/*

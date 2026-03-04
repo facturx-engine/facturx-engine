@@ -117,13 +117,11 @@ Unlike raw XML extraction, `/v1/serialize` returns a normalized, typed JSON obje
 Test **100% of the Pro features (VeraPDF, Smart Diagnostics, and ERP Serialization)** on your own files, within your own infrastructure, during a 30-Day Evaluation period.
 
 1. Request your evaluation key at **[Factur-X Engine on Lemon Squeezy](https://facturx-engine.lemonsqueezy.com)** (Zero friction, instant delivery).
-2. Download the [VeraPDF Greenfield JAR](https://github.com/veraPDF/veraPDF-validation/releases) (v1.26.x recommended) and mount it into the container:
+2. VeraPDF and Saxon-HE are **already bundled** inside the Docker image. Just inject your key:
 
    ```bash
    docker run -d -p 8000:8000 \
      -e LICENSE_KEY='YOUR_KEY' \
-     -v /path/to/verapdf-greenfield-1.26.x.jar:/opt/verapdf.jar \
-     -e VERAPDF_JAR=/opt/verapdf.jar \
      facturxengine/facturx-engine:latest
    ```
 
@@ -154,8 +152,8 @@ The container exposes endpoints designed for DevOps and infrastructure teams:
 
 | Endpoint | Purpose | Availability |
 | :--- | :--- | :--- |
-| `GET /health` | Liveness probe (Kubernetes). Returns 200 OK immediately if the HTTP server is up. | All Editions |
-| `GET /healthz` | Readiness probe. Also checks internal dependencies (Java, Saxon). | All Editions |
+| `GET /health` | Liveness probe (Kubernetes). Returns 200 OK immediately — no subprocess overhead. | All Editions |
+| `GET /healthz` | Readiness probe. Checks JRE, VeraPDF, and Saxon-HE availability. Returns 503 if degraded. | All Editions |
 | `GET /diagnostics` | Full system dump (versions, memory, config). | All Editions |
 | `GET /metrics` | Prometheus metrics scrape target. | Pro Edition Only |
 

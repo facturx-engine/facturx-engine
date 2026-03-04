@@ -1,0 +1,21 @@
+services:
+  facturx-engine:
+    image: facturxengine/facturx-engine:latest
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - WORKERS=4
+      # - LICENSE_KEY=your_base64_key_here
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      start_period: 15s
+      retries: 3
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+          cpus: "2.0"
