@@ -184,13 +184,6 @@ location /metrics {
 
 ---
 
-## Roadmap
-
-- **v1.x (Planned)**: `/v1/render` endpoint — transform Factur-X XML into a human-readable PDF using official Factur-X XSLT stylesheets (Chorus Pro parity).
-- **v2.0 (Planned)**: Full E-Reporting Support (Flux 10) and Lifecycle Management (Flux 11) for direct PDP integration.
-
----
-
 ## Legal & Compliance
 
 **Vendor**: NexaFlow
