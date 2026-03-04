@@ -27,8 +27,7 @@ docker run -d -p 8000:8000 --name facturx-engine facturxengine/facturx-engine:la
 
 # ── STEP 1 · Generate compliant XML from your ERP data ────────────────────
 curl -X POST "http://localhost:8000/v1/xml" \
-  -H "Content-Type: application/json" \
-  -d @examples/simple_invoice.json \
+  -F "metadata=$(cat examples/simple_invoice.json)" \
   -o invoice.xml
 
 # ── STEP 2 · Validate before sending to PDP/PPF ───────────────────────────
