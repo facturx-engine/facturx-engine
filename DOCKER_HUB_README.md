@@ -2,7 +2,7 @@
 
 > **The Privacy-First Invoicing Engine.** 100% Air-gapped, Official SaxonC Validation (Chorus Pro / KoSIT Parity). Generate and Validate Factur-X, ZUGFeRD 2.x, and XRechnung 3.0 without cloud dependencies.
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/facturxengine/facturx-engine)](https://hub.docker.com/r/facturxengine/facturx-engine) [![GitHub](https://img.shields.io/badge/github-repo-181717?logo=github)](https://github.com/facturx-engine/facturx-engine) ![License](https://img.shields.io/badge/license-Community-blue.svg) ![Privacy First](https://img.shields.io/badge/Privacy-Air_Gapped-success?logo=shield-dog) ![SaxonC](https://img.shields.io/badge/Powered_By-SaxonC_HE-blue)
+[![Docker Pulls](https://img.shields.io/docker/pulls/facturxengine/facturx-engine)](https://hub.docker.com/r/facturxengine/facturx-engine) [![GitHub](https://img.shields.io/badge/github-repo-181717?logo=github)](https://github.com/facturx-engine/facturx-engine) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT) ![Privacy First](https://img.shields.io/badge/Privacy-Air_Gapped-success?logo=shield-dog) ![SaxonC](https://img.shields.io/badge/Powered_By-SaxonC_HE-blue)
 
 ---
 
@@ -78,7 +78,7 @@ Test **100% of the Pro features (VeraPDF, Smart Diagnostics, and ERP Serializati
 
 ## Legal
 
-**Vendor**: Factur-X Engine (Paris, France) | **License**: FSL 1.1 / Commercial  
+**Vendor**: Factur-X Engine (Paris, France) | **License**: MIT / Commercial  
 **Compliance**: EU Cyber Resilience Act (CRA) Ready | **Security**: SBOM included
 
 > This software is a technical tool. Users retain full responsibility for fiscal accuracy. [Full legal disclaimer](https://github.com/facturx-engine/facturx-engine).
