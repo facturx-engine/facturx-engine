@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Page Not Found | Factur-X Engine</title>
+    <meta name="robots" content="noindex">
+    <link rel="icon" href="https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png" type="image/png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        amber: { 500: '#f59e0b', 600: '#d97706' },
+                        slate: { 950: '#020617' }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+</head>
+
+<body class="bg-slate-950 text-slate-300 font-sans selection:bg-amber-500 selection:text-black min-h-screen flex flex-col">
+
+    <nav class="border-b border-white/5 bg-slate-950/80 backdrop-blur-md h-20 flex items-center">
+        <div class="max-w-7xl mx-auto px-6 w-full flex items-center justify-between">
+            <a href="/facturx-engine/" class="flex items-center gap-3">
+                <div
+                    class="w-10 h-10 border-2 border-amber-500 flex items-center justify-center rounded-sm bg-slate-900">
+                    <span class="font-mono font-bold text-amber-500">FX</span>
+                </div>
+                <span class="text-xl font-bold tracking-tighter text-white uppercase">Factur-X <span
+                        class="text-amber-500">Engine</span></span>
+            </a>
+        </div>
+    </nav>
+
+    <main class="flex-grow flex items-center justify-center">
+        <div class="text-center px-6 max-w-2xl">
+            <div class="text-amber-500 font-mono text-sm tracking-widest uppercase mb-6">Error 404</div>
+            <h1 class="text-5xl md:text-7xl font-black text-white uppercase tracking-tighter mb-6">
+                Page Not <span class="text-amber-500">Found</span>
+            </h1>
+            <p class="text-lg text-slate-400 mb-12 leading-relaxed">
+                The page you are looking for does not exist or has been moved.
+            </p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="/facturx-engine/"
+                    class="px-8 py-4 bg-amber-500 text-black font-bold uppercase tracking-widest text-sm hover:bg-amber-400 transition-colors">
+                    Back to Home
+                </a>
+                <a href="/facturx-engine/ref/api-reference.html"
+                    class="px-8 py-4 border border-white/10 text-white font-bold uppercase tracking-widest text-sm hover:bg-white/5 transition-colors">
+                    API Reference
+                </a>
+            </div>
+
+            <div class="mt-16 grid md:grid-cols-3 gap-4 text-left">
+                <a href="/facturx-engine/tutorials/python-facturx.html"
+                    class="group block p-4 bg-slate-900/50 border border-white/10 rounded hover:border-amber-500/50 transition-colors">
+                    <div class="text-amber-500 font-mono text-xs mb-1">Tutorial</div>
+                    <div class="text-white text-sm font-bold group-hover:text-amber-500">Python Integration</div>
+                </a>
+                <a href="/facturx-engine/guides/error-codes.html"
+                    class="group block p-4 bg-slate-900/50 border border-white/10 rounded hover:border-amber-500/50 transition-colors">
+                    <div class="text-amber-500 font-mono text-xs mb-1">Guide</div>
+                    <div class="text-white text-sm font-bold group-hover:text-amber-500">Error Codes</div>
+                </a>
+                <a href="/facturx-engine/tools/validator.html"
+                    class="group block p-4 bg-slate-900/50 border border-white/10 rounded hover:border-amber-500/50 transition-colors">
+                    <div class="text-amber-500 font-mono text-xs mb-1">Tool</div>
+                    <div class="text-white text-sm font-bold group-hover:text-amber-500">XML Validator</div>
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="py-8 border-t border-white/5">
+        <div class="max-w-7xl mx-auto px-6 text-center text-slate-600 font-mono text-xs uppercase tracking-widest">
+            &copy; <script>document.write(new Date().getFullYear())</script> Factur-X Engine
+        </div>
+    </footer>
+
+</body>
+
+</html>
