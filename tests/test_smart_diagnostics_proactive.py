@@ -129,3 +129,81 @@ def test_proactive_scan_happy_path(engine):
     """
     diagnostics = engine._proactive_scan(xml.encode('utf-8'))
     assert len(diagnostics) == 0
+
+def test_proactive_scan_invalid_iban(engine):
+    """Test INVALID-IBAN: IBAN too short or invalid format."""
+    xml = """
+    <rsm:CrossIndustryInvoice xmlns:rsm="urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100" xmlns:ram="urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100">
+        <rsm:SupplyChainTradeTransaction>
+            <ram:ApplicableHeaderTradeSettlement>
+                <ram:SpecifiedTradeSettlementPaymentMeans>
+                    <ram:PayeePartyCreditorFinancialAccount>
+                        <ram:ProprietaryID>FR12</ram:ProprietaryID>
+                    </ram:PayeePartyCreditorFinancialAccount>
+                </ram:SpecifiedTradeSettlementPaymentMeans>
+            </ram:ApplicableHeaderTradeSettlement>
+        </rsm:SupplyChainTradeTransaction>
+    </rsm:CrossIndustryInvoice>
+    """
+    diagnostics = engine._proactive_scan(xml.encode('utf-8'))
+    assert len(diagnostics) == 1
+    assert diagnostics[0].rule_id == "INVALID-IBAN"
+    assert diagnostics[0].severity == "warning"
+    assert diagnostics[0].context == {"iban": "FR12"}
+
+def test_proactive_scan_invalid_date_bounds(engine):
+    """Test INVALID-DATE: IssueDate is far in the past."""
+    xml = """
+    <rsm:CrossIndustryInvoice xmlns:rsm="urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100" xmlns:ram="urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100">
+        <rsm:ExchangedDocument>
+            <ram:IssueDateTime>
+                <ram:DateTimeString>19951231</ram:DateTimeString>
+            </ram:IssueDateTime>
+        </rsm:ExchangedDocument>
+    </rsm:CrossIndustryInvoice>
+    """
+    diagnostics = engine._proactive_scan(xml.encode('utf-8'))
+    assert len(diagnostics) == 1
+    assert diagnostics[0].rule_id == "INVALID-DATE"
+    assert diagnostics[0].severity == "warning"
+    assert diagnostics[0].context == {"issue_date": "19951231", "parsed_year": 1995}
+
+def test_proactive_scan_too_many_decimals(engine):
+    """Test TOO-MANY-DECIMALS: Total has more than 2 decimals."""
+    xml = """
+    <rsm:CrossIndustryInvoice xmlns:rsm="urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100" xmlns:ram="urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100">
+        <rsm:SupplyChainTradeTransaction>
+            <ram:ApplicableHeaderTradeSettlement>
+                <ram:SpecifiedTradeSettlementHeaderMonetarySummation>
+                    <ram:GrandTotalAmount>100.005</ram:GrandTotalAmount>
+                </ram:SpecifiedTradeSettlementHeaderMonetarySummation>
+            </ram:ApplicableHeaderTradeSettlement>
+        </rsm:SupplyChainTradeTransaction>
+    </rsm:CrossIndustryInvoice>
+    """
+    diagnostics = engine._proactive_scan(xml.encode('utf-8'))
+    assert len(diagnostics) == 1
+    assert diagnostics[0].rule_id == "TOO-MANY-DECIMALS"
+    assert diagnostics[0].severity == "warning"
+    assert diagnostics[0].context == {"amount": "100.005", "element": "GrandTotalAmount"}
+
+def test_proactive_scan_invalid_country_code(engine):
+    """Test INVALID-COUNTRY-CODE: Country code is not 2 letters."""
+    xml = """
+    <rsm:CrossIndustryInvoice xmlns:rsm="urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100" xmlns:ram="urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100">
+        <rsm:SupplyChainTradeTransaction>
+            <ram:ApplicableHeaderTradeAgreement>
+                <ram:SellerTradeParty>
+                    <ram:PostalTradeAddress>
+                        <ram:CountryID>FRA</ram:CountryID>
+                    </ram:PostalTradeAddress>
+                </ram:SellerTradeParty>
+            </ram:ApplicableHeaderTradeAgreement>
+        </rsm:SupplyChainTradeTransaction>
+    </rsm:CrossIndustryInvoice>
+    """
+    diagnostics = engine._proactive_scan(xml.encode('utf-8'))
+    assert len(diagnostics) == 1
+    assert diagnostics[0].rule_id == "INVALID-COUNTRY-CODE"
+    assert diagnostics[0].severity == "warning"
+    assert diagnostics[0].context == {"country_code": "FRA"}

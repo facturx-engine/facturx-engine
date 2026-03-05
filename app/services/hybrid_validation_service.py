@@ -78,6 +78,7 @@ class HybridValidationService:
             "schematron_valid": None,
             "pdfa_valid": None,
             "errors": [],
+            "xml_content": None,
             "validation_mode": "hybrid"  # vs "lite" for Community fallback
         }
         
@@ -99,6 +100,7 @@ class HybridValidationService:
                             "layer": "system"
                         })
                         return result
+                    result["xml_content"] = xml_content
                 except Exception as e:
                     result["errors"].append({
                         "rule_id": "FX-EXTRACT-FAIL",
@@ -109,6 +111,7 @@ class HybridValidationService:
                     return result
             else:
                 xml_content = file_content
+                result["xml_content"] = xml_content
             
             # 2. Detect format/profile
             try:
