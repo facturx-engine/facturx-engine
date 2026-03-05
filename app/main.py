@@ -55,11 +55,28 @@ from fastapi.responses import RedirectResponse
 from app.constants import PRODUCT_NAME
 from app.version import __version__
 
+# OpenAPI tag grouping — controls Swagger UI and doc generators
+tags_metadata = [
+    {
+        "name": "Core Workflows",
+        "description": "The four primary e-invoicing operations: validate, generate XML, merge PDF+XML, and extract data from received invoices.",
+    },
+    {
+        "name": "Advanced Integration",
+        "description": "ERP serialization (Pro) and convenience conversion shortcuts for advanced integrations.",
+    },
+    {
+        "name": "Operations",
+        "description": "Health probes, readiness checks, diagnostics, and Prometheus metrics.",
+    },
+]
+
 # Create FastAPI application
 app = FastAPI(
     title=PRODUCT_NAME,
     description="Production-ready REST API for Factur-X (ZUGFeRD 2.4) conversions and data extraction.",
-    version=__version__
+    version=__version__,
+    openapi_tags=tags_metadata,
 )
 
 # Include Routers
@@ -363,7 +380,7 @@ async def root():
 
 
 
-@app.get("/health", tags=["health"])
+@app.get("/health", tags=["Operations"])
 async def health_check():
     """
     Liveness probe (Kubernetes).
@@ -381,7 +398,7 @@ async def health_check():
     }
 
 
-@app.get("/healthz", tags=["health"])
+@app.get("/healthz", tags=["Operations"])
 async def readiness_check():
     """
     Readiness probe (Kubernetes).
@@ -443,7 +460,7 @@ async def readiness_check():
         },
     )
 
-@app.get("/metrics", tags=["observability"], include_in_schema=True)
+@app.get("/metrics", tags=["Operations"], include_in_schema=True)
 async def metrics_endpoint(request: Request):
     """
     Prometheus-compatible metrics endpoint.

@@ -12,7 +12,7 @@ from typing import List
 
 from app.version import __version__, __git_hash__, __build_date__
 
-router = APIRouter(tags=["diagnostics"])
+router = APIRouter(tags=["Operations"])
 
 
 class RuntimeConfig(BaseModel):

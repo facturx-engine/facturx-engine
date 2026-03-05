@@ -47,9 +47,20 @@ services:
 
 ---
 
-## API Endpoints
+## Core Workflows
 
-### `/v1/xml` — Generate EN 16931 CII XML
+### `/v1/validate` — Compliance Gate (EN 16931 Schematron, KoSIT / Chorus Pro parity)
+
+Check any CII or UBL invoice (PDF or XML) against EN 16931 before sending to PDP/PPF.
+
+```bash
+curl -X POST "http://localhost:8000/v1/validate" \
+  -F "file=@invoice.pdf"
+```
+
+### `/v1/xml` — Generate EN 16931 CII/UBL XML
+
+Transform your ERP JSON metadata into a Cross-Industry Invoice XML.
 
 ```bash
 curl -X POST "http://localhost:8000/v1/xml" \
@@ -64,7 +75,9 @@ curl -X POST "http://localhost:8000/v1/xml" \
   }' -o invoice.xml
 ```
 
-### `/v1/merge` — Embed XML into PDF → ZUGFeRD / Factur-X PDF/A-3b
+### `/v1/merge` — Embed XML into PDF (ZUGFeRD / Factur-X PDF/A-3b)
+
+Embed an existing XML (Factur-X, ZUGFeRD, XRechnung) into a PDF/A-3b container.
 
 ```bash
 curl -X POST "http://localhost:8000/v1/merge" \
@@ -73,18 +86,35 @@ curl -X POST "http://localhost:8000/v1/merge" \
   --output facturx_compliant.pdf
 ```
 
-### `/v1/validate` — EN 16931 Schematron Validation (KoSIT / Chorus Pro parity)
-
-```bash
-curl -X POST "http://localhost:8000/v1/validate" \
-  -F "file=@invoice.pdf"
-```
-
 ### `/v1/extract` — Extract Structured Data from ZUGFeRD / Factur-X PDF
+
+Pull structured invoice data from a received Factur-X/ZUGFeRD PDF.
 
 ```bash
 curl -X POST "http://localhost:8000/v1/extract" \
   -F "file=@received_invoice.pdf"
+```
+
+## Advanced Capabilities
+
+### `/v1/convert` — One-Step PDF Generation
+
+Convenience shortcut: generates XML from JSON metadata and embeds it into your PDF in a single call.
+
+```bash
+curl -X POST "http://localhost:8000/v1/convert" \
+  -F "pdf=@examples/invoice_raw.pdf" \
+  -F "metadata=$(cat examples/simple_invoice.json)" \
+  --output invoice_compliant.pdf
+```
+
+### `/v1/serialize` — ERP-Ready JSON (Pro)
+
+Returns a normalized, typed JSON object ready to import into any ERP or accounting system.
+
+```bash
+curl -X POST "http://localhost:8000/v1/serialize" \
+  -F "file=@invoice.pdf"
 ```
 
 ---

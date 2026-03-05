@@ -155,9 +155,90 @@
                 </section>
 
                 <section>
-                    <h2 class="text-2xl font-bold text-white mb-6 uppercase tracking-tight">API Endpoints</h2>
+                    <h2 class="text-2xl font-bold text-white mb-6 uppercase tracking-tight">Core Workflows</h2>
                     <p>
-                        The engine exposes a REST API with the following core endpoints:
+                        The four primary e-invoicing operations: validate, generate, merge, and extract.
+                    </p>
+                    <div class="bg-slate-900 border border-white/5 rounded-lg overflow-hidden mt-6">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-black text-amber-500 uppercase tracking-widest text-[10px]">
+                                <tr>
+                                    <th class="p-4">Endpoint</th>
+                                    <th class="p-4">Purpose</th>
+                                    <th class="p-4">Input</th>
+                                    <th class="p-4">Output</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-white/5">
+                                <tr>
+                                    <td class="p-4 font-mono text-white">/v1/validate</td>
+                                    <td class="p-4">Compliance gate &mdash; EN 16931 Schematron validation</td>
+                                    <td class="p-4">PDF or XML (CII/UBL)</td>
+                                    <td class="p-4">JSON Report</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-4 font-mono text-white">/v1/xml</td>
+                                    <td class="p-4">Generate CII/UBL XML from business data</td>
+                                    <td class="p-4">JSON metadata</td>
+                                    <td class="p-4">XML (CII/UBL)</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-4 font-mono text-white">/v1/merge</td>
+                                    <td class="p-4">Embed existing XML into PDF/A-3b container</td>
+                                    <td class="p-4">PDF + XML</td>
+                                    <td class="p-4">Factur-X PDF/A-3</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-4 font-mono text-white">/v1/extract</td>
+                                    <td class="p-4">Extract structured data from received invoices</td>
+                                    <td class="p-4">Factur-X/ZUGFeRD PDF</td>
+                                    <td class="p-4">JSON + XML</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section>
+                    <h2 class="text-2xl font-bold text-white mb-6 uppercase tracking-tight">Advanced Integration</h2>
+                    <p>
+                        ERP serialization and convenience shortcuts for advanced integrations.
+                    </p>
+                    <div class="bg-slate-900 border border-white/5 rounded-lg overflow-hidden mt-6">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-black text-amber-500 uppercase tracking-widest text-[10px]">
+                                <tr>
+                                    <th class="p-4">Endpoint</th>
+                                    <th class="p-4">Purpose</th>
+                                    <th class="p-4">Input</th>
+                                    <th class="p-4">Output</th>
+                                    <th class="p-4">Edition</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-white/5">
+                                <tr>
+                                    <td class="p-4 font-mono text-white">/v1/convert</td>
+                                    <td class="p-4">One-step: JSON + PDF &rarr; compliant Factur-X PDF</td>
+                                    <td class="p-4">PDF + JSON</td>
+                                    <td class="p-4">Factur-X PDF/A-3</td>
+                                    <td class="p-4 text-green-500">Community</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-4 font-mono text-white">/v1/serialize</td>
+                                    <td class="p-4">ERP-ready normalized JSON from invoice</td>
+                                    <td class="p-4">Factur-X PDF or XML</td>
+                                    <td class="p-4">Business-Ready JSON</td>
+                                    <td class="p-4 text-amber-500">Pro</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section>
+                    <h2 class="text-2xl font-bold text-white mb-6 uppercase tracking-tight">Operations</h2>
+                    <p>
+                        Health probes, diagnostics, and observability endpoints for DevOps teams.
                     </p>
                     <div class="bg-slate-900 border border-white/5 rounded-lg overflow-hidden mt-6">
                         <table class="w-full text-left text-sm">
@@ -170,79 +251,24 @@
                             </thead>
                             <tbody class="divide-y divide-white/5">
                                 <tr>
-                                    <td class="p-4 font-mono text-white">/v1/convert</td>
-                                    <td class="p-4">PDF + JSON → Factur-X (PDF/A-3 + XML)</td>
-                                    <td class="p-4 text-green-500">Community</td>
+                                    <td class="p-4 font-mono text-white">/health</td>
+                                    <td class="p-4">Kubernetes liveness probe</td>
+                                    <td class="p-4 text-green-500">All</td>
                                 </tr>
                                 <tr>
-                                    <td class="p-4 font-mono text-white">/v1/xml</td>
-                                    <td class="p-4">JSON → CII XML (No PDF)</td>
-                                    <td class="p-4 text-green-500">Community</td>
+                                    <td class="p-4 font-mono text-white">/healthz</td>
+                                    <td class="p-4">Readiness probe (JRE, VeraPDF, Saxon)</td>
+                                    <td class="p-4 text-green-500">All</td>
                                 </tr>
                                 <tr>
-                                    <td class="p-4 font-mono text-white">/v1/extract</td>
-                                    <td class="p-4">Factur-X PDF → Standard Demo JSON + XML</td>
-                                    <td class="p-4 text-green-500">Community</td>
-                                </tr>
-                                <tr>
-                                    <td class="p-4 font-mono text-white">/v1/validate</td>
-                                    <td class="p-4">Compliance check (EN 16931 Schematron)</td>
-                                    <td class="p-4 text-green-500">Community</td>
-                                </tr>
-                                <tr>
-                                    <td class="p-4 font-mono text-white">/v1/serialize</td>
-                                    <td class="p-4">Factur-X PDF or XML → Business-Ready JSON</td>
-                                    <td class="p-4 text-amber-500">Pro</td>
+                                    <td class="p-4 font-mono text-white">/diagnostics</td>
+                                    <td class="p-4">Full system dump (versions, memory, config)</td>
+                                    <td class="p-4 text-green-500">All</td>
                                 </tr>
                                 <tr>
                                     <td class="p-4 font-mono text-white">/metrics</td>
-                                    <td class="p-4">Prometheus metrics (Observability)</td>
-                                    <td class="p-4 text-green-500">Community</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
-
-                <section>
-                    <h2 class="text-2xl font-bold text-white mb-6 uppercase tracking-tight">File Compatibility</h2>
-                    <p>
-                        Each endpoint accepts specific input formats and produces standardized outputs:
-                    </p>
-                    <div class="bg-slate-900 border border-white/5 rounded-lg overflow-hidden mt-6">
-                        <table class="w-full text-left text-sm">
-                            <thead class="bg-black text-amber-500 uppercase tracking-widest text-[10px]">
-                                <tr>
-                                    <th class="p-4">Endpoint</th>
-                                    <th class="p-4">Input Formats</th>
-                                    <th class="p-4">Output Formats</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-white/5">
-                                <tr>
-                                    <td class="p-4 font-mono text-white">/v1/convert</td>
-                                    <td class="p-4">PDF (v1.4+) + JSON</td>
-                                    <td class="p-4">Factur-X (PDF/A-3 + XML)</td>
-                                </tr>
-                                <tr>
-                                    <td class="p-4 font-mono text-white">/v1/xml</td>
-                                    <td class="p-4">JSON</td>
-                                    <td class="p-4">XML (CII)</td>
-                                </tr>
-                                <tr>
-                                    <td class="p-4 font-mono text-white">/v1/extract</td>
-                                    <td class="p-4">Factur-X PDF</td>
-                                    <td class="p-4">Standard JSON Data + XML</td>
-                                </tr>
-                                <tr>
-                                    <td class="p-4 font-mono text-white">/v1/validate</td>
-                                    <td class="p-4">PDF/A-3, XML (CII/UBL)</td>
-                                    <td class="p-4">JSON Report</td>
-                                </tr>
-                                <tr>
-                                    <td class="p-4 font-mono text-white">/v1/serialize</td>
-                                    <td class="p-4">Factur-X PDF or XML</td>
-                                    <td class="p-4">Business-Ready JSON</td>
+                                    <td class="p-4">Prometheus metrics scrape target</td>
+                                    <td class="p-4 text-amber-500">Pro</td>
                                 </tr>
                             </tbody>
                         </table>
