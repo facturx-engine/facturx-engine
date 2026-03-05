@@ -10,6 +10,7 @@
 
 - **Air-Gapped by Design**: 100% offline execution. No outbound network calls. GDPR/DORA compliant.
 - **Official Saxon-HE Validation**: Technical parity with **Chorus Pro (France)** and **KoSIT (Germany)** portals.
+- **Smart Diagnostics Engine (Pro)**: Proactively detects "Angles Morts" (e.g. invalid IBANs, >2 decimals, bizarre dates) that technically pass standard validation but fail on governmental platforms.
 - **Mandate Ready**: Compliant with **France 2026 (PDP/PPF)** and **Germany 2025** electronic invoicing requirements.
 
 ### Architecture Decisions (Zero Memory Leaks)
@@ -79,7 +80,7 @@ This **Community** version is production-ready. The code is Open Core (transpare
 | **Pricing** | **Free** (MIT) | **990€ / year** | **2490€ / year** | **Contact Us** |
 | **Usage** | Internal Use | Internal Use | **Redistribution** | High Volume |
 | **Data Format** | Raw Extraction | **ERP-Ready JSON** | **ERP-Ready JSON** | Custom |
-| **XML Validation** | Structural & Business Rules (Raw) | **Smart Diagnostics** (Actionable Fixes) | **Smart Diagnostics** (Actionable Fixes) | Custom Rules |
+| **XML Validation** | Structural & Business Rules (Raw) | **Smart Diagnostics** (Pre-Clearance Audit) | **Smart Diagnostics** (Pre-Clearance Audit) | Custom Rules |
 | **PDF Compliance** | ❌ | **VeraPDF (PDF/A-3)** | **VeraPDF (PDF/A-3)** | **VeraPDF (PDF/A-3)** |
 | **Support** | Community | **Priority** | **SLA** | Dedicated |
 
@@ -110,6 +111,15 @@ Unlike raw XML extraction, `/v1/serialize` returns a normalized, typed JSON obje
   }
 }
 ```
+
+#### `/v1/validate` — Smart Diagnostics Engine (Pro)
+
+While the Community edition runs standard EN 16931 Schematron validation, the **Pro Edition** features a Smart Diagnostics engine that translates crypting XPath errors into human-readable actions, and runs a **Proactive Scan** for silent platform killers:
+
+- `INVALID-IBAN`: Catches malformed IBAN sequences.
+- `TOO-MANY-DECIMALS`: Rejects amounts with `>2` fractional digits (e.g. `100.005`) that cause arithmetic truncation errors on Chorus Pro.
+- `INVALID-DATE`: Flags dates from the distant past or future.
+- `TYPE-AMOUNT-MISMATCH`: Detects negative invoice totals masquerading as standard invoices (instead of credit notes).
 
 ### 30-Day Evaluation (Product-Led Growth)
 

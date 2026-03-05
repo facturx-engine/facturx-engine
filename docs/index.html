@@ -313,13 +313,41 @@
 
             <div class="space-y-4">
                 <h3 class="text-xl font-bold text-white text-slate-200">5. Advanced Diagnostics (Angles Morts)</h3>
-                <p class="text-slate-400 leading-relaxed">
+                <p class="text-slate-400 leading-relaxed mb-4">
                     Go beyond standard validation. The <strong>Pro Edition</strong> proactively detects "silent killers"
-                    of invoices:
-                    incoherence between SIRET and VAT Intra, negative totals with wrong type codes, and forbidden
-                    characters.
-                    It essentially acts as a pre-clearance audit before you send to statutory platforms.
+                    of invoices that technically pass Schematron but fail on portals like Chorus Pro:
                 </p>
+                
+                <!-- Smart Diagnostics Feature Highlight -->
+                <div class="grid md:grid-cols-2 gap-4 mt-6">
+                    <div class="bg-black/50 border border-amber-500/20 p-5 rounded">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="px-2 py-0.5 bg-amber-500/10 text-amber-500 text-[10px] font-mono font-bold rounded">INVALID-IBAN</span>
+                        </div>
+                        <p class="text-sm text-slate-400">Detects malformed IBANs (length mismatches or missing country prefix) before payment rejection.</p>
+                    </div>
+                    
+                    <div class="bg-black/50 border border-amber-500/20 p-5 rounded">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="px-2 py-0.5 bg-amber-500/10 text-amber-500 text-[10px] font-mono font-bold rounded">TOO-MANY-DECIMALS</span>
+                        </div>
+                        <p class="text-sm text-slate-400">Catches monetary amounts (e.g. 100.005) strictly above 2 fractional digits to prevent arithmetic truncation.</p>
+                    </div>
+
+                    <div class="bg-black/50 border border-amber-500/20 p-5 rounded">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="px-2 py-0.5 bg-amber-500/10 text-amber-500 text-[10px] font-mono font-bold rounded">INVALID-DATE</span>
+                        </div>
+                        <p class="text-sm text-slate-400">Flags anomalous dates (e.g. year 1995 or 5+ years in the future) that cause silent portal failures.</p>
+                    </div>
+
+                    <div class="bg-black/50 border border-amber-500/20 p-5 rounded">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="px-2 py-0.5 bg-amber-500/10 text-amber-500 text-[10px] font-mono font-bold rounded">TYPE-AMOUNT-MISMATCH</span>
+                        </div>
+                        <p class="text-sm text-slate-400">Identifies negative totals submitted with a standard invoice type code instead of a credit note.</p>
+                    </div>
+                </div>
             </div>
 
         </div>

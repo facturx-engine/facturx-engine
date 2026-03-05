@@ -11,6 +11,7 @@ from typing import Optional, List, Dict, Any, Callable
 from decimal import Decimal, InvalidOperation
 import re
 import logging
+from datetime import datetime
 from lxml import etree
 
 logger = logging.getLogger(__name__)
@@ -132,6 +133,27 @@ class SmartDiagnosticsEngine:
             analyzer=self._analyze_invoice_number_format
         ))
         
+        # New Proactive Features Rule Handlers (for fallback / enrichment if needed)
+        self._rules.append(DiagnosticRule(
+            rule_id_pattern=r"INVALID-IBAN",
+            analyzer=self._analyze_invalid_iban
+        ))
+        
+        self._rules.append(DiagnosticRule(
+            rule_id_pattern=r"INVALID-DATE",
+            analyzer=self._analyze_date_bounds
+        ))
+        
+        self._rules.append(DiagnosticRule(
+            rule_id_pattern=r"TOO-MANY-DECIMALS",
+            analyzer=self._analyze_decimals
+        ))
+        
+        self._rules.append(DiagnosticRule(
+            rule_id_pattern=r"INVALID-COUNTRY-CODE",
+            analyzer=self._analyze_country_codes
+        ))
+        
     def analyze(self, raw_errors: List[Dict[str, Any]], xml_content: Optional[bytes] = None) -> List[Diagnostic]:
         """
         Analyze a list of raw validation errors and return enriched diagnostics.
@@ -181,7 +203,7 @@ class SmartDiagnosticsEngine:
                 vat_id = vat_nodes[0].text or ""
                 country_code = country_nodes[0].text or ""
                 if vat_id and country_code and not vat_id.startswith(country_code):
-                    diagnostics.append(self._analyze_vat_country_mismatch({}, None))
+                    diagnostics.append(self._analyze_vat_country_mismatch({"context": {"vat": vat_id, "country": country_code}}, None))
 
             # 2. Negative Grand Total vs Type Code
             total_nodes = root.xpath('//ram:GrandTotalAmount', namespaces=ns)
@@ -191,7 +213,7 @@ class SmartDiagnosticsEngine:
                     total = Decimal(total_nodes[0].text or "0")
                     type_code = type_nodes[0].text or ""
                     if total < 0 and type_code == "380":
-                        diagnostics.append(self._analyze_invoice_type_vs_amount({}, None))
+                        diagnostics.append(self._analyze_invoice_type_vs_amount({"context": {"total": float(total), "type_code": type_code}}, None))
                 except (ValueError, InvalidOperation):
                     pass
 
@@ -200,7 +222,58 @@ class SmartDiagnosticsEngine:
             if id_nodes:
                 inv_id = id_nodes[0].text or ""
                 if inv_id and not re.match(r'^[A-Za-z0-9/_-]+$', inv_id):
-                    diagnostics.append(self._analyze_invoice_number_format({}, None))
+                    diagnostics.append(self._analyze_invoice_number_format({"context": {"invoice_id": inv_id}}, None))
+            
+            # 4. Invalid IBAN Format/Length Check
+            iban_nodes = root.xpath('//ram:PayeePartyCreditorFinancialAccount/ram:ProprietaryID', namespaces=ns)
+            if not iban_nodes:
+                 iban_nodes = root.xpath('//ram:PayeePartyCreditorFinancialAccount/ram:IBANID', namespaces=ns)
+            if iban_nodes:
+                iban = iban_nodes[0].text or ""
+                iban_clean = iban.replace(" ", "").upper()
+                if iban_clean and (not iban_clean[:2].isalpha() or not iban_clean[2:4].isdigit() or len(iban_clean) < 15 or len(iban_clean) > 34):
+                    diagnostics.append(self._analyze_invalid_iban({"context": {"iban": iban}}, None))
+
+            # 5. Date Bounds Validation
+            date_nodes = root.xpath('//rsm:ExchangedDocument/ram:IssueDateTime/ram:DateTimeString', namespaces=ns)
+            if date_nodes:
+                date_str = date_nodes[0].text or ""
+                if len(date_str) == 8 and date_str.isdigit():
+                    try:
+                        issue_dt = datetime.strptime(date_str, "%Y%m%d")
+                        current_year = datetime.now().year
+                        if issue_dt.year < 2000 or issue_dt.year > current_year + 5:
+                            diagnostics.append(self._analyze_date_bounds({"context": {"issue_date": date_str, "parsed_year": issue_dt.year}}, None))
+                    except ValueError:
+                        pass # Date parsing errors are handled by BR-03
+            
+            # 6. Amounts Decimals Check
+            amount_node_xpaths = [
+                '//ram:TaxBasisTotalAmount',
+                '//ram:TaxTotalAmount',
+                '//ram:GrandTotalAmount',
+                '//ram:LineTotalAmount',
+                '//ram:SpecifiedTradeSettlementLineMonetarySummation/ram:LineTotalAmount'
+            ]
+            for amount_xpath in amount_node_xpaths:
+                for node in root.xpath(amount_xpath, namespaces=ns):
+                    amount_text = node.text or ""
+                    if "." in amount_text and len(amount_text.split(".")[1]) > 2:
+                        # Allow some cases like 3 or 4 decimals if they end in 0s, but flag pure >2
+                        parts = amount_text.split(".")
+                        frac = parts[1].rstrip("0")
+                        if len(frac) > 2:
+                            diagnostics.append(self._analyze_decimals({"context": {"amount": amount_text, "element": node.tag.split('}')[-1]}}, None))
+                            break # Append only one warning per invoice
+
+            # 7. Invalid Country Codes (Basic check, usually EN16931 rules do this but we can do a softer proactive check)
+            # 3166-1 alpha-2 pattern
+            country_nodes = root.xpath('//ram:CountryID', namespaces=ns)
+            for node in country_nodes:
+                cc = node.text or ""
+                if cc and (len(cc) != 2 or not cc.isalpha()):
+                     diagnostics.append(self._analyze_country_codes({"context": {"country_code": cc}}, None))
+                     break
 
         except Exception as e:
             logger.warning(f"Proactive scan failed: {e}")
@@ -453,7 +526,8 @@ class SmartDiagnosticsEngine:
             suggestion=(
                 "Vérifiez que le préfixe de 'vat_number' (ex: FR) correspond au 'country_code' "
                 "du vendeur (BT-40)."
-            )
+            ),
+            context=error.get("context", {})
         )
 
     def _analyze_invoice_type_vs_amount(self, error: Dict[str, Any], xml_content: Optional[bytes]) -> Diagnostic:
@@ -466,7 +540,8 @@ class SmartDiagnosticsEngine:
                 "Un montant total négatif indique généralement un Avoir, qui nécessite "
                 "le code type '381' (Credit Note) au lieu de '380'."
             ),
-            suggestion="Changez le 'type_code' en '381' pour les montants négatifs."
+            suggestion="Changez le 'type_code' en '381' pour les montants négatifs.",
+            context=error.get("context", {})
         )
 
     def _analyze_invoice_number_format(self, error: Dict[str, Any], xml_content: Optional[bytes]) -> Diagnostic:
@@ -482,7 +557,70 @@ class SmartDiagnosticsEngine:
             suggestion=(
                 "Utilisez uniquement des caractères alphanumériques et les séparateurs "
                 "autorisés : tiret (-), underscore (_) et slash (/)."
-            )
+            ),
+            context=error.get("context", {})
+        )
+        
+    def _analyze_invalid_iban(self, error: Dict[str, Any], xml_content: Optional[bytes]) -> Diagnostic:
+        """Check if IBAN format is suspicious."""
+        return Diagnostic(
+            rule_id="INVALID-IBAN",
+            severity="warning",
+            title="Format IBAN Suspect",
+            explanation=(
+                "Le format de l'IBAN (longueur ou structure alphanumérique initiale) semble invalide. "
+                "Cela peut entraîner un rejet de paiement."
+            ),
+            suggestion=(
+                "Vérifiez l'IBAN saisi. Il doit commencer par 2 lettres de code pays, suivies de "
+                "2 chiffres de contrôle, puis du numéro de compte local."
+            ),
+            context=error.get("context", {})
+        )
+        
+    def _analyze_date_bounds(self, error: Dict[str, Any], xml_content: Optional[bytes]) -> Diagnostic:
+        """Check if date is too far in past or future."""
+        return Diagnostic(
+            rule_id="INVALID-DATE",
+            severity="warning",
+            title="Date de Facturation Anormale",
+            explanation=(
+                "La date de facturation détectée est très éloignée dans le passé (avant 2000) ou dans le futur."
+            ),
+            suggestion=(
+                "Vérifiez le format YYYYMMDD de la date et assurez-vous de ne pas avoir fait d'erreur de saisie."
+            ),
+            context=error.get("context", {})
+        )
+        
+    def _analyze_decimals(self, error: Dict[str, Any], xml_content: Optional[bytes]) -> Diagnostic:
+        """Check if amounts have more than 2 decimals."""
+        return Diagnostic(
+            rule_id="TOO-MANY-DECIMALS",
+            severity="warning",
+            title="Montants avec trop de décimales",
+            explanation=(
+                "La norme EN16931 n'autorise que 2 décimales pour les totaux (TaxBasisTotalAmount, etc.)."
+            ),
+            suggestion=(
+                "Arrondissez vos montants totaux à 2 chiffres après la virgule avant de générer le XML."
+            ),
+            context=error.get("context", {})
+        )
+        
+    def _analyze_country_codes(self, error: Dict[str, Any], xml_content: Optional[bytes]) -> Diagnostic:
+        """Check if Country codes are not 2 letters."""
+        return Diagnostic(
+            rule_id="INVALID-COUNTRY-CODE",
+            severity="warning",
+            title="Code Pays Invalide",
+            explanation=(
+                "Un code pays (CountryID) doit être un code ISO 3166-1 alpha-2 de 2 lettres."
+            ),
+            suggestion=(
+                "Utilisez 'FR' au lieu de 'FRA' ou 'FRANCE', 'DE' au lieu de 'GERMANY', etc."
+            ),
+            context=error.get("context", {})
         )
 
 
