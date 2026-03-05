@@ -23,38 +23,70 @@
 ## Quickstart
 
 ```bash
-# Start the engine
 docker run -d -p 8000:8000 --name facturx-engine facturxengine/facturx-engine:latest
+```
 
-# ── STEP 1 · Generate compliant XML from your ERP data ────────────────────
+### Core Workflows
+
+#### 1. Validate — Compliance Gate
+
+Check any CII or UBL invoice (PDF or XML) against EN 16931 before sending to PDP/PPF.
+
+```bash
+curl -X POST "http://localhost:8000/v1/validate" \
+  -F "file=@invoice.xml"
+```
+
+#### 2. Generate XML — Business Data to CII/UBL
+
+Transform your ERP JSON metadata into a Cross-Industry Invoice XML.
+
+```bash
 curl -X POST "http://localhost:8000/v1/xml" \
   -F "metadata=$(cat examples/simple_invoice.json)" \
   -o invoice.xml
+```
 
-# ── STEP 2 · Validate before sending to PDP/PPF ───────────────────────────
-curl -X POST "http://localhost:8000/v1/validate" \
-  -F "file=@invoice.xml"
+#### 3. Merge — Assemble PDF + XML
 
-# ── STEP 3 · Embed XML into a PDF/A-3b container ──────────────────────────
-# curl -X POST "http://localhost:8000/v1/convert" \
-#   -F "pdf=@examples/invoice_raw.pdf" \
-#   -F "metadata=$(cat examples/simple_invoice.json)" \
-#   --output invoice_compliant.pdf
+Embed an existing XML (Factur-X, ZUGFeRD, XRechnung) into a PDF/A-3b container.
 
-# ── OR · Merge existing XML into a PDF/A-3b container (Bring Your Own XML) ─
-# curl -X POST "http://localhost:8000/v1/merge" \
-#   -F "pdf=@examples/invoice_raw.pdf" \
-#   -F "xml=@invoice.xml" \
-#   --output invoice_compliant.pdf
+```bash
+curl -X POST "http://localhost:8000/v1/merge" \
+  -F "pdf=@examples/invoice_raw.pdf" \
+  -F "xml=@invoice.xml" \
+  --output invoice_compliant.pdf
+```
 
-# ── OPTIONAL · Extract structured data from a received invoice ────────────
-# curl -X POST "http://localhost:8000/v1/extract" -F "file=@invoice.pdf"
+#### 4. Extract — Receive Supplier Invoices
 
-# ── OPTIONAL · ERP-ready JSON (Pro) ───────────────────────────────────────
-# curl -X POST "http://localhost:8000/v1/serialize" -F "file=@invoice.pdf"
+Pull structured invoice data from a received Factur-X/ZUGFeRD PDF.
 
-# ── OPTIONAL · Check system diagnostics ───────────────────────────────────
-# curl "http://localhost:8000/diagnostics"
+```bash
+curl -X POST "http://localhost:8000/v1/extract" \
+  -F "file=@invoice.pdf"
+```
+
+### Advanced Capabilities
+
+#### `/v1/convert` — One-Step PDF Generation
+
+Convenience shortcut that generates XML from JSON metadata and embeds it into your PDF in a single call.
+
+```bash
+curl -X POST "http://localhost:8000/v1/convert" \
+  -F "pdf=@examples/invoice_raw.pdf" \
+  -F "metadata=$(cat examples/simple_invoice.json)" \
+  --output invoice_compliant.pdf
+```
+
+#### `/v1/serialize` — ERP-Ready JSON (Pro)
+
+Returns a normalized, typed JSON object ready to import directly into any ERP or accounting system. See [details below](#v1serialize--erp-ready-json-pro-1).
+
+```bash
+curl -X POST "http://localhost:8000/v1/serialize" \
+  -F "file=@invoice.pdf"
 ```
 
 **Windows users:** Replace `curl` with `curl.exe` and use PowerShell syntax for file reading.

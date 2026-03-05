@@ -31,10 +31,11 @@ from app.services.validator import ValidationService
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/v1", tags=["factur-x"])
+router = APIRouter(prefix="/v1")
 
 
-@router.post("/convert", 
+@router.post("/convert",
+             tags=["Advanced Integration"],
              response_class=StreamingResponse,
              responses={
                  200: {"description": "Factur-X PDF successfully generated from provided PDF"},
@@ -130,6 +131,7 @@ async def convert_to_facturx(
 
 
 @router.post("/xml",
+             tags=["Core Workflows"],
              response_class=StreamingResponse,
              responses={
                  200: {"description": "Factur-X/CII XML successfully generated"},
@@ -202,6 +204,7 @@ async def generate_facturx_xml(
 
 
 @router.post("/validate",
+             tags=["Core Workflows"],
              response_model=Union[ValidationResult, ProValidationResult],
              responses={
                  400: {"model": ProblemDetails, "description": "Invalid input"},
@@ -384,6 +387,7 @@ async def validate_facturx(
 
 
 @router.post("/extract",
+             tags=["Core Workflows"],
              response_model=ExtractionResult,
              responses={
                  400: {"model": ProblemDetails, "description": "Invalid input"},
@@ -459,6 +463,7 @@ async def extract_facturx(
         metrics.observe("request_duration_seconds", time.time() - start_time)
 
 @router.post("/serialize",
+             tags=["Advanced Integration"],
              response_model=SerializationResponse,
              responses={
                  400: {"model": ProblemDetails, "description": "Invalid input"},
@@ -586,6 +591,7 @@ async def serialize_facturx(
 
 
 @router.post("/merge",
+             tags=["Core Workflows"],
              response_class=StreamingResponse,
              responses={
                  200: {"description": "Factur-X PDF with embedded XML"},
