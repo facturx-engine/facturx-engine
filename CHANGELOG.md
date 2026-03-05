@@ -354,6 +354,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.7] - 2026-03-05
+
+### Added
+
+- **Smart Diagnostics (Pro)**: Added Proactive Scan rules `INVALID-IBAN`, `TOO-MANY-DECIMALS`, `INVALID-DATE`, `INVALID-COUNTRY-CODE` natively.
+- **Diagnostics Context**: Anomalous values (like incorrect IDs or amounts) are now strictly mapped into the `Diagnostic.context` payload.
+- **DevOps**: Split Docker health checks into `/health` (liveness) and `/healthz` (deep readiness) with optimized `requirements-dev.txt`.
+
+### Changed
+
+- **Validation Robustness**: Fixed the diagnosis parsing engine directly accessing PDF-wrapped `xml_content`.
+- **Proactive Severity**: Downgraded Proactive Scan severity from `error` to `warning` to better align with its "Pre-Clearance Audit" purpose.
+
 ## [1.6.6] - 2026-03-03
 
 ### Changed

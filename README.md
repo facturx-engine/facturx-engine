@@ -84,7 +84,7 @@ This **Community** version is production-ready. The code is Open Core (transpare
 | **PDF Compliance** | ❌ | **VeraPDF (PDF/A-3)** | **VeraPDF (PDF/A-3)** | **VeraPDF (PDF/A-3)** |
 | **Support** | Community | **Priority** | **SLA** | Dedicated |
 
-#### `/v1/serialize` — ERP-Ready JSON (Pro)
+### `/v1/serialize` — ERP-Ready JSON (Pro)
 
 Unlike raw XML extraction, `/v1/serialize` returns a normalized, typed JSON object ready to import directly into any ERP or accounting system:
 
@@ -112,7 +112,7 @@ Unlike raw XML extraction, `/v1/serialize` returns a normalized, typed JSON obje
 }
 ```
 
-#### `/v1/validate` — Smart Diagnostics Engine (Pro)
+### `/v1/validate` — Smart Diagnostics Engine (Pro)
 
 While the Community edition runs standard EN 16931 Schematron validation, the **Pro Edition** features a Smart Diagnostics engine that translates crypting XPath errors into human-readable actions, and runs a **Proactive Scan** for silent platform killers:
 
