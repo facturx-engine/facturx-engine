@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 TEMPLATE_DIR = Path(__file__).parent.parent / "templates"
 jinja_env = SandboxedEnvironment(
     loader=FileSystemLoader(TEMPLATE_DIR),
-    autoescape=select_autoescape(['xml']),
+    autoescape=select_autoescape(['xml', 'xml.j2']),
     trim_blocks=True,
     lstrip_blocks=True
 )
