@@ -1,67 +1,106 @@
-# Factur-X Engine
+# Factur-X Engine — EN16931 · ZUGFeRD 2.3 · Factur-X 1.0 · XRechnung 3.0 · PDF/A-3
 
-> **The Privacy-First Invoicing Engine.** 100% Air-gapped, Official Saxon-HE Validation (Chorus Pro / KoSIT Parity). Generate and Validate Factur-X, ZUGFeRD 2.x, and XRechnung 3.0 without cloud dependencies.
+> **The Privacy-First e-Invoicing API.** 100% Air-gapped. SaxonC-HE Validation at Chorus Pro / KoSIT parity. Generate and Validate Factur-X 1.0, ZUGFeRD 2.x, XRechnung 3.0 — no cloud, no telemetry, no SaaS lock-in.
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/facturxengine/facturx-engine)](https://hub.docker.com/r/facturxengine/facturx-engine) [![GitHub](https://img.shields.io/badge/github-repo-181717?logo=github)](https://github.com/facturx-engine/facturx-engine) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT) ![Privacy First](https://img.shields.io/badge/Privacy-Air_Gapped-success?logo=shield-dog) ![Saxon-HE](https://img.shields.io/badge/Powered_By-Saxon--HE-blue)
+[![Docker Pulls](https://img.shields.io/docker/pulls/facturxengine/facturx-engine)](https://hub.docker.com/r/facturxengine/facturx-engine) [![GitHub](https://img.shields.io/badge/github-repo-181717?logo=github)](https://github.com/facturx-engine/facturx-engine) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT) ![Air-Gapped](https://img.shields.io/badge/Privacy-Air_Gapped-success) ![SaxonC-HE](https://img.shields.io/badge/Validation-SaxonC--HE-blue)
 
 ---
 
 ## Why Factur-X Engine?
 
-- **Air-Gapped by Design**: 100% offline execution. No outbound network calls. GDPR/DORA compliant.
-- **Official Saxon-HE Validation**: Technical parity with **Chorus Pro (France)** and **KoSIT (Germany)** portals.
-- **Mandate Ready**: Compliant with **France 2026 (PDP/PPF)** and **Germany 2025** electronic invoicing requirements.
+| Property | Detail |
+|:---|:---|
+| **Standards** | EN 16931, Factur-X 1.0, ZUGFeRD 2.3, XRechnung 3.0, Peppol BIS |
+| **Validation Engine** | SaxonC-HE — same Schematron as **Chorus Pro (France)** and **KoSIT (Germany)** |
+| **Air-Gapped** | 100% offline. GDPR, DORA, CRA compliant. Zero outbound calls. |
+| **Mandate Ready** | France (PPF/PDP 2026) · Germany (ZUGFeRD 2025) · EU ViDA (2027) |
+| **Security** | SBOM (CycloneDX) included · Cosign-signed image · No telemetry |
 
 ---
 
 ## Quickstart
 
 ```bash
-# Start the engine
+# Start the engine (Community Edition — free, MIT)
 docker run -d -p 8000:8000 --name facturx-engine facturxengine/facturx-engine:latest
-
-# Generate compliant Factur-X XML
-curl -X POST "http://localhost:8000/v1/xml" \
-  -F "metadata=$(cat examples/simple_invoice.json)" \
-  -o invoice.xml
-
-# Merge XML into a PDF/A-3b container
-curl -X POST "http://localhost:8000/v1/merge" \
-  -F "pdf=@examples/invoice_raw.pdf" \
-  -F "xml=@invoice.xml" \
-  --output invoice_compliant.pdf
 ```
 
-**[Full API Documentation](http://localhost:8000/docs)** (Swagger UI available after starting container)
+Or with Docker Compose:
+
+```yaml
+services:
+  facturx:
+    image: facturxengine/facturx-engine:latest
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - WORKERS=4
+      # - LICENSE_KEY=your_pro_key_here
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+```
 
 ---
 
-## Documentation
+## API Endpoints
 
-**[API Reference](https://facturx-engine.github.io/facturx-engine/ref/api-reference.html)** - All endpoints & parameters  
-**[Integration Guides](https://facturx-engine.github.io/facturx-engine/#api)** - Python, Node.js, PHP recipes  
-**[Troubleshooting](https://facturx-engine.github.io/facturx-engine/guides/error-codes.html)** - Error codes & solutions
+### `/v1/xml` — Generate EN 16931 CII XML
+
+```bash
+curl -X POST "http://localhost:8000/v1/xml" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "invoice_number": "INV-2025-001",
+    "issue_date": "20250901",
+    "seller": { "name": "My Company", "vat_number": "FR12345678901" },
+    "buyer": { "name": "Client GmbH" },
+    "lines": [{ "name": "Consulting", "net_price": 1000.00, "vat_rate": 20.0 }],
+    "amounts": { "grand_total": "1200.00" }
+  }' -o invoice.xml
+```
+
+### `/v1/merge` — Embed XML into PDF → ZUGFeRD / Factur-X PDF/A-3b
+
+```bash
+curl -X POST "http://localhost:8000/v1/merge" \
+  -F "pdf=@dolibarr_invoice.pdf" \
+  -F "xml=@invoice.xml" \
+  --output facturx_compliant.pdf
+```
+
+### `/v1/validate` — EN 16931 Schematron Validation (KoSIT / Chorus Pro parity)
+
+```bash
+curl -X POST "http://localhost:8000/v1/validate" \
+  -F "file=@invoice.pdf"
+```
+
+### `/v1/extract` — Extract Structured Data from ZUGFeRD / Factur-X PDF
+
+```bash
+curl -X POST "http://localhost:8000/v1/extract" \
+  -F "file=@received_invoice.pdf"
+```
 
 ---
 
 ## Community vs Pro
 
-| Feature | Community Edition | Pro Edition | OEM Edition | Enterprise |
+| Feature | Community (MIT) | Pro | OEM | Enterprise |
 | :--- | :--- | :--- | :--- | :--- |
-| **Usage** | Internal Use | Internal Use | **Redistribution** | High Volume |
-| **Data Format** | Raw Extraction | **ERP-Ready JSON** | **ERP-Ready JSON** | Custom |
-| **XML Validation** | EN 16931 Rules | **Smart Diagnostics** | **Smart Diagnostics** | Custom Rules |
-| **PDF Compliance** | ❌ | **VeraPDF (PDF/A-3)** | **VeraPDF (PDF/A-3)** | **VeraPDF (PDF/A-3)** |
-| **Support** | Community | **Priority** | **SLA** | Dedicated |
+| **EN 16931 Validation** | ✅ | ✅ | ✅ | Custom Rules |
+| **Smart Diagnostics** | ❌ | ✅ | ✅ | ✅ |
+| **ERP-Ready JSON (`/v1/serialize`)** | ❌ | ✅ | ✅ | ✅ |
+| **PDF/A-3b Compliance (VeraPDF)** | ❌ | ✅ | ✅ | ✅ |
+| **Redistribution** | Internal Use | Internal | ✅ | ✅ |
+| **Support** | Community | Priority | SLA | Dedicated |
 
-### 30-Day Evaluation
-
-Test **100% of the Pro features (VeraPDF, Smart Diagnostics, and ERP Serialization)** on your own files, within your own infrastructure, during a 30-Day Evaluation period.
-
-1. Request your evaluation key at **[Factur-X Engine on Lemon Squeezy](https://facturx-engine.lemonsqueezy.com)** (Zero friction, instant delivery).
-2. Inject the Base64 key into your Docker container:
-   `docker run -e LICENSE_KEY='YOUR_KEY' facturxengine/facturx-engine`
-3. After 30 days, the engine gracefully downgrades back to Community Mode. No forced lock-in.
+**30-Day Free Pro Evaluation**: [facturx-engine.lemonsqueezy.com](https://facturx-engine.lemonsqueezy.com)
 
 ---
 
@@ -69,18 +108,29 @@ Test **100% of the Pro features (VeraPDF, Smart Diagnostics, and ERP Serializati
 
 | Variable | Description | Default |
 | :--- | :--- | :--- |
-| `PORT` | API Listening Port | `8000` |
-| `LICENSE_KEY` | Pro License Key | - |
-| `WORKERS` | Gunicorn Workers | `4` |
+| `PORT` | API listening port | `8000` |
+| `WORKERS` | Gunicorn worker count | `4` |
+| `LICENSE_KEY` | Pro/OEM license key | — |
+| `METRICS_ENABLED` | Enable Prometheus `/metrics` | `false` |
+| `CORS_ORIGINS` | Allowed CORS origins (comma-sep) | `*` |
+
+---
+
+## Documentation & Demo
+
+- 📖 **[Full API Reference](https://facturx-engine.github.io/facturx-engine/ref/api-reference.html)**
+- 🤗 **[Interactive Demo (HuggingFace)](https://huggingface.co/spaces/Facturx-engine/factur-x-engine-demo)** — test with your own files
+- 🐍 **[Python SDK](https://pypi.org/project/facturx-engine/)** (`pip install facturx-engine`)
+- 🔗 **[GitHub Source](https://github.com/facturx-engine/facturx-engine)**
 
 ---
 
 ## Legal
 
-**Vendor**: Factur-X Engine (Paris, France) | **License**: MIT / Commercial  
-**Compliance**: EU Cyber Resilience Act (CRA) Ready | **Security**: SBOM included
+**Vendor**: Factur-X Engine (Paris, France) | **License**: MIT / Commercial
+**Compliance**: EU Cyber Resilience Act (CRA) Ready | **Security**: SBOM (CycloneDX) included · Cosign-signed
 
-> This software is a technical tool. Users retain full responsibility for fiscal accuracy. [Full legal disclaimer](https://github.com/facturx-engine/facturx-engine).
+> This software is a technical tool. Users retain full responsibility for fiscal accuracy.
 
 ---
 
