@@ -309,7 +309,20 @@ async def validate_facturx(
             from app.schemas.validation import ProValidationResult, DiagnosticDetail
             
             engine = get_diagnostics_engine()
-            diagnostics = engine.analyze(all_errors)
+            # Pass XML content for proactive scan (VAT mismatch, negative totals, forbidden chars)
+            xml_for_scan = None
+            if file_content.startswith(b'<?xml') or file_content.startswith(b'<'):
+                xml_for_scan = file_content
+            elif file_content.startswith(b'%PDF'):
+                try:
+                    from app.services.pdf_utils import get_xml_from_pdf
+                    from io import BytesIO
+                    _, xml_bytes = get_xml_from_pdf(BytesIO(file_content), check_xsd=False)
+                    if xml_bytes:
+                        xml_for_scan = xml_bytes
+                except Exception:
+                    pass
+            diagnostics = engine.analyze(all_errors, xml_for_scan)
             
             diagnostic_details = [
                 DiagnosticDetail(

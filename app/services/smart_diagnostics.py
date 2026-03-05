@@ -444,7 +444,7 @@ class SmartDiagnosticsEngine:
         """Check SIRET/VAT prefix vs Country Code."""
         return Diagnostic(
             rule_id="BR-CO-09-EXT",
-            severity="error",
+            severity="warning",
             title="Incohérence Pays / TVA",
             explanation=(
                 "Le numéro de TVA intracommunautaire doit commencer par le code pays "
@@ -460,7 +460,7 @@ class SmartDiagnosticsEngine:
         """Suggest code 381 for negative totals."""
         return Diagnostic(
             rule_id="BT-3-CONTEXT",
-            severity="error",
+            severity="warning",
             title="Type de Facture Incorrect (Avoir)",
             explanation=(
                 "Un montant total négatif indique généralement un Avoir, qui nécessite "
@@ -473,7 +473,7 @@ class SmartDiagnosticsEngine:
         """Check for forbidden characters in BT-1."""
         return Diagnostic(
             rule_id="BT-1-FORMAT",
-            severity="error",
+            severity="warning",
             title="Caractères Interdits dans le Numéro",
             explanation=(
                 "Certains caractères spéciaux (@, #, <, >, &, etc.) provoquent des rejets "
