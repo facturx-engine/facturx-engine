@@ -17,8 +17,8 @@
 # ----------------------------------------
 FROM eclipse-temurin:17-jdk-jammy AS jlink-builder
 
-ARG VERAPDF_VERSION=1.26.5
-ARG VERAPDF_MAJOR_MINOR=1.26
+ARG VERAPDF_VERSION=1.28.2
+ARG VERAPDF_MAJOR_MINOR=1.28
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     wget ca-certificates unzip && \
