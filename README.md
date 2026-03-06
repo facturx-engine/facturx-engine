@@ -1,6 +1,6 @@
 # Factur-X Engine
 
-> **The Privacy-First Invoicing Engine.** 100% Air-gapped, Official Saxon-HE Validation (Chorus Pro / KoSIT Parity). Generate and Validate Factur-X, ZUGFeRD 2.x, and XRechnung without cloud dependencies.
+> **The Privacy-First Invoicing Engine.** 100% Air-gapped, Official Saxon-HE Validation. Generate and Validate Factur-X, ZUGFeRD 2.x, and XRechnung without cloud dependencies.
 
 ![Docker Pulls](https://img.shields.io/docker/pulls/facturxengine/facturx-engine) [![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Live%20Demo-blue)](https://huggingface.co/spaces/Facturx-engine/factur-x-engine-demo) [![GitHub](https://img.shields.io/badge/github-repo-181717?logo=github)](https://github.com/facturx-engine/facturx-engine) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT) ![Standard](https://img.shields.io/badge/standard-EN16931-green.svg) ![Privacy First](https://img.shields.io/badge/Privacy-Air_Gapped-success?logo=shield-dog) ![Saxon-HE](https://img.shields.io/badge/Powered_By-Saxon--HE-blue)
 
@@ -9,7 +9,7 @@
 ## Why Factur-X Engine?
 
 - **Air-Gapped by Design**: 100% offline execution. No outbound network calls. GDPR/DORA compliant.
-- **Official Saxon-HE Validation**: Technical parity with **Chorus Pro (France)** and **KoSIT (Germany)** portals — including EN16931 + BR-FR CTC v1.2.0 rules (FNFE/DGFIP) for French invoices.
+- **Official Saxon-HE Validation**: Same EN16931 Schematron rules used by **Chorus Pro (France)** and **KoSIT (Germany)** — including BR-FR CTC v1.2.0 (FNFE/DGFIP) for French invoices. Full parity requires Saxon-HE (bundled in Docker image); check `validation_completeness` in API responses to confirm.
 - **Smart Diagnostics Engine (Pro)**: Proactively detects "Angles Morts" (e.g. invalid IBANs, >2 decimals, bizarre dates) that technically pass standard validation but fail on governmental platforms.
 - **Mandate Ready**: Compliant with **France 2026 (PDP/PPF)** and **Germany 2025** electronic invoicing requirements.
 
@@ -37,7 +37,7 @@ curl -X POST "http://localhost:8000/v1/validate" \
   -F "file=@invoice.xml"
 ```
 
-#### 2. Generate XML — Business Data to CII/UBL
+#### 2. Generate XML — Business Data to CII
 
 Transform your ERP JSON metadata into a Cross-Industry Invoice XML.
 
@@ -111,7 +111,7 @@ This **Community** version is production-ready. The code is Open Core (transpare
 | :--- | :--- | :--- | :--- | :--- |
 | **Pricing** | **Free** (MIT) | **990€ / year** | **2490€ / year** | **Contact Us** |
 | **Usage** | Internal Use | Internal Use | **Redistribution** | High Volume |
-| **Data Format** | Raw Extraction | **ERP-Ready JSON** | **ERP-Ready JSON** | Custom |
+| **Data Format** | `/v1/extract` (raw XML fields) | **`/v1/serialize` (ERP-Ready JSON)** | **`/v1/serialize` (ERP-Ready JSON)** | Custom |
 | **XML Validation** | Structural & Business Rules (Raw) | **Smart Diagnostics** (Pre-Clearance Audit) | **Smart Diagnostics** (Pre-Clearance Audit) | Custom Rules |
 | **PDF Compliance** | ❌ | **VeraPDF (PDF/A-3)** | **VeraPDF (PDF/A-3)** | **VeraPDF (PDF/A-3)** |
 | **Support** | Community | **Priority** | **SLA** | Dedicated |
@@ -146,7 +146,7 @@ Unlike raw XML extraction, `/v1/serialize` returns a normalized, typed JSON obje
 
 ### `/v1/validate` — Smart Diagnostics Engine (Pro)
 
-While the Community edition runs standard EN 16931 Schematron validation, the **Pro Edition** features a Smart Diagnostics engine that translates crypting XPath errors into human-readable actions, and runs a **Proactive Scan** for silent platform killers:
+While the Community edition runs standard EN 16931 Schematron validation, the **Pro Edition** features a Smart Diagnostics engine that translates cryptic XPath errors into human-readable actions, and runs a **Proactive Scan** for silent platform killers:
 
 - `INVALID-IBAN`: Catches malformed IBAN sequences.
 - `TOO-MANY-DECIMALS`: Rejects amounts with `>2` fractional digits (e.g. `100.005`) that cause arithmetic truncation errors on Chorus Pro.

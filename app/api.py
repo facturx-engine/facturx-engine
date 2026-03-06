@@ -485,7 +485,7 @@ async def serialize_facturx(
     designed for ERP and accounting system integration.
     
     **Trial Mode**: Available for reference files.
-    **Community Mode**: Returns obfuscated (masked) data for schema testing.
+    **Community Mode**: Not available — returns 403 with a link to obtain a license key.
     """
     import time
     from app.metrics import metrics
