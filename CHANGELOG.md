@@ -352,7 +352,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased]
+## [1.6.8] - 2026-03-06
+
+### Added
+
+- **Compliance — France 2026**: Embedded official FNFE/DGFIP **BR-FR CTC v1.2.0** Schematron rules (CII + UBL). `HybridValidationService` now auto-detects `CountryID=FR` and applies French mandate rules on top of EN 16931 — achieving true **Chorus Pro parity**.
+- **Compliance — Germany (XRechnung UBL)**: Integrated the official **KoSIT XRechnung-UBL-validation.xsl** (xrechnung-3.0.2-schematron-2.5.0). XRechnung invoices in UBL format now run against German BR-DE rules instead of the generic EN 16931 base.
+- **Schema Coverage**: Added **Factur-X 1.08 BASICWL XSD** (+ 3 dependency schemas) for structural validation of the BASICWL profile.
+- **Extraction — UBL CreditNote**: Full extraction support for `<CreditNote>` root element (UBL 2.1): `CreditNoteLine`, `CreditedQuantity`, `billing_reference`, `tax_point_date`, and `document_type` ("invoice" | "credit_note") exposed in `/v1/extract`.
+- **Validation — EN16931 UBL**: Updated EN 16931 UBL Schematron to **CEN v1.3.15**.
+
+### Changed
+
+- **XRechnung 2.3 deprecated**: Profile is now explicitly rejected (HTTP 422) with a clear upgrade message pointing to 3.0.x. Silent fallback has been removed.
 
 ## [1.6.7] - 2026-03-05
 
