@@ -1,8 +1,8 @@
 # Factur-X Engine — EN16931 · ZUGFeRD 2.3 · Factur-X 1.0 · XRechnung 3.0 · PDF/A-3
 
-> **The Privacy-First e-Invoicing API.** 100% Air-gapped. SaxonC-HE Validation at Chorus Pro / KoSIT parity. Generate and Validate Factur-X 1.0, ZUGFeRD 2.x, XRechnung 3.0 — no cloud, no telemetry, no SaaS lock-in.
+> **The Privacy-First e-Invoicing API.** 100% Air-gapped. Saxon-HE Validation at Chorus Pro / KoSIT parity. Generate and Validate Factur-X 1.0, ZUGFeRD 2.x, XRechnung 3.0 — no cloud, no telemetry, no SaaS lock-in.
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/facturxengine/facturx-engine)](https://hub.docker.com/r/facturxengine/facturx-engine) [![GitHub](https://img.shields.io/badge/github-repo-181717?logo=github)](https://github.com/facturx-engine/facturx-engine) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT) ![Air-Gapped](https://img.shields.io/badge/Privacy-Air_Gapped-success) ![SaxonC-HE](https://img.shields.io/badge/Validation-SaxonC--HE-blue)
+[![Docker Pulls](https://img.shields.io/docker/pulls/facturxengine/facturx-engine)](https://hub.docker.com/r/facturxengine/facturx-engine) [![GitHub](https://img.shields.io/badge/github-repo-181717?logo=github)](https://github.com/facturx-engine/facturx-engine) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT) ![Air-Gapped](https://img.shields.io/badge/Privacy-Air_Gapped-success) ![Saxon-HE](https://img.shields.io/badge/Validation-Saxon--HE-blue)
 
 ---
 
@@ -11,7 +11,7 @@
 | Property | Detail |
 |:---|:---|
 | **Standards** | EN 16931, Factur-X 1.0, ZUGFeRD 2.3, XRechnung 3.0, Peppol BIS |
-| **Validation Engine** | SaxonC-HE — same Schematron as **Chorus Pro (France)** and **KoSIT (Germany)** |
+| **Validation Engine** | Saxon-HE — same Schematron as **Chorus Pro (France)** and **KoSIT (Germany)** |
 | **Air-Gapped** | 100% offline. GDPR, DORA, CRA compliant. Zero outbound calls. |
 | **Mandate Ready** | France (PPF/PDP 2026) · Germany (ZUGFeRD 2025) · EU ViDA (2027) |
 | **Security** | SBOM (CycloneDX) included · Cosign-signed image · No telemetry |

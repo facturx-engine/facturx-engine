@@ -31,6 +31,9 @@ XRECHNUNG_30_ROOT = SCHEMA_ROOT / "xrechnung_3.0.2" / "cii"
 XRECHNUNG_30_XSD = XRECHNUNG_30_ROOT / "xsd" / "CrossIndustryInvoice_100pD16B.xsd"
 XRECHNUNG_30_XSLT = XRECHNUNG_30_ROOT / "xslt" / "XRechnung-CII-validation.xsl"
 
+# EN16931 UBL (Peppol / XRechnung UBL base rules)
+UBL_EN16931_XSLT = SCHEMA_ROOT / "_XSLT_EN16931_UBL" / "EN16931-UBL-validation.xslt"
+
 VALIDATION_TIMEOUT = int(os.getenv("FX_VALIDATION_TIMEOUT", "30"))
 
 # Subprocess Java configurations
@@ -143,19 +146,18 @@ class HybridValidationService:
             effective_xsd_path = ""   # Default: Skip XSD
             effective_xslt_path = ""  # Default: Skip XSLT
             
-            # 4.1 Handle UBL (Partial Support Note)
+            # 4.1 Handle UBL (EN16931 Schematron validation)
             if detected_format == "ubl":
-                result["errors"].append({
-                    "rule_id": "FX-UBL-PARTIAL",
-                    "message": f"Format UBL ({detected_profile}) détecté. La validation des règles métier (Schematron) pour UBL n'est pas encore activée.",
-                    "severity": "warning",
-                    "layer": "system"
-                })
-                result["is_valid"] = True # Structure is valid if it parsed
-                return result
+                if detected_profile == "en16931":
+                    effective_xslt_path = str(UBL_EN16931_XSLT)
+                    logger.info(f"UBL Profile '{detected_profile}': applying EN16931 UBL Schematron rules")
+                else:
+                    # XRechnung UBL, Peppol, etc. — apply EN16931 base rules
+                    effective_xslt_path = str(UBL_EN16931_XSLT)
+                    logger.info(f"UBL Profile '{detected_profile}': applying EN16931 UBL Schematron rules (base)")
 
             # 4.2 Handle CII / Factur-X
-            if detected_profile == "en16931":
+            elif detected_profile == "en16931":
                 effective_xsd_path = str(XSD_PATH)
                 effective_xslt_path = str(XSLT_PATH)
                 logger.info(f"Profile '{detected_profile}': applying full EN16931 XSD + Schematron rules")
