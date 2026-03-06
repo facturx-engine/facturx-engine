@@ -153,6 +153,13 @@ class ValidationErrorDetail(BaseModel):
     message: str = Field(..., description="Error message")
     severity: str = Field(default="error", description="error or warning")
 
+
+class SkippedLayer(BaseModel):
+    """A validation layer that was skipped, with the reason why."""
+    layer: str = Field(..., description="Layer name (xsd, schematron, pdfa3b, br_fr_ctc)")
+    reason: str = Field(..., description="Why this layer was skipped (e.g. tool_missing:saxon_jar)")
+
+
 class ValidationResult(BaseModel):
     """Validation result response."""
     valid: bool = Field(..., description="Whether the file is valid")
@@ -161,6 +168,9 @@ class ValidationResult(BaseModel):
     errors: List[ValidationErrorDetail] = Field(default_factory=list, description="List of validation errors")
     validation_mode: Optional[str] = Field(None, description="Validation mode")
     pdfa_valid: Optional[bool] = Field(None, description="PDF/A-3b compliance (null if input was raw XML or VeraPDF unavailable)")
+    validation_completeness: str = Field(default="full", description="full if all applicable layers ran, partial if some were skipped")
+    layers_executed: List[str] = Field(default_factory=list, description="Validation layers that actually ran (xsd, schematron, pdfa3b, br_fr_ctc)")
+    layers_skipped: List[SkippedLayer] = Field(default_factory=list, description="Validation layers that were skipped with reasons")
 
 
 class DiagnosticDetail(BaseModel):
@@ -183,6 +193,9 @@ class ProValidationResult(BaseModel):
     diagnostics: List[DiagnosticDetail] = Field(default_factory=list, description="Smart diagnostics with explanations")
     validation_mode: str = Field(default="pro_diagnostics", description="Always 'pro_diagnostics' for this response type")
     pdfa_valid: Optional[bool] = Field(None, description="PDF/A-3b compliance (null if input was raw XML or VeraPDF unavailable)")
+    validation_completeness: str = Field(default="full", description="full if all applicable layers ran, partial if some were skipped")
+    layers_executed: List[str] = Field(default_factory=list, description="Validation layers that actually ran")
+    layers_skipped: List[SkippedLayer] = Field(default_factory=list, description="Validation layers that were skipped with reasons")
 
 
 class ErrorResponse(BaseModel):
