@@ -71,7 +71,8 @@ RUN wget -q \
 ARG VERAPDF_INSTALLER_SHA256=""
 ARG SAXON_JAR_SHA256=""
 
-# Download Saxon-HE 10.8 JAR from Maven Central (10.8 natively includes xmlresolver)
+# Download Saxon-HE 10.8 JAR from Maven Central (10.8 natively includes xmlresolver;
+# Saxon 12.x requires a separate xmlresolver JAR — not worth the complexity for XSLT 2.0)
 RUN wget -q "https://repo1.maven.org/maven2/net/sf/saxon/Saxon-HE/10.8/Saxon-HE-10.8.jar" -O /saxon.jar && \
     if [ -n "$SAXON_JAR_SHA256" ]; then \
     echo "${SAXON_JAR_SHA256}  /saxon.jar" | sha256sum -c - || \
