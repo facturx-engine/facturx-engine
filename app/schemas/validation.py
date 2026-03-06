@@ -156,7 +156,7 @@ class ValidationErrorDetail(BaseModel):
 class ValidationResult(BaseModel):
     """Validation result response."""
     valid: bool = Field(..., description="Whether the file is valid")
-    format: Optional[str] = Field(None, description="Detected format (factur-x, zugferd, order-x)")
+    format: Optional[str] = Field(None, description="Detected format (factur-x, zugferd, ubl)")
     flavor: Optional[str] = Field(None, description="Detected flavor/level")
     errors: List[ValidationErrorDetail] = Field(default_factory=list, description="List of validation errors")
     validation_mode: Optional[str] = Field(None, description="Validation mode")

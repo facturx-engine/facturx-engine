@@ -26,12 +26,23 @@ class ExtractionService:
         recover=False  # Security: strict parsing
     )
 
-    # Namespaces for UBL (Simplified for common XRechnung)
+    # Namespaces for UBL Invoice (XRechnung, EN16931-UBL)
     NS_UBL = {
         'ubl': 'urn:oasis:names:specification:ubl:schema:xsd:Invoice-2',
         'cac': 'urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2',
         'cbc': 'urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2'
     }
+
+    # Namespaces for UBL CreditNote (same CAC/CBC, different root namespace)
+    NS_UBL_CN = {
+        'cn': 'urn:oasis:names:specification:ubl:schema:xsd:CreditNote-2',
+        'cac': 'urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2',
+        'cbc': 'urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2'
+    }
+
+    # UBL root tags that identify document type
+    _UBL_INVOICE_TAG = '{urn:oasis:names:specification:ubl:schema:xsd:Invoice-2}Invoice'
+    _UBL_CREDITNOTE_TAG = '{urn:oasis:names:specification:ubl:schema:xsd:CreditNote-2}CreditNote'
 
     @classmethod
     async def extract_invoice_data_async(cls, file_content: bytes, filename: str) -> Dict[str, Any]:
@@ -89,7 +100,12 @@ class ExtractionService:
                 # 3. Map to Intelligent Demo JSON
                 try:
                     if fmt == "ubl":
-                        result["invoice_json"] = ExtractionService._parse_demo_ubl(xml_root, filename)
+                        # Detect UBL document type: Invoice or CreditNote
+                        root_tag = xml_root.tag
+                        is_credit_note = root_tag == ExtractionService._UBL_CREDITNOTE_TAG
+                        result["invoice_json"] = ExtractionService._parse_demo_ubl(
+                            xml_root, filename, is_credit_note=is_credit_note
+                        )
                     else:
                         result["invoice_json"] = ExtractionService._parse_demo_cii(xml_root, fmt or "factur-x", filename)
                 except Exception as inner_e:
@@ -333,10 +349,19 @@ class ExtractionService:
         }
 
     @staticmethod
-    def _parse_demo_ubl(xml_root, filename):
-        """Parse UBL XML into Demo JSON structure."""
-        ns = ExtractionService.NS_UBL
-        
+    def _parse_demo_ubl(xml_root, filename, is_credit_note: bool = False):
+        """Parse UBL Invoice or CreditNote XML into Demo JSON structure.
+
+        UBL CreditNote uses the same CAC/CBC namespaces as Invoice but:
+          - root namespace is CreditNote-2 instead of Invoice-2
+          - line elements are <cac:CreditNoteLine> with <cbc:CreditedQuantity>
+          - there is no <cbc:DueDate> (credit notes don't have payment terms)
+          - document_type is reported as "credit_note" in _meta
+        """
+        # Select namespace set based on document type
+        ns = ExtractionService.NS_UBL_CN if is_credit_note else ExtractionService.NS_UBL
+        document_type = "credit_note" if is_credit_note else "invoice"
+
         def xpath_first(el, path):
             res = el.xpath(path, namespaces=ns)
             if res:
@@ -348,13 +373,19 @@ class ExtractionService:
         # 1. Basic Info
         invoice_id = xpath_first(xml_root, '//cbc:ID')
         date_str = xpath_first(xml_root, '//cbc:IssueDate')
-        due_date = xpath_first(xml_root, '//cbc:DueDate')
+        # CreditNote has no DueDate; Invoice may have one
+        due_date = xpath_first(xml_root, '//cbc:DueDate') if not is_credit_note else None
+        # CreditNote may carry a TaxPointDate instead
+        tax_point_date = xpath_first(xml_root, '//cbc:TaxPointDate') if is_credit_note else None
         currency = xpath_first(xml_root, '//cbc:DocumentCurrencyCode') or "EUR"
+        # BillingReference: the original invoice number a credit note refers to
+        billing_ref = xpath_first(xml_root, '//cac:BillingReference/cac:InvoiceDocumentReference/cbc:ID') \
+            if is_credit_note else None
 
         def clean_str(s):
             return s if s and s.strip() else None
 
-        # 2. Seller
+        # 2. Seller (AccountingSupplierParty — identical in both document types)
         seller_node = xml_root.xpath('//cac:AccountingSupplierParty/cac:Party', namespaces=ns)
         seller = {"name": "", "vat_number": "", "registration_id": None, "email": None}
         if seller_node:
@@ -364,13 +395,12 @@ class ExtractionService:
             seller["vat_number"] = xpath_first(s_node, 'cac:PartyTaxScheme/cbc:CompanyID') or ""
             seller["registration_id"] = xpath_first(s_node, 'cac:PartyLegalEntity/cbc:CompanyID')
             seller["email"] = xpath_first(s_node, 'cac:Contact/cbc:ElectronicMail')
-            
             seller["line1"] = clean_str(xpath_first(s_node, 'cac:PostalAddress/cbc:StreetName'))
             seller["city"] = clean_str(xpath_first(s_node, 'cac:PostalAddress/cbc:CityName'))
             seller["postcode"] = clean_str(xpath_first(s_node, 'cac:PostalAddress/cbc:PostalZone'))
             seller["country"] = clean_str(xpath_first(s_node, 'cac:PostalAddress/cac:Country/cbc:IdentificationCode'))
 
-        # 3. Buyer
+        # 3. Buyer (AccountingCustomerParty — identical in both document types)
         buyer_node = xml_root.xpath('//cac:AccountingCustomerParty/cac:Party', namespaces=ns)
         buyer = {"name": "", "vat_number": "", "registration_id": None, "email": None}
         if buyer_node:
@@ -380,41 +410,47 @@ class ExtractionService:
             buyer["vat_number"] = xpath_first(b_node, 'cac:PartyTaxScheme/cbc:CompanyID') or ""
             buyer["registration_id"] = xpath_first(b_node, 'cac:PartyLegalEntity/cbc:CompanyID')
             buyer["email"] = xpath_first(b_node, 'cac:Contact/cbc:ElectronicMail')
-            
             buyer["line1"] = clean_str(xpath_first(b_node, 'cac:PostalAddress/cbc:StreetName'))
             buyer["city"] = clean_str(xpath_first(b_node, 'cac:PostalAddress/cbc:CityName'))
             buyer["postcode"] = clean_str(xpath_first(b_node, 'cac:PostalAddress/cbc:PostalZone'))
             buyer["country"] = clean_str(xpath_first(b_node, 'cac:PostalAddress/cac:Country/cbc:IdentificationCode'))
 
-        # 4. Parsing Lines
+        # 4. Line Items
+        # Invoice uses <cac:InvoiceLine> / <cbc:InvoicedQuantity>
+        # CreditNote uses <cac:CreditNoteLine> / <cbc:CreditedQuantity>
         line_items = []
-        lines_xml = xml_root.xpath('//cac:InvoiceLine', namespaces=ns)
         total_net_calc = 0.0
+
+        if is_credit_note:
+            lines_xml = xml_root.xpath('//cac:CreditNoteLine', namespaces=ns)
+            qty_tag = 'cbc:CreditedQuantity'
+        else:
+            lines_xml = xml_root.xpath('//cac:InvoiceLine', namespaces=ns)
+            qty_tag = 'cbc:InvoicedQuantity'
 
         for item in lines_xml[:50]:
             name = xpath_first(item, 'cac:Item/cbc:Name') or "Item"
-            raw_qty = xpath_first(item, 'cbc:InvoicedQuantity')
+            raw_qty = xpath_first(item, qty_tag)
             raw_price = xpath_first(item, 'cac:Price/cbc:PriceAmount')
             raw_total = xpath_first(item, 'cbc:LineExtensionAmount')
             raw_vat = xpath_first(item, 'cac:Item/cac:ClassifiedTaxCategory/cbc:Percent')
-            
+
             qty = float(raw_qty) if raw_qty else 0.0
             price = float(raw_price) if raw_price else 0.0
             line_total = float(raw_total) if raw_total else (qty * price)
             vat_rate = float(raw_vat) if raw_vat else 0.0
-            
             total_net_calc += line_total
-            
+
             line_items.append({
                 "description": name,
                 "quantity": f"{qty}",
-                "unit_code": xpath_first(item, 'cbc:InvoicedQuantity/@unitCode') or "C62",
+                "unit_code": xpath_first(item, f'{qty_tag}/@unitCode') or "C62",
                 "unit_price": f"{price:.2f}",
-                "vat_rate": f"{vat_rate:.2f}", 
+                "vat_rate": f"{vat_rate:.2f}",
                 "line_total": f"{line_total:.2f}"
             })
 
-        # 5. Totals
+        # 5. Totals (LegalMonetaryTotal is identical in both document types)
         raw_net = xpath_first(xml_root, '//cac:LegalMonetaryTotal/cbc:TaxExclusiveAmount')
         raw_tax = xpath_first(xml_root, '//cac:TaxTotal/cbc:TaxAmount')
         raw_gross = xpath_first(xml_root, '//cac:LegalMonetaryTotal/cbc:TaxInclusiveAmount')
@@ -425,6 +461,7 @@ class ExtractionService:
         gross_val = float(raw_gross) if raw_gross else (net_val + tax_val)
         payable_val = float(raw_payable) if raw_payable else gross_val
 
+        # 6. Tax Breakdown (identical structure in both document types)
         breakdown = []
         for subtotal in xml_root.xpath('//cac:TaxTotal/cac:TaxSubtotal', namespaces=ns):
             try:
@@ -440,10 +477,17 @@ class ExtractionService:
             except Exception:
                 pass
 
-        return {
+        # 7. Build output dict
+        warnings = []
+        if is_credit_note and not billing_ref:
+            warnings.append({
+                "code": "NO_BILLING_REFERENCE",
+                "message": "CreditNote: no BillingReference/InvoiceDocumentReference found."
+            })
+
+        result = {
             "invoice_number": invoice_id,
             "invoice_date": date_str,
-            "due_date": due_date,
             "currency": currency,
             "buyer_reference": xpath_first(xml_root, '//cbc:BuyerReference'),
             "contract_reference": xpath_first(xml_root, '//cac:ContractDocumentReference/cbc:ID'),
@@ -460,9 +504,19 @@ class ExtractionService:
             "_meta": {
                 "filename": filename,
                 "edition": "community",
-                "warnings": []
+                "document_type": document_type,
+                "warnings": warnings
             }
         }
+
+        # Add document-type-specific fields
+        if is_credit_note:
+            result["billing_reference"] = billing_ref
+            result["tax_point_date"] = tax_point_date
+        else:
+            result["due_date"] = due_date
+
+        return result
 
     @staticmethod
     def _parse_cii_tax_breakdown(xml_root, xpath_first, ns):

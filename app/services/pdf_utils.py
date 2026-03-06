@@ -18,7 +18,6 @@ logger = logging.getLogger(__name__)
 # fails to find embedded XML. Ordered by priority.
 _FALLBACK_ATTACHMENT_NAMES = [
     "xrechnung.xml",
-    "order-x.xml",
 ]
 
 
