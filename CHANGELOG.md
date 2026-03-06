@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.9] - 2026-03-06
+
+### Added
+
+- **Validation**: `/v1/validate` responses now include `validation_completeness` (`full` / `partial`), `layers_executed`, and `layers_skipped` to explicitly surface which validation layers ran vs. were skipped (e.g. Saxon absent, VeraPDF unlicensed).
+
+### Changed
+
+- **Dependencies**: Bumped all Python packages to latest (fastapi 0.135.1, uvicorn 0.41.0, factur-x 3.15, lxml 6.0.2, etc.) and VeraPDF 1.26.5 → 1.28.2.
+
+### Fixed
+
+- **Documentation**: Corrected `/serialize` docstring — Community Mode returns HTTP 403, not obfuscated data.
+- **Documentation**: Removed unconditional "Chorus Pro / KoSIT parity" claim from README; conditioned on `validation_completeness=full`.
+- **Documentation**: Fixed `/v1/xml` section title (generates CII only, not CII/UBL).
+- **Documentation**: Fixed typo "crypting" → "cryptic" in Smart Diagnostics section.
+
 ## [1.6.5] - 2026-03-03
 
 ### Added
