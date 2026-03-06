@@ -21,7 +21,7 @@ def _check_xml_magic(content: bytes) -> bool:
     stripped = content.lstrip(b"\xef\xbb\xbf \t\r\n")  # strip UTF-8 BOM + whitespace
     return stripped[:5] == b"<?xml" or stripped[:4] in (b"<rsm", b"<ubl", b"<Cro")
 
-from app.schemas.validation import InvoiceMetadata, ValidationResult, ProValidationResult
+from app.schemas.validation import InvoiceMetadata, ValidationResult, ProValidationResult, SkippedLayer
 from app.schemas.errors import ProblemDetails
 from app.schemas.extraction import ExtractionResult
 from app.schemas.integration import SerializationResponse
@@ -350,6 +350,9 @@ async def validate_facturx(
                 diagnostics=diagnostic_details,
                 validation_mode="pro_smart_diagnostics",
                 pdfa_valid=result.get("pdfa_valid"),
+                validation_completeness=result.get("validation_completeness", "full"),
+                layers_executed=result.get("layers_executed", []),
+                layers_skipped=[SkippedLayer(**s) for s in result.get("layers_skipped", [])],
             )
         else:
             # COMMUNITY MODE: Open Validation (full error list, structured format)
@@ -369,6 +372,9 @@ async def validate_facturx(
                 errors=structured_errors,
                 validation_mode="open_community",
                 pdfa_valid=result.get("pdfa_valid"),
+                validation_completeness=result.get("validation_completeness", "full"),
+                layers_executed=result.get("layers_executed", []),
+                layers_skipped=[SkippedLayer(**s) for s in result.get("layers_skipped", [])],
             )
         
     except HTTPException:

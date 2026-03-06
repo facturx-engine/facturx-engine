@@ -102,7 +102,9 @@ class HybridValidationService:
             "pdfa_valid": None,
             "errors": [],
             "xml_content": None,
-            "validation_mode": "hybrid"  # vs "lite" for Community fallback
+            "validation_mode": "hybrid",  # vs "lite" for Community fallback
+            "layers_executed": [],
+            "layers_skipped": [],
         }
         
         try:
@@ -157,6 +159,9 @@ class HybridValidationService:
                 logger.warning("No validation schemas found - falling back to basic validation")
                 result["validation_mode"] = "lite"
                 result["is_valid"] = True  # Basic parse succeeded
+                result["layers_skipped"].append({"layer": "xsd", "reason": "artifact_missing"})
+                result["layers_skipped"].append({"layer": "schematron", "reason": "artifact_missing"})
+                result["validation_completeness"] = "partial"
                 return result
             
             # 4. Profile-aware schema selection
@@ -226,15 +231,19 @@ class HybridValidationService:
                 logger.info(f"Profile '{detected_profile}': no specific rules found (Structural Validation Only)")
             
             # 5. Run hybrid validation directly (no ProcessPool)
+            has_xsd = effective_xsd_path and os.path.exists(effective_xsd_path)
+            has_xslt = effective_xslt_path and os.path.exists(effective_xslt_path)
+            has_saxon = SAXON_JAR and os.path.exists(SAXON_JAR)
+
             try:
                 validator = HybridValidator(
-                    xsd_path=effective_xsd_path if os.path.exists(effective_xsd_path) else None,
-                    xslt_path=effective_xslt_path if os.path.exists(effective_xslt_path) else None,
+                    xsd_path=effective_xsd_path if has_xsd else None,
+                    xslt_path=effective_xslt_path if has_xslt else None,
                     saxon_jar=SAXON_JAR
                 )
-                
+
                 validation_result = validator.validate(xml_content)
-                
+
                 result["is_valid"] = validation_result.is_valid
                 result["xsd_valid"] = validation_result.xsd_valid
                 result["schematron_valid"] = validation_result.schematron_valid
@@ -248,6 +257,20 @@ class HybridValidationService:
                     }
                     for e in validation_result.errors
                 ])
+
+                # --- Layer tracking ---
+                if has_xsd:
+                    result["layers_executed"].append("xsd")
+                elif effective_xsd_path:
+                    # Path was selected but file doesn't exist
+                    result["layers_skipped"].append({"layer": "xsd", "reason": "artifact_missing"})
+
+                if has_xslt and has_saxon:
+                    result["layers_executed"].append("schematron")
+                elif has_xslt and not has_saxon:
+                    result["layers_skipped"].append({"layer": "schematron", "reason": "tool_missing:saxon_jar"})
+                elif not has_xslt and effective_xslt_path:
+                    result["layers_skipped"].append({"layer": "schematron", "reason": "artifact_missing:xslt"})
                 
             except Exception as e:
                 result["errors"].append({
@@ -283,8 +306,14 @@ class HybridValidationService:
                             })
                         if not fr_result.schematron_valid:
                             result["is_valid"] = False
+                        result["layers_executed"].append("br_fr_ctc")
                     else:
                         logger.debug("BR-FR CTC skipped: Saxon JAR or XSLT not available")
+                        if not has_saxon:
+                            result["layers_skipped"].append({"layer": "br_fr_ctc", "reason": "tool_missing:saxon_jar"})
+                        elif not fr_xslt.exists():
+                            result["layers_skipped"].append({"layer": "br_fr_ctc", "reason": "artifact_missing"})
+                # seller_country != "FR" → br_fr_ctc is not applicable, don't add to skipped
             except Exception as fr_ex:
                 logger.warning(f"BR-FR CTC validation failed (non-blocking): {fr_ex}")
 
@@ -297,9 +326,11 @@ class HybridValidationService:
                     if not cls.VERAPDF_ENABLED_GLOBAL:
                         logger.info("VeraPDF validation skipped: Globally disabled via VERAPDF_ENABLED=false")
                         result["pdfa_valid"] = None
+                        result["layers_skipped"].append({"layer": "pdfa3b", "reason": "disabled_by_config"})
                     elif not validate_pdfa:
                         logger.info("VeraPDF validation skipped: Disabled per-request via validate_pdfa=false")
                         result["pdfa_valid"] = None
+                        result["layers_skipped"].append({"layer": "pdfa3b", "reason": "disabled_by_request"})
                     elif VERAPDF_JAR and os.path.exists(VERAPDF_JAR):
                         try:
                             from app.services.hybrid_validator import validate_pdfa3
@@ -315,14 +346,20 @@ class HybridValidationService:
                                 })
                             if pdfa_valid is False:
                                 result["is_valid"] = False
+                            result["layers_executed"].append("pdfa3b")
                         except Exception as e:
                             logger.error("VeraPDF integration error: %s", e)
-                    elif VERAPDF_JAR:
-                        logger.warning("VERAPDF_JAR configured but not found: %s", VERAPDF_JAR)
+                    else:
+                        if VERAPDF_JAR:
+                            logger.warning("VERAPDF_JAR configured but not found: %s", VERAPDF_JAR)
+                        result["layers_skipped"].append({"layer": "pdfa3b", "reason": "tool_missing:verapdf_jar"})
                 else:
                     logger.info("VeraPDF validation skipped: Requires Pro license.")
-                    result["pdfa_valid"] = None # Indicate it was not run
-                    
+                    result["pdfa_valid"] = None  # Indicate it was not run
+                    result["layers_skipped"].append({"layer": "pdfa3b", "reason": "license_required"})
+
+            # 7. Compute validation_completeness
+            result["validation_completeness"] = "partial" if result["layers_skipped"] else "full"
 
             return result
             
