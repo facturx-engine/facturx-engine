@@ -9,7 +9,7 @@
 ## Why Factur-X Engine?
 
 - **Air-Gapped by Design**: 100% offline execution. No outbound network calls. GDPR/DORA compliant.
-- **Official Saxon-HE Validation**: Technical parity with **Chorus Pro (France)** and **KoSIT (Germany)** portals.
+- **Official Saxon-HE Validation**: Technical parity with **Chorus Pro (France)** and **KoSIT (Germany)** portals — including EN16931 + BR-FR CTC v1.2.0 rules (FNFE/DGFIP) for French invoices.
 - **Smart Diagnostics Engine (Pro)**: Proactively detects "Angles Morts" (e.g. invalid IBANs, >2 decimals, bizarre dates) that technically pass standard validation but fail on governmental platforms.
 - **Mandate Ready**: Compliant with **France 2026 (PDP/PPF)** and **Germany 2025** electronic invoicing requirements.
 

@@ -82,19 +82,22 @@ def detect_format(xml_etree: etree._Element) -> Tuple[Optional[str], Optional[st
         if is_ubl:
             profile = "en16931"
             if "xrechnung" in urn.lower():
-                # Extract version from URN like urn:xeinkauf.de:kosit:xrechnung_3.0
+                # XRechnung 3.0 is the current supported version
+                # XRechnung 2.3 is deprecated (EOL 2024) — map to 3.0 with warning
                 if "3.0" in urn:
                     profile = "xrechnung_3.0"
-                elif "2.3" in urn:
-                    profile = "xrechnung_2.3"
+                else:
+                    logger.warning(f"Deprecated XRechnung URN detected: {urn}. Treating as xrechnung_3.0.")
+                    profile = "xrechnung_3.0"
             return "ubl", profile
 
         # 3. Check for Factur-X / ZUGFeRD / XRechnung (CII)
         if "xrechnung" in urn.lower():
             if "3.0" in urn:
                 return "factur-x", "xrechnung_3.0"
-            if "2.3" in urn:
-                return "factur-x", "xrechnung_2.3"
+            # Deprecated XRechnung versions — map to 3.0 with warning
+            logger.warning(f"Deprecated XRechnung URN detected: {urn}. Treating as xrechnung_3.0.")
+            return "factur-x", "xrechnung_3.0"
 
         # 4. Manual mapping for standard Factur-X / ZUGFeRD profiles 
         # (Avoids facturx library crashes on some ZUGFeRD 2.0 files with empty namespace prefixes)

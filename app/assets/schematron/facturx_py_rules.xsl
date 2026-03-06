@@ -15,7 +15,17 @@
     </xsl:template>
 
     <xsl:template match="rsm:CrossIndustryInvoice">
-        
+
+        <!--
+            This file provides XSLT 1.0 business rules for the Community ValidationService
+            (which uses lxml, not Saxon-HE). These rules are intentionally duplicated from the
+            official EN16931 Schematron (XSLT 2.0) to ensure Community edition users get
+            basic calculation checks without requiring Java/Saxon.
+
+            The HybridValidationService (Pro) uses the official XSLT via Saxon-HE subprocess
+            and does NOT use this file — no double-execution risk.
+        -->
+
         <!-- [BR-FR-01] SIRET Check for French Sellers -->
         <xsl:if test=".//ram:SellerTradeParty/ram:PostalTradeAddress/ram:CountryID = 'FR'">
             <xsl:if test="not(.//ram:SellerTradeParty/ram:SpecifiedLegalOrganization/ram:ID[@schemeID='0002']) and not(.//ram:SellerTradeParty/ram:SpecifiedLegalOrganization/ram:ID[@schemeID='0009'])">
@@ -36,8 +46,8 @@
 
         <xsl:variable name="sum_lines" select="sum(.//ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedLineTradeSettlement/ram:SpecifiedTradeSettlementLineMonetarySummation/ram:LineTotalAmount)"/>
         <xsl:variable name="net_total" select=".//ram:SpecifiedTradeSettlementHeaderMonetarySummation/ram:LineTotalAmount"/>
-        
-        <!-- [BR-CO-13] Total Amount Check (Calculated difference) -->
+
+        <!-- [BR-CO-13] Total Amount Check (XSLT 1.0 fallback for Community edition) -->
         <xsl:variable name="diff_lines">
             <xsl:choose>
                 <xsl:when test="$sum_lines &gt; $net_total"><xsl:value-of select="$sum_lines - $net_total"/></xsl:when>
@@ -51,7 +61,7 @@
             </svrl:failed-assert>
         </xsl:if>
 
-        <!-- [BR-CO-16] VAT Calculation Check -->
+        <!-- [BR-CO-16] VAT Calculation Check (XSLT 1.0 fallback for Community edition) -->
         <xsl:variable name="tax_basis" select=".//ram:SpecifiedTradeSettlementHeaderMonetarySummation/ram:TaxBasisTotalAmount"/>
         <xsl:variable name="tax_total" select=".//ram:SpecifiedTradeSettlementHeaderMonetarySummation/ram:TaxTotalAmount"/>
         <xsl:variable name="grand_total" select=".//ram:SpecifiedTradeSettlementHeaderMonetarySummation/ram:GrandTotalAmount"/>

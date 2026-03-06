@@ -26,13 +26,33 @@ SCHEMA_ROOT = PROJECT_ROOT / "app" / "resources" / "schemas"
 XSD_PATH = SCHEMA_ROOT / "Factur-X_1.08_EN16931.xsd"
 XSLT_PATH = SCHEMA_ROOT / "_XSLT_EN16931" / "FACTUR-X_EN16931.xslt"
 
-# XRechnung 3.0.2
+# Factur-X 1.08 BASICWL (XSD structure validation)
+BASICWL_XSD_PATH = SCHEMA_ROOT / "Factur-X_1.08_BASICWL.xsd"
+
+# XRechnung 3.0.2 — CII (Cross-Industry Invoice)
 XRECHNUNG_30_ROOT = SCHEMA_ROOT / "xrechnung_3.0.2" / "cii"
 XRECHNUNG_30_XSD = XRECHNUNG_30_ROOT / "xsd" / "CrossIndustryInvoice_100pD16B.xsd"
 XRECHNUNG_30_XSLT = XRECHNUNG_30_ROOT / "xslt" / "XRechnung-CII-validation.xsl"
 
-# EN16931 UBL (Peppol / XRechnung UBL base rules)
+# XRechnung 3.0.2 — UBL (R2)
+# Place XRechnung-UBL-validation.xsl here (from xrechnung-schematron release on KoSIT GitHub).
+# When the file is absent, the service gracefully falls back to EN16931-UBL Schematron.
+XRECHNUNG_30_UBL_ROOT = SCHEMA_ROOT / "xrechnung_3.0.2" / "ubl"
+XRECHNUNG_30_UBL_XSLT = XRECHNUNG_30_UBL_ROOT / "xslt" / "XRechnung-UBL-validation.xsl"
+
+# EN16931 UBL Schematron — base rules for UBL (Peppol BIS 3.0, generic UBL invoices)
 UBL_EN16931_XSLT = SCHEMA_ROOT / "_XSLT_EN16931_UBL" / "EN16931-UBL-validation.xslt"
+
+# UBL 2.1 XSD — OASIS structural schemas (R5)
+# Place the OASIS UBL-2.1.zip maindoc content at app/resources/schemas/ubl-2.1/xsd/maindoc/
+# When absent, XSD structural validation for UBL is skipped (Schematron still runs).
+UBL_XSD_INVOICE_PATH = SCHEMA_ROOT / "ubl-2.1" / "xsd" / "maindoc" / "UBL-Invoice-2.1.xsd"
+UBL_XSD_CREDITNOTE_PATH = SCHEMA_ROOT / "ubl-2.1" / "xsd" / "maindoc" / "UBL-CreditNote-2.1.xsd"
+
+# French regulatory rules — BR-FR CTC v1.2.0 (France 2026 mandate / Chorus Pro parity)
+BR_FR_CTC_ROOT = SCHEMA_ROOT / "_BR_FR_CTC"
+BR_FR_CTC_CII_XSLT = BR_FR_CTC_ROOT / "BR-FR-CII.xsl"
+BR_FR_CTC_UBL_XSLT = BR_FR_CTC_ROOT / "BR-FR-UBL.xsl"
 
 VALIDATION_TIMEOUT = int(os.getenv("FX_VALIDATION_TIMEOUT", "30"))
 
@@ -146,15 +166,38 @@ class HybridValidationService:
             effective_xsd_path = ""   # Default: Skip XSD
             effective_xslt_path = ""  # Default: Skip XSLT
             
-            # 4.1 Handle UBL (EN16931 Schematron validation)
+            # 4.1 Handle UBL documents (Invoice or CreditNote)
             if detected_format == "ubl":
-                if detected_profile == "en16931":
+                # Detect document type from XML root tag for XSD selection (R5)
+                root_tag = xml_etree.tag
+                is_credit_note_ubl = "CreditNote" in root_tag
+
+                # R5: Optional UBL 2.1 XSD structural validation (OASIS)
+                ubl_xsd_candidate = UBL_XSD_CREDITNOTE_PATH if is_credit_note_ubl else UBL_XSD_INVOICE_PATH
+                if ubl_xsd_candidate.exists():
+                    effective_xsd_path = str(ubl_xsd_candidate)
+                    logger.info(f"UBL XSD found — applying structural validation ({ubl_xsd_candidate.name})")
+                else:
+                    logger.debug("UBL 2.1 XSD not present — skipping structural XSD validation (Schematron only)")
+
+                # R2: XRechnung UBL — prefer dedicated KoSIT Schematron, fall back to EN16931-UBL
+                if detected_profile == "xrechnung_3.0":
+                    if XRECHNUNG_30_UBL_XSLT.exists():
+                        effective_xslt_path = str(XRECHNUNG_30_UBL_XSLT)
+                        logger.info("UBL Profile 'xrechnung_3.0': applying XRechnung 3.0.2 UBL Schematron rules")
+                    else:
+                        effective_xslt_path = str(UBL_EN16931_XSLT)
+                        logger.warning(
+                            "XRechnung UBL Schematron not found at %s — "
+                            "falling back to EN16931-UBL base rules. "
+                            "Place XRechnung-UBL-validation.xsl from the KoSIT xrechnung-schematron release "
+                            "at app/resources/schemas/xrechnung_3.0.2/ubl/xslt/ to enable full XRechnung UBL validation.",
+                            XRECHNUNG_30_UBL_XSLT
+                        )
+                else:
+                    # EN16931-UBL, Peppol BIS 3.0, or unknown UBL profile → EN16931 base rules
                     effective_xslt_path = str(UBL_EN16931_XSLT)
                     logger.info(f"UBL Profile '{detected_profile}': applying EN16931 UBL Schematron rules")
-                else:
-                    # XRechnung UBL, Peppol, etc. — apply EN16931 base rules
-                    effective_xslt_path = str(UBL_EN16931_XSLT)
-                    logger.info(f"UBL Profile '{detected_profile}': applying EN16931 UBL Schematron rules (base)")
 
             # 4.2 Handle CII / Factur-X
             elif detected_profile == "en16931":
@@ -172,8 +215,9 @@ class HybridValidationService:
                 effective_xslt_path = str(SCHEMA_ROOT / "_XSLT_MINIMUM" / "FACTUR-X_MINIMUM.xslt")
                 logger.info(f"Profile '{detected_profile}': applying MINIMUM Schematron rules")
             elif detected_profile in ("basicwl", "basic wl"):
+                effective_xsd_path = str(BASICWL_XSD_PATH)
                 effective_xslt_path = str(SCHEMA_ROOT / "_XSLT_BASICWL" / "FACTUR-X_BASIC-WL.xslt")
-                logger.info(f"Profile '{detected_profile}': applying BASIC WL Schematron rules")
+                logger.info(f"Profile '{detected_profile}': applying BASICWL XSD + Schematron rules")
             elif detected_profile == "xrechnung_3.0":
                 effective_xsd_path = str(XRECHNUNG_30_XSD)
                 effective_xslt_path = str(XRECHNUNG_30_XSLT)
@@ -213,6 +257,36 @@ class HybridValidationService:
                     "layer": "system"
                 })
                 return result
+
+            # 5.5 French regulatory rules — BR-FR CTC v1.2.0
+            # Activated when the seller's country is France (FR), Saxon-HE is available,
+            # and the BR-FR XSLT artifacts exist.
+            try:
+                seller_country = cls._extract_seller_country(xml_content, detected_format)
+                if seller_country == "FR":
+                    fr_xslt = BR_FR_CTC_CII_XSLT if detected_format != "ubl" else BR_FR_CTC_UBL_XSLT
+                    if fr_xslt.exists() and SAXON_JAR and os.path.exists(SAXON_JAR):
+                        logger.info("Seller country is FR — applying BR-FR CTC v1.2.0 rules")
+                        fr_validator = HybridValidator(
+                            xsd_path=None,
+                            xslt_path=str(fr_xslt),
+                            saxon_jar=SAXON_JAR
+                        )
+                        fr_result = fr_validator.validate(xml_content)
+                        for e in fr_result.errors:
+                            result["errors"].append({
+                                "rule_id": e.rule_id,
+                                "message": e.message,
+                                "location": e.location,
+                                "severity": e.severity,
+                                "layer": e.layer.value,
+                            })
+                        if not fr_result.schematron_valid:
+                            result["is_valid"] = False
+                    else:
+                        logger.debug("BR-FR CTC skipped: Saxon JAR or XSLT not available")
+            except Exception as fr_ex:
+                logger.warning(f"BR-FR CTC validation failed (non-blocking): {fr_ex}")
 
             # 6. PDF/A-3b validation via VeraPDF subprocess (PDF inputs only)
             # VeraPDF is strictly a Pro feature (Evaluation, Business, Enterprise).
@@ -262,6 +336,34 @@ class HybridValidationService:
             })
             return result
     
+    @staticmethod
+    def _extract_seller_country(xml_content: bytes, detected_format: str) -> str:
+        """
+        Extract the seller's country code from the invoice XML.
+        Returns an ISO 3166-1 alpha-2 code (e.g. 'FR', 'DE') or '' if not found.
+        """
+        try:
+            secure_parser = etree.XMLParser(resolve_entities=False, no_network=True, recover=True)
+            root = etree.fromstring(xml_content, parser=secure_parser)
+            if detected_format == "ubl":
+                nodes = root.xpath(
+                    "//*[local-name()='AccountingSupplierParty']"
+                    "//*[local-name()='Country']"
+                    "/*[local-name()='IdentificationCode']"
+                )
+            else:
+                # CII
+                nodes = root.xpath(
+                    "//*[local-name()='SellerTradeParty']"
+                    "/*[local-name()='PostalTradeAddress']"
+                    "/*[local-name()='CountryID']"
+                )
+            if nodes and nodes[0].text:
+                return nodes[0].text.strip().upper()
+        except Exception:
+            pass
+        return ""
+
     @classmethod
     async def validate_async(cls, file_content: bytes, filename: str, validate_pdfa: bool = True) -> Dict[str, Any]:
         """
