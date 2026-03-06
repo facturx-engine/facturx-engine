@@ -130,14 +130,13 @@ def test_xrechnung_302_cii_corpus(file_path):
 
 @pytest.mark.parametrize("file_path", get_xrechnung_ubl_files())
 def test_xrechnung_302_ubl_corpus(file_path):
-    """UBL-format XRechnung files: verify engine handles them gracefully."""
+    """Validate UBL-format XRechnung 3.0.2 test instances with EN16931 Schematron."""
     content = file_path.read_bytes()
-    # Use HybridValidationService (Production Engine)
-    try:
-        HybridValidationService.validate(content, file_path.name)
-    except Exception:
-        pass
-    assert True  # If we reached here, no crash occurred
+    result = HybridValidationService.validate(content, file_path.name)
+
+    is_valid = result["is_valid"]
+    errors = result.get("errors", [])
+    assert is_valid is True, f"XRechnung UBL file {file_path.name} failed: {errors}"
 
 
 # --- Corpus Master: ZUGFeRD v2 (Structured Valid/Invalid) ---
