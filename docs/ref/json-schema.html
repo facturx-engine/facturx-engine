@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Schema Reference &mdash; /v1/serialize Response | Factur-X Engine</title>
+    <meta name="description"
+        content="Versioned JSON Schema documentation for the Factur-X Engine /v1/serialize endpoint. BusinessReadyInvoice structure with typed fields for ERP integration.">
+    <link rel="canonical" href="https://facturx-engine.github.io/facturx-engine/ref/json-schema.html" />
+    <link rel="icon" href="https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png" type="image/png">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://facturx-engine.github.io/facturx-engine/ref/json-schema.html">
+    <meta property="og:title" content="JSON Schema Reference — /v1/serialize | Factur-X Engine">
+    <meta property="og:description"
+        content="Versioned JSON Schema for the BusinessReadyInvoice response. Typed fields, nested objects, and field mapping guide.">
+    <meta property="og:image" content="https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png">
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="E-Invoice JSON Schema Reference | Factur-X Engine">
+    <meta name="twitter:description"
+        content="Versioned schema for ERP-ready invoice JSON. Document every field with types and examples.">
+    <meta name="twitter:image" content="https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        amber: { 500: '#f59e0b', 600: '#d97706' },
+                        slate: { 950: '#020617' }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "TechArticle",
+      "headline": "JSON Schema Reference for /v1/serialize",
+      "alternativeHeadline": "BusinessReadyInvoice Schema Documentation",
+      "image": "https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png",
+      "author": {
+        "@type": "Organization",
+        "name": "Factur-X Engine"
+      },
+      "keywords": "JSON Schema, e-invoice JSON format, Factur-X JSON, BusinessReadyInvoice, serialize endpoint, ERP invoice schema"
+    }
+    </script>
+</head>
+
+<body class="bg-slate-950 text-slate-300 font-sans selection:bg-amber-500 selection:text-black leading-relaxed">
+
+    <nav
+        class="fixed top-0 w-full z-50 border-b border-white/5 bg-slate-950/80 backdrop-blur-md h-20 flex items-center">
+        <div class="max-w-7xl mx-auto px-6 w-full flex items-center justify-between">
+            <a href="../index.html" class="flex items-center gap-3">
+                <div
+                    class="w-10 h-10 border-2 border-amber-500 flex items-center justify-center rounded-sm bg-slate-900">
+                    <span class="font-mono font-bold text-amber-500">FX</span>
+                </div>
+                <span class="text-xl font-bold tracking-tighter text-white uppercase">Factur-X <span
+                        class="text-amber-500">Engine</span></span>
+            </a>
+            <div class="flex items-center gap-4">
+                <a href="api-overview.html"
+                    class="text-slate-400 hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest">Reference</a>
+                <a href="https://github.com/facturx-engine/facturx-engine"
+                    class="px-4 py-2 border border-white/10 rounded text-xs font-bold uppercase tracking-widest hover:bg-white/5 transition-colors">GitHub</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-40 pb-20">
+        <article class="max-w-4xl mx-auto px-6">
+
+            <header class="mb-16">
+                <div
+                    class="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-500 text-[10px] uppercase tracking-widest font-bold mb-6">
+                    Reference / JSON Schema
+                </div>
+                <h1 class="text-4xl md:text-5xl font-black text-white tracking-tight mb-8 leading-tight">
+                    JSON Schema <span class="text-amber-500">Reference</span>
+                </h1>
+                <p class="text-xl text-slate-400 font-light leading-relaxed">
+                    The <code class="bg-slate-800 px-1 py-0.5 rounded text-amber-500">/v1/serialize</code> endpoint returns a versioned, typed JSON object designed for direct ERP consumption. This page documents every field.
+                </p>
+                <div class="mt-6 flex gap-4 flex-wrap">
+                    <a href="../schemas/serialize-response.v1.schema.json"
+                        class="text-amber-500 hover:text-amber-400 text-sm font-mono underline">
+                        Download Raw Schema (JSON)
+                    </a>
+                    <span class="text-slate-600">|</span>
+                    <span class="text-slate-500 text-sm font-mono">Schema Version: 1.0.0</span>
+                </div>
+            </header>
+
+            <!-- Versioning -->
+            <section class="mb-16">
+                <h2 class="text-2xl font-bold text-white mb-4">Schema Versioning</h2>
+                <p class="mb-4">
+                    Every response includes a <code class="bg-slate-800 px-1 py-0.5 rounded text-amber-500">schema_version</code> field following semantic versioning:
+                </p>
+                <ul class="space-y-2 text-slate-400 text-sm">
+                    <li><strong class="text-white">Patch</strong> (1.0.x) &mdash; Bug fixes, no field changes</li>
+                    <li><strong class="text-white">Minor</strong> (1.x.0) &mdash; New optional fields added. Existing fields unchanged.</li>
+                    <li><strong class="text-white">Major</strong> (x.0.0) &mdash; Breaking changes. Field renames, removals, or type changes.</li>
+                </ul>
+            </section>
+
+            <!-- Top-level Response -->
+            <section class="mb-16">
+                <h2 class="text-2xl font-bold text-white mb-6">Response Envelope</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-white/10">
+                                <th class="text-left py-3 px-3 text-slate-500 font-mono uppercase tracking-widest text-xs">Field</th>
+                                <th class="text-left py-3 px-3 text-slate-500 font-mono uppercase tracking-widest text-xs">Type</th>
+                                <th class="text-left py-3 px-3 text-slate-500 font-mono uppercase tracking-widest text-xs">Required</th>
+                                <th class="text-left py-3 px-3 text-slate-500 font-mono uppercase tracking-widest text-xs">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-slate-400">
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">success</td>
+                                <td class="py-3 px-3 font-mono">boolean</td>
+                                <td class="py-3 px-3 text-green-400">Yes</td>
+                                <td class="py-3 px-3">Whether serialization completed without errors</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">schema_version</td>
+                                <td class="py-3 px-3 font-mono">string</td>
+                                <td class="py-3 px-3">No</td>
+                                <td class="py-3 px-3">Semantic version of the invoice schema (default: "1.0.0")</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">engine_version</td>
+                                <td class="py-3 px-3 font-mono">string</td>
+                                <td class="py-3 px-3">No</td>
+                                <td class="py-3 px-3">Engine version that produced this response (e.g., "1.6.9")</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">invoice</td>
+                                <td class="py-3 px-3 font-mono">BusinessReadyInvoice | null</td>
+                                <td class="py-3 px-3">No</td>
+                                <td class="py-3 px-3">The extracted invoice data. Null on failure.</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">errors</td>
+                                <td class="py-3 px-3 font-mono">object[]</td>
+                                <td class="py-3 px-3">No</td>
+                                <td class="py-3 px-3">Array of error objects (empty on success)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- BusinessReadyInvoice -->
+            <section class="mb-16">
+                <h2 class="text-2xl font-bold text-white mb-6">BusinessReadyInvoice</h2>
+                <p class="mb-6 text-slate-400">The core invoice object. All monetary amounts accept both <code class="bg-slate-800 px-1 py-0.5 rounded text-amber-500">number</code> and <code class="bg-slate-800 px-1 py-0.5 rounded text-amber-500">string</code> types for precision safety.</p>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-white/10">
+                                <th class="text-left py-3 px-3 text-slate-500 font-mono uppercase tracking-widest text-xs">Field</th>
+                                <th class="text-left py-3 px-3 text-slate-500 font-mono uppercase tracking-widest text-xs">Type</th>
+                                <th class="text-left py-3 px-3 text-slate-500 font-mono uppercase tracking-widest text-xs">Required</th>
+                                <th class="text-left py-3 px-3 text-slate-500 font-mono uppercase tracking-widest text-xs">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-slate-400">
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">invoice_number</td>
+                                <td class="py-3 px-3 font-mono">string</td>
+                                <td class="py-3 px-3 text-green-400">Yes</td>
+                                <td class="py-3 px-3">Invoice identifier (BT-1)</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">invoice_date</td>
+                                <td class="py-3 px-3 font-mono">string (date)</td>
+                                <td class="py-3 px-3 text-green-400">Yes</td>
+                                <td class="py-3 px-3">Issue date in YYYY-MM-DD format (BT-2)</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">due_date</td>
+                                <td class="py-3 px-3 font-mono">string (date) | null</td>
+                                <td class="py-3 px-3">No</td>
+                                <td class="py-3 px-3">Payment due date in YYYY-MM-DD format (BT-9)</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">currency</td>
+                                <td class="py-3 px-3 font-mono">string</td>
+                                <td class="py-3 px-3">No</td>
+                                <td class="py-3 px-3">ISO 4217 currency code (default: "EUR") (BT-5)</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">buyer_reference</td>
+                                <td class="py-3 px-3 font-mono">string | null</td>
+                                <td class="py-3 px-3">No</td>
+                                <td class="py-3 px-3">Buyer reference / PO number (BT-10)</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">contract_reference</td>
+                                <td class="py-3 px-3 font-mono">string | null</td>
+                                <td class="py-3 px-3">No</td>
+                                <td class="py-3 px-3">Contract reference (BT-12)</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">seller</td>
+                                <td class="py-3 px-3 font-mono">PartySchema</td>
+                                <td class="py-3 px-3 text-green-400">Yes</td>
+                                <td class="py-3 px-3">Seller / supplier details</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">buyer</td>
+                                <td class="py-3 px-3 font-mono">PartySchema</td>
+                                <td class="py-3 px-3 text-green-400">Yes</td>
+                                <td class="py-3 px-3">Buyer / customer details</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">line_items</td>
+                                <td class="py-3 px-3 font-mono">LineItemSchema[]</td>
+                                <td class="py-3 px-3 text-green-400">Yes</td>
+                                <td class="py-3 px-3">Invoice line items</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">tax_breakdown</td>
+                                <td class="py-3 px-3 font-mono">TaxBreakdownSchema[]</td>
+                                <td class="py-3 px-3 text-green-400">Yes</td>
+                                <td class="py-3 px-3">Tax subtotals per category/rate</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">total_net_amount</td>
+                                <td class="py-3 px-3 font-mono">number | string</td>
+                                <td class="py-3 px-3 text-green-400">Yes</td>
+                                <td class="py-3 px-3">Sum of line totals before tax (BT-106)</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">total_tax_amount</td>
+                                <td class="py-3 px-3 font-mono">number | string</td>
+                                <td class="py-3 px-3 text-green-400">Yes</td>
+                                <td class="py-3 px-3">Total tax amount (BT-110)</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">total_gross_amount</td>
+                                <td class="py-3 px-3 font-mono">number | string</td>
+                                <td class="py-3 px-3 text-green-400">Yes</td>
+                                <td class="py-3 px-3">Total with tax (BT-112)</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">amount_due</td>
+                                <td class="py-3 px-3 font-mono">number | string</td>
+                                <td class="py-3 px-3 text-green-400">Yes</td>
+                                <td class="py-3 px-3">Amount due for payment (BT-115)</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">format</td>
+                                <td class="py-3 px-3 font-mono">string</td>
+                                <td class="py-3 px-3 text-green-400">Yes</td>
+                                <td class="py-3 px-3">Detected format: "factur-x", "zugferd", "xrechnung", "ubl"</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">profile</td>
+                                <td class="py-3 px-3 font-mono">string</td>
+                                <td class="py-3 px-3 text-green-400">Yes</td>
+                                <td class="py-3 px-3">Detected profile: "minimum", "basic", "en16931", "extended"</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- PartySchema -->
+            <section class="mb-16">
+                <h2 class="text-2xl font-bold text-white mb-6">PartySchema</h2>
+                <p class="mb-6 text-slate-400">Normalized seller/buyer representation. Only <code class="bg-slate-800 px-1 py-0.5 rounded text-amber-500">name</code> is required.</p>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-white/10">
+                                <th class="text-left py-3 px-3 text-slate-500 font-mono uppercase tracking-widest text-xs">Field</th>
+                                <th class="text-left py-3 px-3 text-slate-500 font-mono uppercase tracking-widest text-xs">Type</th>
+                                <th class="text-left py-3 px-3 text-slate-500 font-mono uppercase tracking-widest text-xs">Required</th>
+                                <th class="text-left py-3 px-3 text-slate-500 font-mono uppercase tracking-widest text-xs">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-slate-400">
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">name</td>
+                                <td class="py-3 px-3 font-mono">string</td>
+                                <td class="py-3 px-3 text-green-400">Yes</td>
+                                <td class="py-3 px-3">Legal company name</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">vat_number</td>
+                                <td class="py-3 px-3 font-mono">string | null</td>
+                                <td class="py-3 px-3">No</td>
+                                <td class="py-3 px-3">VAT ID with country prefix (e.g., "FR12345678901")</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">registration_id</td>
+                                <td class="py-3 px-3 font-mono">string | null</td>
+                                <td class="py-3 px-3">No</td>
+                                <td class="py-3 px-3">Trade registration number (SIRET, HRB, etc.)</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">address</td>
+                                <td class="py-3 px-3 font-mono">AddressSchema | null</td>
+                                <td class="py-3 px-3">No</td>
+                                <td class="py-3 px-3">Physical address</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">email</td>
+                                <td class="py-3 px-3 font-mono">string | null</td>
+                                <td class="py-3 px-3">No</td>
+                                <td class="py-3 px-3">Contact email address</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- AddressSchema -->
+            <section class="mb-16">
+                <h2 class="text-2xl font-bold text-white mb-6">AddressSchema</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-white/10">
+                                <th class="text-left py-3 px-3 text-slate-500 font-mono uppercase tracking-widest text-xs">Field</th>
+                                <th class="text-left py-3 px-3 text-slate-500 font-mono uppercase tracking-widest text-xs">Type</th>
+                                <th class="text-left py-3 px-3 text-slate-500 font-mono uppercase tracking-widest text-xs">Required</th>
+                                <th class="text-left py-3 px-3 text-slate-500 font-mono uppercase tracking-widest text-xs">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-slate-400">
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">line1</td>
+                                <td class="py-3 px-3 font-mono">string</td>
+                                <td class="py-3 px-3 text-green-400">Yes</td>
+                                <td class="py-3 px-3">Street address line 1</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">line2</td>
+                                <td class="py-3 px-3 font-mono">string | null</td>
+                                <td class="py-3 px-3">No</td>
+                                <td class="py-3 px-3">Street address line 2</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">city</td>
+                                <td class="py-3 px-3 font-mono">string</td>
+                                <td class="py-3 px-3 text-green-400">Yes</td>
+                                <td class="py-3 px-3">City name</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">postcode</td>
+                                <td class="py-3 px-3 font-mono">string</td>
+                                <td class="py-3 px-3 text-green-400">Yes</td>
+                                <td class="py-3 px-3">Postal code</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">country_code</td>
+                                <td class="py-3 px-3 font-mono">string</td>
+                                <td class="py-3 px-3 text-green-400">Yes</td>
+                                <td class="py-3 px-3">ISO 3166-1 alpha-2 country code (e.g., "FR", "DE")</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- LineItemSchema -->
+            <section class="mb-16">
+                <h2 class="text-2xl font-bold text-white mb-6">LineItemSchema</h2>
+                <p class="mb-6 text-slate-400">High-precision invoice line item. Monetary values and quantities accept both <code class="bg-slate-800 px-1 py-0.5 rounded text-amber-500">number</code> and <code class="bg-slate-800 px-1 py-0.5 rounded text-amber-500">string</code> types.</p>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-white/10">
+                                <th class="text-left py-3 px-3 text-slate-500 font-mono uppercase tracking-widest text-xs">Field</th>
+                                <th class="text-left py-3 px-3 text-slate-500 font-mono uppercase tracking-widest text-xs">Type</th>
+                                <th class="text-left py-3 px-3 text-slate-500 font-mono uppercase tracking-widest text-xs">Required</th>
+                                <th class="text-left py-3 px-3 text-slate-500 font-mono uppercase tracking-widest text-xs">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-slate-400">
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">name</td>
+                                <td class="py-3 px-3 font-mono">string</td>
+                                <td class="py-3 px-3 text-green-400">Yes</td>
+                                <td class="py-3 px-3">Item name (BT-153)</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">description</td>
+                                <td class="py-3 px-3 font-mono">string | null</td>
+                                <td class="py-3 px-3">No</td>
+                                <td class="py-3 px-3">Item description (BT-154)</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">quantity</td>
+                                <td class="py-3 px-3 font-mono">number | string</td>
+                                <td class="py-3 px-3 text-green-400">Yes</td>
+                                <td class="py-3 px-3">Invoiced quantity (BT-129)</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">unit_code</td>
+                                <td class="py-3 px-3 font-mono">string</td>
+                                <td class="py-3 px-3 text-green-400">Yes</td>
+                                <td class="py-3 px-3">UN/ECE Rec 20 unit code (e.g., "C62", "HUR")</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">unit_label</td>
+                                <td class="py-3 px-3 font-mono">string | null</td>
+                                <td class="py-3 px-3">No</td>
+                                <td class="py-3 px-3">Human-readable unit (e.g., "piece", "hour")</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">net_price</td>
+                                <td class="py-3 px-3 font-mono">number | string</td>
+                                <td class="py-3 px-3 text-green-400">Yes</td>
+                                <td class="py-3 px-3">Net unit price (BT-146)</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">line_total</td>
+                                <td class="py-3 px-3 font-mono">number | string</td>
+                                <td class="py-3 px-3 text-green-400">Yes</td>
+                                <td class="py-3 px-3">Net line total = Qty &times; Price (BT-131)</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">vat_rate</td>
+                                <td class="py-3 px-3 font-mono">number | string</td>
+                                <td class="py-3 px-3 text-green-400">Yes</td>
+                                <td class="py-3 px-3">VAT percentage (e.g., 20.00)</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">vat_category</td>
+                                <td class="py-3 px-3 font-mono">string</td>
+                                <td class="py-3 px-3">No</td>
+                                <td class="py-3 px-3">VAT category code (default: "S" = Standard)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- TaxBreakdownSchema -->
+            <section class="mb-16">
+                <h2 class="text-2xl font-bold text-white mb-6">TaxBreakdownSchema</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-white/10">
+                                <th class="text-left py-3 px-3 text-slate-500 font-mono uppercase tracking-widest text-xs">Field</th>
+                                <th class="text-left py-3 px-3 text-slate-500 font-mono uppercase tracking-widest text-xs">Type</th>
+                                <th class="text-left py-3 px-3 text-slate-500 font-mono uppercase tracking-widest text-xs">Required</th>
+                                <th class="text-left py-3 px-3 text-slate-500 font-mono uppercase tracking-widest text-xs">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-slate-400">
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">category</td>
+                                <td class="py-3 px-3 font-mono">string</td>
+                                <td class="py-3 px-3 text-green-400">Yes</td>
+                                <td class="py-3 px-3">VAT category code ("S", "Z", "E", "AE", etc.)</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">rate</td>
+                                <td class="py-3 px-3 font-mono">number | string</td>
+                                <td class="py-3 px-3 text-green-400">Yes</td>
+                                <td class="py-3 px-3">VAT rate percentage</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">basis_amount</td>
+                                <td class="py-3 px-3 font-mono">number | string</td>
+                                <td class="py-3 px-3 text-green-400">Yes</td>
+                                <td class="py-3 px-3">Taxable base amount for this category</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 font-mono text-amber-500">tax_amount</td>
+                                <td class="py-3 px-3 font-mono">number | string</td>
+                                <td class="py-3 px-3 text-green-400">Yes</td>
+                                <td class="py-3 px-3">Calculated tax amount for this category</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Field Mapping -->
+            <section class="mb-16">
+                <h2 class="text-2xl font-bold text-white mb-6">Field Mapping Between Endpoints</h2>
+                <p class="mb-6 text-slate-400">
+                    Field names differ between extraction, serialization, and conversion endpoints. Use this mapping when passing data between endpoints:
+                </p>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-white/10">
+                                <th class="text-left py-3 px-3 text-slate-500 font-mono uppercase tracking-widest text-xs">Business Term</th>
+                                <th class="text-left py-3 px-3 text-slate-500 font-mono uppercase tracking-widest text-xs">/v1/extract</th>
+                                <th class="text-left py-3 px-3 text-amber-500 font-mono uppercase tracking-widest text-xs">/v1/serialize</th>
+                                <th class="text-left py-3 px-3 text-slate-500 font-mono uppercase tracking-widest text-xs">/v1/convert</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-slate-400">
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 text-white">Invoice Date</td>
+                                <td class="py-3 px-3 font-mono">invoice_date</td>
+                                <td class="py-3 px-3 font-mono text-amber-500">invoice_date</td>
+                                <td class="py-3 px-3 font-mono">issue_date</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 text-white">Country Code</td>
+                                <td class="py-3 px-3 font-mono">country</td>
+                                <td class="py-3 px-3 font-mono text-amber-500">country_code</td>
+                                <td class="py-3 px-3 font-mono">country_code</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-3 text-white">Buyer / Seller</td>
+                                <td class="py-3 px-3 font-mono">Nested objects</td>
+                                <td class="py-3 px-3 font-mono text-amber-500">Nested objects</td>
+                                <td class="py-3 px-3 font-mono">Nested objects</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="bg-slate-900 border border-white/10 rounded-lg p-4 mt-4">
+                    <p class="text-sm text-slate-400">
+                        <strong class="text-white">Important:</strong> To regenerate a validated file from an extracted one, you must map <code class="bg-slate-800 px-1 py-0.5 rounded text-amber-500">invoice_date</code> to <code class="bg-slate-800 px-1 py-0.5 rounded text-amber-500">issue_date</code> and <code class="bg-slate-800 px-1 py-0.5 rounded text-amber-500">country</code> to <code class="bg-slate-800 px-1 py-0.5 rounded text-amber-500">country_code</code>.
+                    </p>
+                </div>
+            </section>
+
+            <!-- Example Response -->
+            <section class="mb-16">
+                <h2 class="text-2xl font-bold text-white mb-6">Example Response</h2>
+                <div class="bg-[#0d1117] rounded-lg border border-white/10 overflow-hidden">
+                    <div class="px-4 py-2 border-b border-white/5 text-xs font-mono text-slate-500 flex justify-between">
+                        <span>/v1/serialize response</span>
+                        <span>JSON</span>
+                    </div>
+                    <pre class="p-4 overflow-x-auto text-sm font-mono text-slate-300"><code>{
+  <span class="text-green-400">"success"</span>: <span class="text-orange-400">true</span>,
+  <span class="text-green-400">"schema_version"</span>: <span class="text-green-400">"1.0.0"</span>,
+  <span class="text-green-400">"engine_version"</span>: <span class="text-green-400">"1.6.9"</span>,
+  <span class="text-green-400">"invoice"</span>: {
+    <span class="text-green-400">"invoice_number"</span>: <span class="text-green-400">"INV-2025-0042"</span>,
+    <span class="text-green-400">"invoice_date"</span>: <span class="text-green-400">"2025-03-01"</span>,
+    <span class="text-green-400">"due_date"</span>: <span class="text-green-400">"2025-03-31"</span>,
+    <span class="text-green-400">"currency"</span>: <span class="text-green-400">"EUR"</span>,
+    <span class="text-green-400">"seller"</span>: {
+      <span class="text-green-400">"name"</span>: <span class="text-green-400">"ACME SAS"</span>,
+      <span class="text-green-400">"vat_number"</span>: <span class="text-green-400">"FR12345678901"</span>
+    },
+    <span class="text-green-400">"buyer"</span>: {
+      <span class="text-green-400">"name"</span>: <span class="text-green-400">"Client Corp"</span>,
+      <span class="text-green-400">"buyer_reference"</span>: <span class="text-green-400">"PO-9981"</span>
+    },
+    <span class="text-green-400">"line_items"</span>: [{
+      <span class="text-green-400">"name"</span>: <span class="text-green-400">"Consulting services"</span>,
+      <span class="text-green-400">"quantity"</span>: <span class="text-orange-400">5</span>,
+      <span class="text-green-400">"unit_code"</span>: <span class="text-green-400">"HUR"</span>,
+      <span class="text-green-400">"net_price"</span>: <span class="text-orange-400">150.00</span>,
+      <span class="text-green-400">"line_total"</span>: <span class="text-orange-400">750.00</span>,
+      <span class="text-green-400">"vat_rate"</span>: <span class="text-orange-400">20.0</span>
+    }],
+    <span class="text-green-400">"tax_breakdown"</span>: [{
+      <span class="text-green-400">"category"</span>: <span class="text-green-400">"S"</span>,
+      <span class="text-green-400">"rate"</span>: <span class="text-orange-400">20.0</span>,
+      <span class="text-green-400">"basis_amount"</span>: <span class="text-orange-400">750.00</span>,
+      <span class="text-green-400">"tax_amount"</span>: <span class="text-orange-400">150.00</span>
+    }],
+    <span class="text-green-400">"total_net_amount"</span>: <span class="text-orange-400">750.00</span>,
+    <span class="text-green-400">"total_tax_amount"</span>: <span class="text-orange-400">150.00</span>,
+    <span class="text-green-400">"total_gross_amount"</span>: <span class="text-orange-400">900.00</span>,
+    <span class="text-green-400">"amount_due"</span>: <span class="text-orange-400">900.00</span>,
+    <span class="text-green-400">"format"</span>: <span class="text-green-400">"factur-x"</span>,
+    <span class="text-green-400">"profile"</span>: <span class="text-green-400">"en16931"</span>
+  }
+}</code></pre>
+                </div>
+            </section>
+
+            <!-- CTA -->
+            <section class="text-center py-10 border-t border-white/5">
+                <h2 class="text-2xl font-bold text-white mb-4">Try /v1/serialize</h2>
+                <p class="text-slate-400 mb-8">The serialize endpoint is a Pro feature. Start a 30-day evaluation.</p>
+                <div class="flex justify-center gap-4 flex-wrap">
+                    <a href="https://facturx-engine.lemonsqueezy.com"
+                        class="inline-flex items-center justify-center px-8 py-4 bg-amber-500 text-black font-bold uppercase tracking-widest hover:bg-amber-400 transition-colors">
+                        Get Evaluation Key
+                    </a>
+                    <a href="api-reference.html"
+                        class="inline-flex items-center justify-center px-8 py-4 border border-white/10 text-white font-bold uppercase tracking-widest hover:bg-white/5 transition-colors">
+                        Full API Reference
+                    </a>
+                </div>
+            </section>
+
+        </article>
+    </main>
+
+    <footer class="py-12 bg-slate-900 border-t border-white/5">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <a href="../"
+                class="text-slate-500 hover:text-white transition-colors text-xs font-bold uppercase tracking-widest">Back
+                to Home</a>
+        </div>
+    </footer>
+
+</body>
+
+</html>
