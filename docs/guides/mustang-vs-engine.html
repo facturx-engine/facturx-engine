@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mustangproject vs Factur-X Engine &mdash; Choosing the Right E-Invoicing Tool | Factur-X Engine</title>
+    <meta name="description"
+        content="An objective comparison between Mustangproject (Java library) and Factur-X Engine (REST API middleware). Architecture, deployment, validation, and use cases.">
+    <link rel="canonical" href="https://facturx-engine.github.io/facturx-engine/guides/mustang-vs-engine.html" />
+    <link rel="icon" href="https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png" type="image/png">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://facturx-engine.github.io/facturx-engine/guides/mustang-vs-engine.html">
+    <meta property="og:title" content="Mustangproject vs Factur-X Engine — Choosing the Right E-Invoicing Tool">
+    <meta property="og:description"
+        content="Objective comparison: Java library vs REST API middleware for Factur-X, ZUGFeRD, and XRechnung.">
+    <meta property="og:image" content="https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png">
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Mustangproject vs Factur-X Engine | Comparison">
+    <meta name="twitter:description"
+        content="Java library vs REST API middleware for e-invoicing. Architecture, deployment, and validation compared.">
+    <meta name="twitter:image" content="https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        amber: { 500: '#f59e0b', 600: '#d97706' },
+                        slate: { 950: '#020617' }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "TechArticle",
+      "headline": "Mustangproject vs Factur-X Engine — Choosing the Right E-Invoicing Tool",
+      "alternativeHeadline": "Java library vs REST API middleware for Factur-X and ZUGFeRD",
+      "image": "https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png",
+      "author": {
+        "@type": "Organization",
+        "name": "Factur-X Engine"
+      },
+      "keywords": "Mustangproject alternative, Factur-X library comparison, ZUGFeRD Java vs Python, e-invoicing middleware, Mustangproject vs Factur-X Engine"
+    }
+    </script>
+</head>
+
+<body class="bg-slate-950 text-slate-300 font-sans selection:bg-amber-500 selection:text-black leading-relaxed">
+
+    <nav
+        class="fixed top-0 w-full z-50 border-b border-white/5 bg-slate-950/80 backdrop-blur-md h-20 flex items-center">
+        <div class="max-w-7xl mx-auto px-6 w-full flex items-center justify-between">
+            <a href="../index.html" class="flex items-center gap-3">
+                <div
+                    class="w-10 h-10 border-2 border-amber-500 flex items-center justify-center rounded-sm bg-slate-900">
+                    <span class="font-mono font-bold text-amber-500">FX</span>
+                </div>
+                <span class="text-xl font-bold tracking-tighter text-white uppercase">Factur-X <span
+                        class="text-amber-500">Engine</span></span>
+            </a>
+            <div class="flex items-center gap-4">
+                <a href="../ref/api-overview.html"
+                    class="text-slate-400 hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest">Reference</a>
+                <a href="https://github.com/facturx-engine/facturx-engine"
+                    class="px-4 py-2 border border-white/10 rounded text-xs font-bold uppercase tracking-widest hover:bg-white/5 transition-colors">GitHub</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-40 pb-20">
+        <article class="max-w-3xl mx-auto px-6">
+
+            <header class="mb-16">
+                <div
+                    class="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-500 text-[10px] uppercase tracking-widest font-bold mb-6">
+                    Guide / Comparison
+                </div>
+                <h1 class="text-4xl md:text-5xl font-black text-white tracking-tight mb-8 leading-tight">
+                    Mustangproject vs <span class="text-amber-500">Factur-X Engine</span>
+                </h1>
+                <p class="text-xl text-slate-400 font-light leading-relaxed">
+                    Both tools generate and validate EN 16931 e-invoices. They solve the same problem with fundamentally different architectures. This page helps you pick the right one for your stack.
+                </p>
+            </header>
+
+            <!-- Acknowledgment -->
+            <section class="mb-12">
+                <div class="bg-slate-900 border border-white/10 rounded-lg p-6">
+                    <p class="text-slate-400 text-sm">
+                        <strong class="text-white">Note:</strong> Mustangproject is a well-maintained open-source project with years of production use. This comparison is meant to highlight architectural differences, not to diminish their work. Choose the tool that fits your constraints.
+                    </p>
+                </div>
+            </section>
+
+            <!-- Comparison Table -->
+            <section class="mb-20">
+                <h2 class="text-2xl font-bold text-white mb-6">At a Glance</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-white/10">
+                                <th class="text-left py-4 px-4 text-slate-500 font-mono uppercase tracking-widest text-xs"></th>
+                                <th class="text-left py-4 px-4 text-slate-500 font-mono uppercase tracking-widest text-xs">Mustangproject</th>
+                                <th class="text-left py-4 px-4 text-amber-500 font-mono uppercase tracking-widest text-xs">Factur-X Engine</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-slate-400">
+                            <tr class="border-b border-white/5">
+                                <td class="py-4 px-4 font-bold text-white">Type</td>
+                                <td class="py-4 px-4">Java library (.jar)</td>
+                                <td class="py-4 px-4">REST API middleware (Docker)</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-4 px-4 font-bold text-white">Language</td>
+                                <td class="py-4 px-4">Java (JVM required)</td>
+                                <td class="py-4 px-4">Python + isolated Java subprocesses</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-4 px-4 font-bold text-white">Integration</td>
+                                <td class="py-4 px-4">Import as Maven/Gradle dependency</td>
+                                <td class="py-4 px-4">HTTP calls from any language</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-4 px-4 font-bold text-white">Deployment</td>
+                                <td class="py-4 px-4">Embedded in your JVM app</td>
+                                <td class="py-4 px-4">Standalone Docker container</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-4 px-4 font-bold text-white">Validation</td>
+                                <td class="py-4 px-4">Built-in Java validators</td>
+                                <td class="py-4 px-4">Saxon-HE Schematron (same rules as Chorus Pro / KoSIT)</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-4 px-4 font-bold text-white">Formats</td>
+                                <td class="py-4 px-4">Factur-X, ZUGFeRD, XRechnung</td>
+                                <td class="py-4 px-4">Factur-X, ZUGFeRD, XRechnung, UBL, CII</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-4 px-4 font-bold text-white">Air-gapped</td>
+                                <td class="py-4 px-4">Depends on your setup</td>
+                                <td class="py-4 px-4">By design &mdash; zero outbound calls</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-4 px-4 font-bold text-white">License</td>
+                                <td class="py-4 px-4">Apache 2.0</td>
+                                <td class="py-4 px-4">MIT (Community) / Commercial (Pro)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- When to choose each -->
+            <section class="mb-20">
+                <h2 class="text-2xl font-bold text-white mb-8">When to Choose What</h2>
+
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-slate-900 p-6 rounded-lg border border-white/10">
+                        <h3 class="text-white font-bold mb-4">Choose Mustangproject if&hellip;</h3>
+                        <ul class="text-sm space-y-3 text-slate-400">
+                            <li class="flex gap-2">
+                                <span class="text-slate-500 mt-1 shrink-0">&bull;</span>
+                                <span>Your backend is <strong class="text-white">already Java</strong> (Spring, Quarkus, etc.)</span>
+                            </li>
+                            <li class="flex gap-2">
+                                <span class="text-slate-500 mt-1 shrink-0">&bull;</span>
+                                <span>You want a <strong class="text-white">library dependency</strong>, not a separate service</span>
+                            </li>
+                            <li class="flex gap-2">
+                                <span class="text-slate-500 mt-1 shrink-0">&bull;</span>
+                                <span>You need <strong class="text-white">in-process</strong> PDF generation with no network calls</span>
+                            </li>
+                            <li class="flex gap-2">
+                                <span class="text-slate-500 mt-1 shrink-0">&bull;</span>
+                                <span>Your team has <strong class="text-white">Java expertise</strong> for customization</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-slate-900 p-6 rounded-lg border border-amber-500/20">
+                        <h3 class="text-amber-500 font-bold mb-4">Choose Factur-X Engine if&hellip;</h3>
+                        <ul class="text-sm space-y-3 text-slate-400">
+                            <li class="flex gap-2">
+                                <span class="text-amber-500 mt-1 shrink-0">&bull;</span>
+                                <span>Your backend is <strong class="text-white">Python, Node.js, PHP, Go, or any language</strong></span>
+                            </li>
+                            <li class="flex gap-2">
+                                <span class="text-amber-500 mt-1 shrink-0">&bull;</span>
+                                <span>You want <strong class="text-white">language-agnostic</strong> integration via REST API</span>
+                            </li>
+                            <li class="flex gap-2">
+                                <span class="text-amber-500 mt-1 shrink-0">&bull;</span>
+                                <span>You need an <strong class="text-white">air-gapped, containerized</strong> solution</span>
+                            </li>
+                            <li class="flex gap-2">
+                                <span class="text-amber-500 mt-1 shrink-0">&bull;</span>
+                                <span>You prefer <strong class="text-white">delegating regulatory maintenance</strong> to a dedicated tool</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Same task, different approach -->
+            <section class="mb-20">
+                <h2 class="text-2xl font-bold text-white mb-6">Same Task, Different Approach</h2>
+                <p class="mb-6 text-slate-400">Generating a Factur-X PDF from business data:</p>
+
+                <div class="space-y-6">
+                    <div class="bg-[#0d1117] rounded-lg border border-white/10 overflow-hidden">
+                        <div class="px-4 py-2 border-b border-white/5 text-xs font-mono text-slate-500 flex justify-between">
+                            <span>Mustangproject (Java)</span>
+                            <span>Library call</span>
+                        </div>
+                        <pre class="p-4 overflow-x-auto text-sm font-mono text-slate-300"><code><span class="text-slate-500">// Requires JVM, Maven dependency, Java toolchain</span>
+ZUGFeRDExporterFromA3 exporter = <span class="text-pink-400">new</span> ZUGFeRDExporterFromA3()
+    .setZUGFeRDVersion(<span class="text-orange-400">2</span>)
+    .setProfile(Profiles.getByName(<span class="text-green-400">"EN16931"</span>))
+    .load(<span class="text-green-400">"invoice.pdf"</span>);
+exporter.setTransaction(xmlContent);
+exporter.export(<span class="text-green-400">"facturx.pdf"</span>);</code></pre>
+                    </div>
+
+                    <div class="bg-[#0d1117] rounded-lg border border-amber-500/20 overflow-hidden">
+                        <div class="px-4 py-2 border-b border-amber-500/10 text-xs font-mono text-amber-500 flex justify-between">
+                            <span>Factur-X Engine (Any language)</span>
+                            <span>REST API call</span>
+                        </div>
+                        <pre class="p-4 overflow-x-auto text-sm font-mono text-slate-300"><code><span class="text-slate-500"># Works from Python, Node.js, PHP, Go, curl…</span>
+curl -X POST <span class="text-green-400">"http://localhost:8000/v1/convert"</span> \
+  -F <span class="text-green-400">"pdf=@invoice.pdf"</span> \
+  -F <span class="text-green-400">"metadata=@invoice_data.json"</span> \
+  --output facturx.pdf</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Key Differences -->
+            <section class="mb-20">
+                <h2 class="text-2xl font-bold text-white mb-6">Key Architectural Differences</h2>
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-white mb-2">Memory Management</h3>
+                        <p class="text-slate-400">
+                            Mustangproject runs inside your JVM &mdash; memory is shared with your application. Factur-X Engine runs Saxon-HE and VeraPDF as isolated subprocesses: each validation spawns a short-lived process, and memory is reclaimed by the OS immediately after completion. No JVM memory leaks under sustained load.
+                        </p>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-white mb-2">Validation Depth</h3>
+                        <p class="text-slate-400">
+                            The engine executes the official EN 16931 Schematron rules (the same ones used by Chorus Pro and KoSIT) via Saxon-HE. The Pro edition adds Smart Diagnostics that translate cryptic XPath errors into actionable messages like <code class="bg-slate-800 px-1 py-0.5 rounded text-amber-500">INVALID-IBAN</code> or <code class="bg-slate-800 px-1 py-0.5 rounded text-amber-500">TOO-MANY-DECIMALS</code>.
+                        </p>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-white mb-2">Polyglot Support</h3>
+                        <p class="text-slate-400">
+                            Mustangproject is a Java library &mdash; non-Java backends need JNI bridges, subprocess calls, or a wrapper service. Factur-X Engine is a REST API by design: any language that can make HTTP requests can generate and validate e-invoices.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CTA -->
+            <section class="text-center py-10 border-t border-white/5">
+                <h2 class="text-2xl font-bold text-white mb-4">Try Factur-X Engine</h2>
+                <div class="bg-black border border-white/10 rounded-lg p-4 max-w-lg mx-auto mb-8">
+                    <pre class="font-mono text-sm text-slate-300"><code>docker run -d -p 8000:8000 facturxengine/facturx-engine:latest</code></pre>
+                </div>
+                <div class="flex justify-center gap-4 flex-wrap">
+                    <a href="../ref/api-reference.html"
+                        class="inline-flex items-center justify-center px-8 py-4 bg-amber-500 text-black font-bold uppercase tracking-widest hover:bg-amber-400 transition-colors">
+                        API Reference
+                    </a>
+                    <a href="https://github.com/facturx-engine/facturx-engine"
+                        class="inline-flex items-center justify-center px-8 py-4 border border-white/10 text-white font-bold uppercase tracking-widest hover:bg-white/5 transition-colors">
+                        View Source
+                    </a>
+                </div>
+            </section>
+
+        </article>
+    </main>
+
+    <footer class="py-12 bg-slate-900 border-t border-white/5">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <a href="../"
+                class="text-slate-500 hover:text-white transition-colors text-xs font-bold uppercase tracking-widest">Back
+                to Home</a>
+        </div>
+    </footer>
+
+</body>
+
+</html>

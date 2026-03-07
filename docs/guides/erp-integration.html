@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How to Integrate E-Invoicing into Your ERP | Factur-X Engine</title>
+    <meta name="description"
+        content="Add Factur-X, ZUGFeRD, and XRechnung support to your ERP with a single REST API. Receive supplier invoices as JSON, send compliant XML/PDF. No XML parsing required.">
+    <link rel="canonical" href="https://facturx-engine.github.io/facturx-engine/guides/erp-integration.html" />
+    <link rel="icon" href="https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png" type="image/png">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://facturx-engine.github.io/facturx-engine/guides/erp-integration.html">
+    <meta property="og:title" content="How to Integrate E-Invoicing into Your ERP | Factur-X Engine">
+    <meta property="og:description"
+        content="Add Factur-X, ZUGFeRD, and XRechnung support to your ERP with a single REST API. No XML parsing required.">
+    <meta property="og:image" content="https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png">
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="ERP E-Invoicing Integration Guide | Factur-X Engine">
+    <meta name="twitter:description"
+        content="A self-hosted translation layer between your ERP and EN 16931 e-invoicing. REST API, air-gapped, Docker-ready.">
+    <meta name="twitter:image" content="https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        amber: { 500: '#f59e0b', 600: '#d97706' },
+                        slate: { 950: '#020617' }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "TechArticle",
+      "headline": "How to Integrate E-Invoicing into Your ERP",
+      "alternativeHeadline": "Add Factur-X, ZUGFeRD, and XRechnung to any backend via REST API",
+      "image": "https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png",
+      "author": {
+        "@type": "Organization",
+        "name": "Factur-X Engine"
+      },
+      "keywords": "ERP integration, e-invoicing middleware, Factur-X API, ZUGFeRD REST API, XRechnung integration, EN 16931",
+      "articleBody": "Factur-X Engine acts as a translation layer between your ERP and e-invoicing regulations. Receive supplier invoices as clean JSON, send compliant XML or PDF — all through a single REST API."
+    }
+    </script>
+</head>
+
+<body class="bg-slate-950 text-slate-300 font-sans selection:bg-amber-500 selection:text-black leading-relaxed">
+
+    <nav
+        class="fixed top-0 w-full z-50 border-b border-white/5 bg-slate-950/80 backdrop-blur-md h-20 flex items-center">
+        <div class="max-w-7xl mx-auto px-6 w-full flex items-center justify-between">
+            <a href="../index.html" class="flex items-center gap-3">
+                <div
+                    class="w-10 h-10 border-2 border-amber-500 flex items-center justify-center rounded-sm bg-slate-900">
+                    <span class="font-mono font-bold text-amber-500">FX</span>
+                </div>
+                <span class="text-xl font-bold tracking-tighter text-white uppercase">Factur-X <span
+                        class="text-amber-500">Engine</span></span>
+            </a>
+            <div class="flex items-center gap-4">
+                <a href="../ref/api-overview.html"
+                    class="text-slate-400 hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest">Reference</a>
+                <a href="https://github.com/facturx-engine/facturx-engine"
+                    class="px-4 py-2 border border-white/10 rounded text-xs font-bold uppercase tracking-widest hover:bg-white/5 transition-colors">GitHub</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-40 pb-20">
+        <article class="max-w-3xl mx-auto px-6">
+
+            <header class="mb-16">
+                <div
+                    class="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-500 text-[10px] uppercase tracking-widest font-bold mb-6">
+                    Guide / ERP Integration
+                </div>
+                <h1 class="text-4xl md:text-5xl font-black text-white tracking-tight mb-8 leading-tight">
+                    How to Integrate E-Invoicing <span class="text-amber-500">into Your ERP</span>
+                </h1>
+                <p class="text-xl text-slate-400 font-light leading-relaxed">
+                    Your ERP shouldn't need to understand CII, UBL, Schematron, or PDF/A-3. It should send JSON and receive JSON.
+                    Factur-X Engine is the translation layer that handles the rest.
+                </p>
+            </header>
+
+            <!-- The Problem -->
+            <section class="mb-20">
+                <h2 class="text-2xl font-bold text-white mb-6">The Problem</h2>
+                <p class="mb-6">
+                    EN 16931 e-invoicing mandates are rolling out across Europe. Your ERP needs to handle multiple formats
+                    (Factur-X, ZUGFeRD, XRechnung), validate against Schematron rules, and generate PDF/A-3 compliant documents.
+                </p>
+                <p class="mb-6">
+                    Building this in-house means maintaining XML parsers, tracking regulatory updates, and handling edge cases
+                    across hundreds of real-world invoices. The alternative: a dedicated middleware that speaks both ERP and e-invoicing.
+                </p>
+            </section>
+
+            <!-- Architecture Diagram -->
+            <section class="mb-20">
+                <h2 class="text-2xl font-bold text-white mb-6">Architecture</h2>
+                <p class="mb-6">
+                    Factur-X Engine sits between your application and the outside world. It translates in both directions:
+                </p>
+                <div class="bg-[#0d1117] rounded-lg border border-white/10 overflow-hidden">
+                    <div class="px-4 py-2 border-b border-white/5 text-xs font-mono text-slate-500 flex justify-between">
+                        <span>Data Flow</span>
+                        <span>Architecture</span>
+                    </div>
+                    <pre class="p-6 overflow-x-auto text-sm font-mono text-slate-300"><code>
+  <span class="text-amber-500">RECEIVE (Supplier invoices)</span>
+
+  Supplier PDF/XML ──&gt; <span class="text-amber-500">Factur-X Engine</span> ──&gt; Clean JSON ──&gt; Your ERP / DB
+                       │ /v1/validate │
+                       │ /v1/extract  │
+                       │ /v1/serialize│
+
+  <span class="text-amber-500">SEND (Your invoices)</span>
+
+  Your ERP JSON ──&gt; <span class="text-amber-500">Factur-X Engine</span> ──&gt; Compliant PDF/XML ──&gt; Client
+                    │ /v1/xml     │
+                    │ /v1/convert │
+                    │ /v1/merge   │
+</code></pre>
+                </div>
+            </section>
+
+            <!-- Receive Flow -->
+            <section class="mb-20">
+                <h2 class="text-2xl font-bold text-white mb-8">Receive &mdash; Ingesting Supplier Invoices</h2>
+                <p class="mb-8">
+                    When your ERP receives a Factur-X or ZUGFeRD PDF from a supplier, three API calls turn it into usable data:
+                </p>
+
+                <div class="space-y-8">
+                    <div>
+                        <h3 class="text-lg font-bold text-white mb-3">
+                            <span class="text-amber-500 font-mono">1.</span> Validate &mdash; Compliance Gate
+                        </h3>
+                        <p class="text-slate-400 mb-4">
+                            Check the invoice against EN 16931 Schematron rules before it enters your database.
+                        </p>
+                        <div class="bg-black border border-white/10 rounded-lg p-4 overflow-x-auto">
+                            <pre class="font-mono text-sm text-slate-300"><code>curl -X POST "http://localhost:8000/v1/validate" \
+  -F "file=@supplier_invoice.pdf"</code></pre>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-bold text-white mb-3">
+                            <span class="text-amber-500 font-mono">2.</span> Extract &mdash; Raw XML Fields
+                        </h3>
+                        <p class="text-slate-400 mb-4">
+                            Pull structured data from the embedded XML. Returns a standard JSON representation.
+                        </p>
+                        <div class="bg-black border border-white/10 rounded-lg p-4 overflow-x-auto">
+                            <pre class="font-mono text-sm text-slate-300"><code>curl -X POST "http://localhost:8000/v1/extract" \
+  -F "file=@supplier_invoice.pdf"</code></pre>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-bold text-white mb-3">
+                            <span class="text-amber-500 font-mono">3.</span> Serialize &mdash; ERP-Ready JSON
+                            <span class="ml-2 px-2 py-0.5 bg-amber-500/10 border border-amber-500/30 text-amber-500 text-[10px] uppercase tracking-widest font-bold">Pro</span>
+                        </h3>
+                        <p class="text-slate-400 mb-4">
+                            Returns a normalized, typed JSON object with a versioned schema &mdash; ready for direct database insertion.
+                        </p>
+                        <div class="bg-black border border-white/10 rounded-lg p-4 overflow-x-auto">
+                            <pre class="font-mono text-sm text-slate-300"><code>curl -X POST "http://localhost:8000/v1/serialize" \
+  -F "file=@supplier_invoice.pdf"</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Send Flow -->
+            <section class="mb-20">
+                <h2 class="text-2xl font-bold text-white mb-8">Send &mdash; Generating Compliant Invoices</h2>
+                <p class="mb-8">
+                    Your ERP has the business data. The engine transforms it into regulation-compliant XML or PDF:
+                </p>
+
+                <div class="space-y-8">
+                    <div>
+                        <h3 class="text-lg font-bold text-white mb-3">
+                            <span class="text-amber-500 font-mono">4.</span> Generate XML &mdash; Business Data to CII
+                        </h3>
+                        <p class="text-slate-400 mb-4">
+                            Transform your ERP JSON into a Cross-Industry Invoice XML document.
+                        </p>
+                        <div class="bg-black border border-white/10 rounded-lg p-4 overflow-x-auto">
+                            <pre class="font-mono text-sm text-slate-300"><code>curl -X POST "http://localhost:8000/v1/xml" \
+  -H "Content-Type: application/json" \
+  -d @invoice_data.json -o invoice.xml</code></pre>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-bold text-white mb-3">
+                            <span class="text-amber-500 font-mono">5.</span> Convert &mdash; One-Step PDF Generation
+                        </h3>
+                        <p class="text-slate-400 mb-4">
+                            Generates XML from JSON metadata and embeds it into your PDF in a single call.
+                        </p>
+                        <div class="bg-black border border-white/10 rounded-lg p-4 overflow-x-auto">
+                            <pre class="font-mono text-sm text-slate-300"><code>curl -X POST "http://localhost:8000/v1/convert" \
+  -F "pdf=@invoice.pdf" \
+  -F "metadata=@invoice_data.json" \
+  --output invoice_compliant.pdf</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Full Python Workflow -->
+            <section class="mb-20">
+                <h2 class="text-2xl font-bold text-white mb-6">Full Workflow &mdash; Python Example</h2>
+                <p class="mb-6">
+                    A complete receive-and-send pipeline in Python using the <code class="bg-slate-800 px-1 py-0.5 rounded text-amber-500">requests</code> library:
+                </p>
+                <div class="bg-[#0d1117] rounded-lg border border-white/10 overflow-hidden">
+                    <div class="px-4 py-2 border-b border-white/5 text-xs font-mono text-slate-500 flex justify-between">
+                        <span>erp_pipeline.py</span>
+                        <span>Python</span>
+                    </div>
+                    <pre class="p-4 overflow-x-auto text-sm font-mono text-slate-300"><code><span class="text-pink-400">import</span> requests, json
+
+ENGINE = <span class="text-green-400">"http://localhost:8000"</span>
+
+<span class="text-slate-500"># ── RECEIVE: Supplier sends a Factur-X PDF ──</span>
+<span class="text-pink-400">def</span> <span class="text-blue-400">ingest_supplier_invoice</span>(pdf_path):
+    <span class="text-slate-500"># Step 1: Validate compliance</span>
+    r = requests.post(f<span class="text-green-400">"{ENGINE}/v1/validate"</span>,
+        files={<span class="text-green-400">"file"</span>: open(pdf_path, <span class="text-green-400">"rb"</span>)})
+    report = r.json()
+    <span class="text-pink-400">if not</span> report[<span class="text-green-400">"valid"</span>]:
+        <span class="text-pink-400">raise</span> ValueError(f<span class="text-green-400">"Non-compliant: {report['errors']}"</span>)
+
+    <span class="text-slate-500"># Step 2: Extract structured data</span>
+    r = requests.post(f<span class="text-green-400">"{ENGINE}/v1/extract"</span>,
+        files={<span class="text-green-400">"file"</span>: open(pdf_path, <span class="text-green-400">"rb"</span>)})
+    <span class="text-pink-400">return</span> r.json()[<span class="text-green-400">"invoice_json"</span>]
+
+<span class="text-slate-500"># ── SEND: Generate a compliant invoice ──</span>
+<span class="text-pink-400">def</span> <span class="text-blue-400">generate_invoice</span>(pdf_path, metadata):
+    r = requests.post(f<span class="text-green-400">"{ENGINE}/v1/convert"</span>,
+        files={<span class="text-green-400">"pdf"</span>: open(pdf_path, <span class="text-green-400">"rb"</span>)},
+        data={<span class="text-green-400">"metadata"</span>: json.dumps(metadata)})
+    <span class="text-pink-400">with</span> open(<span class="text-green-400">"output.pdf"</span>, <span class="text-green-400">"wb"</span>) <span class="text-pink-400">as</span> f:
+        f.write(r.content)
+    <span class="text-pink-400">return</span> <span class="text-green-400">"output.pdf"</span></code></pre>
+                </div>
+            </section>
+
+            <!-- Quickstart -->
+            <section class="text-center py-10 border-t border-white/5">
+                <h2 class="text-2xl font-bold text-white mb-4">Get Started in 30 Seconds</h2>
+                <div class="bg-black border border-white/10 rounded-lg p-4 max-w-lg mx-auto mb-8">
+                    <pre class="font-mono text-sm text-slate-300"><code>docker run -d -p 8000:8000 facturxengine/facturx-engine:latest</code></pre>
+                </div>
+                <div class="flex justify-center gap-4 flex-wrap">
+                    <a href="../ref/api-reference.html"
+                        class="inline-flex items-center justify-center px-8 py-4 bg-amber-500 text-black font-bold uppercase tracking-widest hover:bg-amber-400 transition-colors">
+                        API Reference
+                    </a>
+                    <a href="https://facturx-engine.lemonsqueezy.com"
+                        class="inline-flex items-center justify-center px-8 py-4 border border-white/10 text-white font-bold uppercase tracking-widest hover:bg-white/5 transition-colors">
+                        Pro License
+                    </a>
+                </div>
+            </section>
+
+        </article>
+    </main>
+
+    <footer class="py-12 bg-slate-900 border-t border-white/5">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <a href="../"
+                class="text-slate-500 hover:text-white transition-colors text-xs font-bold uppercase tracking-widest">Back
+                to Home</a>
+        </div>
+    </footer>
+
+</body>
+
+</html>

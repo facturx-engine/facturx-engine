@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facture Électronique France 2026 &mdash; Obligation B2B et Intégration Technique | Factur-X Engine</title>
+    <meta name="description"
+        content="Guide technique pour la facturation électronique obligatoire en France (2026-2027). Formats acceptés (Factur-X, UBL), plateformes (Chorus Pro, PDP), et intégration via API REST.">
+    <link rel="canonical" href="https://facturx-engine.github.io/facturx-engine/guides/france-2026.html" />
+    <link rel="icon" href="https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png" type="image/png">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://facturx-engine.github.io/facturx-engine/guides/france-2026.html">
+    <meta property="og:title" content="Facture Électronique France 2026 — Obligation B2B et Intégration Technique">
+    <meta property="og:description"
+        content="Guide technique : formats acceptés, calendrier du mandat, et intégration API pour la facturation électronique B2B en France.">
+    <meta property="og:image" content="https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png">
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Facture Électronique France 2026 | Guide Technique">
+    <meta name="twitter:description"
+        content="Calendrier du mandat B2B, formats Factur-X/UBL, et intégration via API REST self-hosted.">
+    <meta name="twitter:image" content="https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        amber: { 500: '#f59e0b', 600: '#d97706' },
+                        slate: { 950: '#020617' }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "TechArticle",
+      "headline": "Facture Électronique France 2026 — Obligation B2B et Intégration Technique",
+      "alternativeHeadline": "Guide développeur pour la facturation électronique obligatoire en France",
+      "inLanguage": "fr",
+      "image": "https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png",
+      "author": {
+        "@type": "Organization",
+        "name": "Factur-X Engine"
+      },
+      "keywords": "facture électronique france 2026, facturation obligatoire B2B, Factur-X, Chorus Pro, PDP, e-invoicing france, EN 16931"
+    }
+    </script>
+</head>
+
+<body class="bg-slate-950 text-slate-300 font-sans selection:bg-amber-500 selection:text-black leading-relaxed">
+
+    <nav
+        class="fixed top-0 w-full z-50 border-b border-white/5 bg-slate-950/80 backdrop-blur-md h-20 flex items-center">
+        <div class="max-w-7xl mx-auto px-6 w-full flex items-center justify-between">
+            <a href="../index.html" class="flex items-center gap-3">
+                <div
+                    class="w-10 h-10 border-2 border-amber-500 flex items-center justify-center rounded-sm bg-slate-900">
+                    <span class="font-mono font-bold text-amber-500">FX</span>
+                </div>
+                <span class="text-xl font-bold tracking-tighter text-white uppercase">Factur-X <span
+                        class="text-amber-500">Engine</span></span>
+            </a>
+            <div class="flex items-center gap-4">
+                <a href="../ref/api-overview.html"
+                    class="text-slate-400 hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest">Reference</a>
+                <a href="https://github.com/facturx-engine/facturx-engine"
+                    class="px-4 py-2 border border-white/10 rounded text-xs font-bold uppercase tracking-widest hover:bg-white/5 transition-colors">GitHub</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-40 pb-20">
+        <article class="max-w-3xl mx-auto px-6">
+
+            <header class="mb-16">
+                <div
+                    class="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-500 text-[10px] uppercase tracking-widest font-bold mb-6">
+                    Guide / France 2026
+                </div>
+                <h1 class="text-4xl md:text-5xl font-black text-white tracking-tight mb-8 leading-tight">
+                    Facture Électronique <span class="text-amber-500">France 2026</span>
+                </h1>
+                <p class="text-xl text-slate-400 font-light leading-relaxed">
+                    La facturation électronique B2B devient obligatoire en France. Ce guide couvre le calendrier, les formats acceptés, et comment intégrer la conformité dans votre stack technique.
+                </p>
+            </header>
+
+            <!-- Timeline -->
+            <section class="mb-20">
+                <h2 class="text-2xl font-bold text-white mb-6">Calendrier du Mandat</h2>
+                <div class="space-y-4">
+                    <div class="flex gap-4 items-start">
+                        <div class="shrink-0 w-28 text-amber-500 font-mono font-bold text-sm pt-1">Sept. 2026</div>
+                        <div class="bg-slate-900 border border-white/10 rounded-lg p-4 flex-1">
+                            <p class="text-white font-bold mb-1">Réception obligatoire</p>
+                            <p class="text-sm text-slate-400">Toutes les entreprises assujetties à la TVA doivent pouvoir recevoir des factures électroniques.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 items-start">
+                        <div class="shrink-0 w-28 text-amber-500 font-mono font-bold text-sm pt-1">Sept. 2026</div>
+                        <div class="bg-slate-900 border border-white/10 rounded-lg p-4 flex-1">
+                            <p class="text-white font-bold mb-1">Émission &mdash; Grandes entreprises et ETI</p>
+                            <p class="text-sm text-slate-400">Obligation d'émettre des factures électroniques pour les grandes entreprises et entreprises de taille intermédiaire.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 items-start">
+                        <div class="shrink-0 w-28 text-slate-500 font-mono font-bold text-sm pt-1">Sept. 2027</div>
+                        <div class="bg-slate-900 border border-white/5 rounded-lg p-4 flex-1">
+                            <p class="text-white font-bold mb-1">Émission &mdash; PME et micro-entreprises</p>
+                            <p class="text-sm text-slate-400">Extension de l'obligation d'émission à toutes les entreprises, quelle que soit leur taille.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Formats Accepted -->
+            <section class="mb-20">
+                <h2 class="text-2xl font-bold text-white mb-6">Formats Acceptés</h2>
+                <p class="mb-6">
+                    L'administration fiscale française accepte trois formats conformes à la norme européenne EN 16931 :
+                </p>
+                <div class="grid md:grid-cols-3 gap-4">
+                    <div class="bg-slate-900 border border-amber-500/20 rounded-lg p-5">
+                        <h3 class="text-amber-500 font-bold font-mono mb-2">Factur-X</h3>
+                        <p class="text-sm text-slate-400">PDF hybride (PDF/A-3 + XML CII). Lisible par l'humain et la machine. Format privilégié en France.</p>
+                    </div>
+                    <div class="bg-slate-900 border border-white/10 rounded-lg p-5">
+                        <h3 class="text-white font-bold font-mono mb-2">UBL</h3>
+                        <p class="text-sm text-slate-400">Universal Business Language. XML structuré, utilisé en Italie (FatturaPA) et aux Pays-Bas (Peppol).</p>
+                    </div>
+                    <div class="bg-slate-900 border border-white/10 rounded-lg p-5">
+                        <h3 class="text-white font-bold font-mono mb-2">CII</h3>
+                        <p class="text-sm text-slate-400">Cross-Industry Invoice. Le format XML sous-jacent de Factur-X et ZUGFeRD.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Platforms -->
+            <section class="mb-20">
+                <h2 class="text-2xl font-bold text-white mb-6">Plateformes et Circuits</h2>
+                <div class="space-y-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-white mb-2">Portail Public de Facturation (PPF)</h3>
+                        <p class="text-slate-400">
+                            Plateforme centrale opérée par l'État. Concentrateur des flux e-invoicing et e-reporting. Toutes les transactions B2B transitent par le PPF ou par une Plateforme de Dématérialisation Partenaire (PDP).
+                        </p>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-white mb-2">Plateformes de Dématérialisation Partenaires (PDP)</h3>
+                        <p class="text-slate-400">
+                            Opérateurs privés immatriculés par l'administration. Ils assurent la transmission, la validation et l'archivage des factures électroniques. Les PDP doivent valider la conformité EN 16931 avant transmission.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- What Developers Need -->
+            <section class="mb-20">
+                <h2 class="text-2xl font-bold text-white mb-6">Ce que Ça Implique pour les Développeurs</h2>
+                <p class="mb-6">
+                    Si vous développez un ERP, un logiciel de comptabilité ou un SaaS de facturation, votre application doit :
+                </p>
+                <ul class="space-y-3 text-slate-400 mb-8">
+                    <li class="flex gap-3">
+                        <span class="text-amber-500 shrink-0">&bull;</span>
+                        <span><strong class="text-white">Générer</strong> des factures Factur-X (PDF/A-3 + XML CII) conformes EN 16931</span>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-amber-500 shrink-0">&bull;</span>
+                        <span><strong class="text-white">Valider</strong> les factures reçues contre les règles Schematron officielles</span>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-amber-500 shrink-0">&bull;</span>
+                        <span><strong class="text-white">Extraire</strong> les données structurées (JSON) des factures pour injection en base de données</span>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-amber-500 shrink-0">&bull;</span>
+                        <span><strong class="text-white">Archiver</strong> les originaux XML avec traçabilité complète</span>
+                    </li>
+                </ul>
+                <p class="text-slate-400">
+                    Factur-X Engine couvre les trois premiers points via une API REST self-hosted, sans dépendance cloud.
+                </p>
+            </section>
+
+            <!-- Integration Example -->
+            <section class="mb-20">
+                <h2 class="text-2xl font-bold text-white mb-6">Exemple d'Intégration</h2>
+                <p class="mb-6">
+                    Valider une facture reçue puis générer une facture conforme &mdash; deux appels API :
+                </p>
+
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-white mb-3">
+                            <span class="text-amber-500 font-mono">1.</span> Valider une facture fournisseur
+                        </h3>
+                        <div class="bg-black border border-white/10 rounded-lg p-4 overflow-x-auto">
+                            <pre class="font-mono text-sm text-slate-300"><code>curl -X POST "http://localhost:8000/v1/validate" \
+  -F "file=@facture_fournisseur.pdf"</code></pre>
+                        </div>
+                        <div class="bg-black border border-white/10 rounded-lg p-4 overflow-x-auto mt-3">
+                            <div class="text-xs text-slate-500 font-mono mb-2 uppercase tracking-widest">Réponse</div>
+                            <pre class="font-mono text-sm text-green-400"><code>{
+  "valid": true,
+  "format": "factur-x",
+  "flavor": "en16931",
+  "validation_completeness": "full"
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-bold text-white mb-3">
+                            <span class="text-amber-500 font-mono">2.</span> Générer une facture conforme
+                        </h3>
+                        <div class="bg-black border border-white/10 rounded-lg p-4 overflow-x-auto">
+                            <pre class="font-mono text-sm text-slate-300"><code>curl -X POST "http://localhost:8000/v1/convert" \
+  -F "pdf=@ma_facture.pdf" \
+  -F "metadata=@donnees_facture.json" \
+  --output facture_facturx.pdf</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Smart Diagnostics -->
+            <section class="mb-20">
+                <div class="bg-amber-500/10 border border-amber-500/30 rounded-lg p-8">
+                    <h3 class="text-2xl font-bold text-white mb-4">Smart Diagnostics (Pro)</h3>
+                    <p class="text-slate-400 mb-6">
+                        Les erreurs Schematron sont des expressions XPath cryptiques. L'édition Pro les traduit en messages actionnables adaptés au contexte français :
+                    </p>
+                    <ul class="text-sm space-y-2 text-slate-400 mb-6">
+                        <li><code class="bg-slate-900 px-2 py-0.5 rounded text-amber-500">INVALID-IBAN</code> &mdash; IBAN malformé dans les coordonnées bancaires</li>
+                        <li><code class="bg-slate-900 px-2 py-0.5 rounded text-amber-500">TOO-MANY-DECIMALS</code> &mdash; Montants avec &gt;2 décimales (rejetés par Chorus Pro)</li>
+                        <li><code class="bg-slate-900 px-2 py-0.5 rounded text-amber-500">TYPE-AMOUNT-MISMATCH</code> &mdash; Totaux négatifs sur une facture standard (380)</li>
+                    </ul>
+                    <a href="https://facturx-engine.lemonsqueezy.com"
+                        class="inline-flex items-center justify-center px-6 py-3 bg-amber-500 text-black font-bold uppercase tracking-widest hover:bg-amber-400 transition-colors text-sm">
+                        Évaluation 30 jours
+                    </a>
+                </div>
+            </section>
+
+            <!-- CTA -->
+            <section class="text-center py-10 border-t border-white/5">
+                <h2 class="text-2xl font-bold text-white mb-4">Démarrer en 30 Secondes</h2>
+                <div class="bg-black border border-white/10 rounded-lg p-4 max-w-lg mx-auto mb-8">
+                    <pre class="font-mono text-sm text-slate-300"><code>docker run -d -p 8000:8000 facturxengine/facturx-engine:latest</code></pre>
+                </div>
+                <div class="flex justify-center gap-4 flex-wrap">
+                    <a href="../ref/api-reference.html"
+                        class="inline-flex items-center justify-center px-8 py-4 bg-amber-500 text-black font-bold uppercase tracking-widest hover:bg-amber-400 transition-colors">
+                        Référence API
+                    </a>
+                    <a href="erp-integration.html"
+                        class="inline-flex items-center justify-center px-8 py-4 border border-white/10 text-white font-bold uppercase tracking-widest hover:bg-white/5 transition-colors">
+                        Guide Intégration ERP
+                    </a>
+                </div>
+            </section>
+
+        </article>
+    </main>
+
+    <footer class="py-12 bg-slate-900 border-t border-white/5">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <a href="../"
+                class="text-slate-500 hover:text-white transition-colors text-xs font-bold uppercase tracking-widest">Retour
+                à l'accueil</a>
+        </div>
+    </footer>
+
+</body>
+
+</html>
