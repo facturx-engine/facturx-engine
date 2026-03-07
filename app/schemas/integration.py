@@ -80,5 +80,14 @@ class BusinessReadyInvoice(BaseModel):
 class SerializationResponse(BaseModel):
     """Response model for the /serialize endpoint."""
     success: bool
+    schema_version: str = Field(
+        default="1.0.0",
+        description="Semantic version of the BusinessReadyInvoice schema. "
+                    "Minor bumps = new optional fields. Major bumps = breaking changes."
+    )
+    engine_version: str = Field(
+        default="0.0.0",
+        description="Factur-X Engine version that produced this response."
+    )
     invoice: Optional[BusinessReadyInvoice] = None
     errors: List[Dict[str, str]] = []

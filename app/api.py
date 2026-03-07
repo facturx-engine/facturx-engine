@@ -3,6 +3,7 @@ FastAPI route handlers for Factur-X API.
 """
 import logging
 import json
+from app.version import __version__
 from typing import Optional, Union
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from fastapi.responses import StreamingResponse
@@ -572,12 +573,14 @@ async def serialize_facturx(
             
             return SerializationResponse(
                 success=True,
+                engine_version=__version__,
                 invoice=invoice_data
             )
         except Exception as e:
             logger.exception(f"Serialization failed: {e}")
             return SerializationResponse(
                 success=False,
+                engine_version=__version__,
                 errors=[{"error": "SERIALIZATION_FAILED", "message": str(e)}]
             )
         
