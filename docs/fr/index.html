@@ -4,9 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Moteur Factur-X | API de Facturation Électronique pour Docker</title>
+    <title>Factur-X Engine | Couche de Traduction ERP ↔ Facturation Électronique</title>
     <meta name="description"
-        content="Générez et validez des factures Factur-X et XRechnung. Moteur Docker souverain, déconnecté, sans dépendance Java. Conforme Réforme 2026/PDP.">
+        content="La couche de traduction auto-hébergée entre votre ERP et la facturation électronique. Ingérez, validez et normalisez Factur-X, ZUGFeRD et XRechnung en JSON — ou générez du XML conforme depuis vos données métier.">
     <!-- Canonical URL to consolidate indexing signals -->
     <link rel="canonical" href="https://facturx-engine.github.io/facturx-engine/fr/" />
     <link rel="alternate" hreflang="en" href="https://facturx-engine.github.io/facturx-engine/" />
@@ -18,16 +18,16 @@
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://facturx-engine.github.io/facturx-engine/fr/">
-    <meta property="og:title" content="Moteur Factur-X | API de Facturation Souveraine">
+    <meta property="og:title" content="Factur-X Engine | Couche de Traduction ERP">
     <meta property="og:description"
-        content="Validation officielle EN 16931 et Génération Factur-X. Infrastructure souveraine, sans Cloud.">
+        content="La couche de traduction auto-hébergée entre votre ERP et la facturation électronique. Validez, extrayez et normalisez en JSON.">
     <meta property="og:image" content="https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Moteur Factur-X | Middleware Facture Électronique">
+    <meta name="twitter:title" content="Factur-X Engine | Couche de Traduction ERP">
     <meta name="twitter:description"
-        content="La façon la plus rapide de générer des factures conformes PDP / Réforme 2026.">
+        content="La couche de traduction auto-hébergée entre votre ERP et la facturation électronique. Validez, extrayez et normalisez en JSON.">
     <meta name="twitter:image" content="https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png">
 
     <!-- JSON-LD Schema (Enriched) -->
@@ -183,12 +183,13 @@
                 </div>
 
                 <h1 class="text-5xl md:text-7xl font-black tracking-tighter text-white uppercase leading-none mb-8">
-                    Facturation <br>
-                    <span class="text-amber-500">Électronique</span>
+                    Couche de <br>
+                    <span class="text-amber-500">Traduction</span>
                 </h1>
                 <p class="max-w-2xl text-xl md:text-2xl text-slate-400 leading-relaxed font-light mb-12">
-                    Le moteur de validation <span class="text-white">SaxonC</span> officiel pour Factur-X.
-                    Conformité France 2026 sans dépendance Cloud.
+                    Le pont auto-hébergé entre votre <span class="text-white">ERP</span> et la facturation électronique.
+                    Ingérez, validez et normalisez Factur-X, ZUGFeRD et XRechnung en JSON — ou
+                    générez du XML conforme depuis vos données métier.
                 </p>
                 <div class="flex flex-wrap gap-4">
                     <a href="https://github.com/facturx-engine/facturx-engine#quickstart"
@@ -339,10 +340,9 @@
                 </div>
                 <div class="space-y-4">
                     <div class="text-amber-500 font-mono text-xs tracking-widest uppercase">02 / Architecture</div>
-                    <h3 class="text-2xl font-bold text-white">Zéro Dépendance Java</h3>
-                    <p class="text-sm text-slate-500 leading-relaxed">Cœur pur Python. Pas de JVM lourde, pas de
-                        licences Java
-                        complexes. Un conteneur Docker léger et rapide.</p>
+                    <h3 class="text-2xl font-bold text-white">Sous-processus Isolés</h3>
+                    <p class="text-sm text-slate-500 leading-relaxed">Saxon-HE et VeraPDF tournent en sous-processus Java
+                        sandboxés. La mémoire est récupérée instantanément par l'OS — aucune fuite JVM sous charge.</p>
                 </div>
                 <div class="space-y-4">
                     <div class="text-amber-500 font-mono text-xs tracking-widest uppercase">03 / Intégrité</div>
@@ -478,9 +478,9 @@
             </p>
             <div class="grid md:grid-cols-3 gap-6 text-left">
                 <div class="bg-black border border-white/5 p-6 rounded">
-                    <h4 class="text-white font-bold mb-2">Tarification Forfaitaire</h4>
-                    <p class="text-sm text-slate-500">2490€/an. Clients illimités, volume illimité. Pas de frais cachés
-                        à la facture.</p>
+                    <h4 class="text-white font-bold mb-2">Licence Annuelle Forfaitaire</h4>
+                    <p class="text-sm text-slate-500">Clients illimités, volume illimité. Pas de frais cachés
+                        à la facture. <a href="https://facturx-engine.lemonsqueezy.com" class="text-amber-500 hover:underline">Voir les tarifs</a>.</p>
                 </div>
                 <div class="bg-black border border-white/5 p-6 rounded">
                     <h4 class="text-white font-bold mb-2">Prêt pour la Marque Blanche</h4>
@@ -506,35 +506,29 @@
                 </p>
             </div>
 
-            <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
                 <!-- Community -->
                 <div class="bg-slate-900/50 border border-white/10 p-8 rounded flex flex-col">
                     <h3 class="text-xl font-bold text-white mb-2">Community</h3>
                     <div class="text-3xl font-black text-white mb-4">Gratuit <span
-                            class="text-sm text-slate-500 font-normal">à vie</span></div>
-                    <p class="text-sm text-slate-400 mb-8 flex-grow">Pour les projets internes et la génération simple.
-                        Licence FSL 1.1.</p>
+                            class="text-sm text-slate-500 font-normal">Licence MIT</span></div>
+                    <p class="text-sm text-slate-400 mb-8 flex-grow">Prêt pour la production. Open Core avec code Python transparent.</p>
                     <ul class="space-y-3 mb-8 text-sm text-slate-300">
                         <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500" fill="none"
                                 stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M5 13l4 4L19 7"></path>
-                            </svg> Génération Factur-X & XRechnung</li>
+                            </svg> <strong>Réception :</strong> /v1/extract — champs XML bruts</li>
                         <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500" fill="none"
                                 stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M5 13l4 4L19 7"></path>
-                            </svg> Validation PDF & XML (/v1/xml)</li>
+                            </svg> <strong>Validation :</strong> Schematron EN 16931 (erreurs XPath brutes)</li>
                         <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500" fill="none"
                                 stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M5 13l4 4L19 7"></path>
-                            </svg> Extraction JSON Standard</li>
-                        <li class="flex items-center gap-2 text-slate-600"><svg class="w-4 h-4" fill="none"
-                                stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M6 18L18 6M6 6l12 12"></path>
-                            </svg> Pas de redistribution commerciale</li>
+                            </svg> <strong>Émission :</strong> Générer, Convertir, Fusionner</li>
                     </ul>
                     <a href="https://github.com/facturx-engine/facturx-engine#quickstart"
                         class="w-full py-3 border border-white/10 text-center font-bold uppercase tracking-widest text-xs hover:bg-white/5 transition-colors text-white">Voir
@@ -546,73 +540,38 @@
                     class="bg-slate-900 border-2 border-amber-500 p-8 rounded flex flex-col relative transform md:-translate-y-4 shadow-2xl shadow-amber-500/10">
                     <div
                         class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-amber-500 text-black text-[10px] font-bold uppercase tracking-widest py-1 px-3 rounded-full">
-                        Le plus Populaire</div>
+                        Pour Intégrateurs ERP</div>
                     <h3 class="text-xl font-bold text-amber-500 mb-2">Édition Pro</h3>
-                    <div class="text-3xl font-black text-white mb-4">990€ <span
-                            class="text-sm text-slate-500 font-normal">/ an</span></div>
-                    <p class="text-sm text-slate-400 mb-8 flex-grow">Pour les entreprises nécessitant la sérialisation
-                        ERP complète et une validation avancée.</p>
+                    <div class="text-3xl font-black text-white mb-4">Licence Annuelle</div>
+                    <p class="text-sm text-slate-400 mb-8 flex-grow">Sérialisation JSON ERP-Ready, Diagnostics Intelligents et conformité PDF/A-3.</p>
                     <ul class="space-y-3 mb-8 text-sm text-slate-200">
                         <li class="flex items-center gap-2"><svg class="w-4 h-4 text-amber-500" fill="none"
                                 stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M5 13l4 4L19 7"></path>
                             </svg> Tout ce qui est dans Community</li>
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-amber-500" fill="none"
-                                stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M5 13l4 4L19 7"></path>
-                            </svg> Validation VeraPDF (PDF/A-3)</li>
                         <li class="flex items-center gap-2 font-bold"><svg class="w-4 h-4 text-amber-500" fill="none"
                                 stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M5 13l4 4L19 7"></path>
-                            </svg> JSON structuré "ERP-Ready"</li>
+                            </svg> <strong>Réception :</strong> /v1/serialize — JSON normalisé et typé</li>
                         <li class="flex items-center gap-2"><svg class="w-4 h-4 text-amber-500" fill="none"
                                 stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M5 13l4 4L19 7"></path>
-                            </svg> Moteur de Diagnostics Intelligents</li>
+                            </svg> <strong>Validation :</strong> Diagnostics Intelligents — erreurs lisibles</li>
+                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-amber-500" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path>
+                            </svg> Conformité VeraPDF (PDF/A-3)</li>
                     </ul>
                     <a href="https://facturx-engine.lemonsqueezy.com"
-                        class="w-full py-3 bg-amber-500 text-black text-center font-bold uppercase tracking-widest text-xs hover:bg-amber-400 transition-colors">Démarrer
-                        l'Évaluation 30 jours</a>
-                </div>
-
-                <!-- OEM -->
-                <div class="bg-slate-900/50 border border-white/10 p-8 rounded flex flex-col">
-                    <h3 class="text-xl font-bold text-white mb-2">Édition OEM</h3>
-                    <div class="text-3xl font-black text-white mb-4">2490€ <span
-                            class="text-sm text-slate-500 font-normal">/ an</span></div>
-                    <p class="text-sm text-slate-400 mb-8 flex-grow">Pour les éditeurs de logiciels (ERP, Compta, SaaS)
-                        souhaitant embarquer notre moteur.</p>
-                    <ul class="space-y-3 mb-8 text-sm text-slate-300">
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500" fill="none"
-                                stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M5 13l4 4L19 7"></path>
-                            </svg> Tout ce qui est dans Pro</li>
-                        <li class="flex items-center gap-2 font-bold"><svg class="w-4 h-4 text-green-500" fill="none"
-                                stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M5 13l4 4L19 7"></path>
-                            </svg> Redistribution Commerciale</li>
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500" fill="none"
-                                stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M5 13l4 4L19 7"></path>
-                            </svg> Sous-clients illimités</li>
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500" fill="none"
-                                stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M5 13l4 4L19 7"></path>
-                            </svg> Support SLA prioritaire</li>
-                    </ul>
-                    <a href="https://facturx-engine.lemonsqueezy.com"
-                        class="w-full py-3 border border-white/10 text-center font-bold uppercase tracking-widest text-xs hover:bg-white/5 transition-colors text-white">Obtenir
-                        la Licence</a>
+                        class="w-full py-3 bg-amber-500 text-black text-center font-bold uppercase tracking-widest text-xs hover:bg-amber-400 transition-colors">Tarifs
+                        & Évaluation 30 jours</a>
                 </div>
             </div>
+            <p class="text-center text-sm text-slate-500 mt-8">Licences OEM et Enterprise disponibles — <a href="https://facturx-engine.lemonsqueezy.com" class="text-amber-500 hover:underline">voir toutes les options</a></p>
         </div>
     </section>
 
