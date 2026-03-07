@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'DOCKER_HUB_README.md'
+      - 'README.md'
       - '.github/workflows/docker-hub-description.yml'
   workflow_dispatch:
 
@@ -22,4 +22,4 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           repository: facturxengine/facturx-engine
-          readme-filepath: ./DOCKER_HUB_README.md
+          readme-filepath: ./README.md
