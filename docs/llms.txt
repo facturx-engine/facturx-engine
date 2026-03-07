@@ -1,10 +1,10 @@
 # Factur-X Engine
 
-> High-performance Python middleware for generating and validating Factur-X, ZUGFeRD, and XRechnung e-invoices.
+> The self-hosted translation layer between your ERP and e-invoicing. Ingest, validate, and normalize Factur-X, UBL, and CII into usable JSON — or generate compliant XML from your business data.
 
 ## Core USP
-- **100% Air-gapped**: Strictly no telemetry, no cloud dependencies.
-- **Pure Python Core**: No Java/JVM footprint. Uses SaxonC (C/C++) for validation.
+- **100% Air-gapped**: Strictly no telemetry, no cloud dependencies. GDPR/DORA compliant.
+- **Isolated Subprocesses**: Saxon-HE and VeraPDF run as sandboxed Java subprocesses. Memory is instantly reclaimed by the OS.
 - **Performance**: High concurrency with Gunicorn/Uvicorn, low memory footprint.
 - **Compliance**: EN 16931, PDF/A-3, official Schematron (CII/UBL).
 
