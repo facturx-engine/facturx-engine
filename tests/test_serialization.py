@@ -89,10 +89,39 @@ class TestSerialization(unittest.TestCase):
             self.assertTrue(data["success"])
             self.assertEqual(data["invoice"]["format"], "ubl")
             self.assertTrue(data["invoice"]["profile"].startswith("xrechnung"))
-            
+
             # Basic assertions to ensure data is extracted
             self.assertIsNotNone(data["invoice"]["invoice_number"])
             self.assertGreater(float(data["invoice"]["total_gross_amount"]), 0)
+
+            # Schema versioning assertions
+            self.assertEqual(data["schema_version"], "1.0.0")
+            self.assertIn("engine_version", data)
+
+    @patch('app.license.is_licensed', return_value=True)
+    @patch('app.license.has_tier', return_value=True)
+    @patch('app.metrics.metrics')
+    def test_serialize_error_contains_schema_version(self, mock_metrics, mock_has_tier, mock_is_licensed):
+        """Even on serialization errors, response must contain schema_version and engine_version."""
+
+        with patch.dict(os.environ, {"LICENSE_KEY": "valid-key"}):
+            # Send a valid XML that is neither CII nor UBL → serialization will fail
+            invalid_xml = b"""<?xml version="1.0" encoding="UTF-8"?>
+            <SomeRandomDocument>
+                <Data>This is not a valid invoice format</Data>
+            </SomeRandomDocument>"""
+
+            response = self.client.post(
+                "/v1/serialize",
+                files={"file": ("invalid.xml", invalid_xml, "application/xml")}
+            )
+
+            self.assertEqual(response.status_code, 200)
+            data = response.json()
+            self.assertFalse(data["success"])
+            self.assertEqual(data["schema_version"], "1.0.0")
+            self.assertIn("engine_version", data)
+            self.assertGreater(len(data["errors"]), 0)
 
 if __name__ == "__main__":
     unittest.main()

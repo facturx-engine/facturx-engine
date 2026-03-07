@@ -1,0 +1,457 @@
+{
+  "$defs": {
+    "AddressSchema": {
+      "description": "Normalized physical address.",
+      "properties": {
+        "line1": {
+          "title": "Line1",
+          "type": "string"
+        },
+        "line2": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Line2"
+        },
+        "city": {
+          "title": "City",
+          "type": "string"
+        },
+        "postcode": {
+          "title": "Postcode",
+          "type": "string"
+        },
+        "country_code": {
+          "title": "Country Code",
+          "type": "string"
+        }
+      },
+      "required": [
+        "line1",
+        "city",
+        "postcode",
+        "country_code"
+      ],
+      "title": "AddressSchema",
+      "type": "object"
+    },
+    "BusinessReadyInvoice": {
+      "description": "The 'Killer Feature' Pro Schema.\nFlattened, typed, and normalized for direct ERP consumption.",
+      "properties": {
+        "invoice_number": {
+          "title": "Invoice Number",
+          "type": "string"
+        },
+        "invoice_date": {
+          "format": "date",
+          "title": "Invoice Date",
+          "type": "string"
+        },
+        "due_date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Due Date"
+        },
+        "currency": {
+          "default": "EUR",
+          "title": "Currency",
+          "type": "string"
+        },
+        "buyer_reference": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Buyer reference (BT-10)",
+          "title": "Buyer Reference"
+        },
+        "contract_reference": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Contract reference (BT-12)",
+          "title": "Contract Reference"
+        },
+        "seller": {
+          "$ref": "#/$defs/PartySchema"
+        },
+        "buyer": {
+          "$ref": "#/$defs/PartySchema"
+        },
+        "line_items": {
+          "items": {
+            "$ref": "#/$defs/LineItemSchema"
+          },
+          "title": "Line Items",
+          "type": "array"
+        },
+        "tax_breakdown": {
+          "items": {
+            "$ref": "#/$defs/TaxBreakdownSchema"
+          },
+          "title": "Tax Breakdown",
+          "type": "array"
+        },
+        "total_net_amount": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "title": "Total Net Amount"
+        },
+        "total_tax_amount": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "title": "Total Tax Amount"
+        },
+        "total_gross_amount": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "title": "Total Gross Amount"
+        },
+        "amount_due": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "title": "Amount Due"
+        },
+        "format": {
+          "description": "factur-x / zugferd / xrechnung / ubl",
+          "title": "Format",
+          "type": "string"
+        },
+        "profile": {
+          "description": "minimum / basic / en16931 / extended / xrechnung_3.0",
+          "title": "Profile",
+          "type": "string"
+        }
+      },
+      "required": [
+        "invoice_number",
+        "invoice_date",
+        "seller",
+        "buyer",
+        "line_items",
+        "tax_breakdown",
+        "total_net_amount",
+        "total_tax_amount",
+        "total_gross_amount",
+        "amount_due",
+        "format",
+        "profile"
+      ],
+      "title": "BusinessReadyInvoice",
+      "type": "object"
+    },
+    "LineItemSchema": {
+      "description": "High-precision invoice line item.",
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "quantity": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "title": "Quantity"
+        },
+        "unit_code": {
+          "description": "UN/ECE Rec 20 unit code (e.g., C62, HUR)",
+          "title": "Unit Code",
+          "type": "string"
+        },
+        "unit_label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Human readable unit (e.g., piece, hour)",
+          "title": "Unit Label"
+        },
+        "net_price": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "description": "Net unit price",
+          "title": "Net Price"
+        },
+        "line_total": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "description": "Net line total (Qty * Price)",
+          "title": "Line Total"
+        },
+        "vat_rate": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "description": "VAT percentage (e.g., 20.00)",
+          "title": "Vat Rate"
+        },
+        "vat_category": {
+          "default": "S",
+          "description": "VAT category code (EN 16931)",
+          "title": "Vat Category",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "quantity",
+        "unit_code",
+        "net_price",
+        "line_total",
+        "vat_rate"
+      ],
+      "title": "LineItemSchema",
+      "type": "object"
+    },
+    "PartySchema": {
+      "description": "Normalized party (Seller/Buyer) representation.",
+      "properties": {
+        "name": {
+          "description": "Legal company name",
+          "title": "Name",
+          "type": "string"
+        },
+        "vat_number": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "VAT ID with country prefix",
+          "title": "Vat Number"
+        },
+        "registration_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Trade registration number",
+          "title": "Registration Id"
+        },
+        "address": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AddressSchema"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "email": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Email"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "PartySchema",
+      "type": "object"
+    },
+    "TaxBreakdownSchema": {
+      "description": "Normalized tax breakdown per category/rate.",
+      "properties": {
+        "category": {
+          "title": "Category",
+          "type": "string"
+        },
+        "rate": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "title": "Rate"
+        },
+        "basis_amount": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "title": "Basis Amount"
+        },
+        "tax_amount": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "title": "Tax Amount"
+        }
+      },
+      "required": [
+        "category",
+        "rate",
+        "basis_amount",
+        "tax_amount"
+      ],
+      "title": "TaxBreakdownSchema",
+      "type": "object"
+    }
+  },
+  "description": "Response model for the /serialize endpoint.",
+  "properties": {
+    "success": {
+      "title": "Success",
+      "type": "boolean"
+    },
+    "schema_version": {
+      "default": "1.0.0",
+      "description": "Semantic version of the BusinessReadyInvoice schema. Minor bumps = new optional fields. Major bumps = breaking changes.",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "engine_version": {
+      "default": "0.0.0",
+      "description": "Factur-X Engine version that produced this response.",
+      "title": "Engine Version",
+      "type": "string"
+    },
+    "invoice": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/BusinessReadyInvoice"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "errors": {
+      "default": [],
+      "items": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "type": "object"
+      },
+      "title": "Errors",
+      "type": "array"
+    }
+  },
+  "required": [
+    "success"
+  ],
+  "title": "SerializationResponse",
+  "type": "object",
+  "$id": "https://github.com/facturx-engine/facturx-engine/blob/main/docs/schemas/serialize-response.v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}
