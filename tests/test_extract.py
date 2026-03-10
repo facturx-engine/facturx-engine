@@ -186,9 +186,13 @@ def test_end_to_end_convert_validate_extract(client):
     print("  - Full product workflow validated!")
 
 
-def test_diagnostics_endpoint(client):
-    """Test the /diagnostics endpoint."""
-    response = client.get("/diagnostics")
+def test_diagnostics_endpoint(client, monkeypatch):
+    """Test the /diagnostics endpoint with token-based access."""
+    monkeypatch.setenv("DIAGNOSTICS_TOKEN", "test-diagnostics-token")
+    response = client.get(
+        "/diagnostics",
+        headers={"Authorization": "Bearer test-diagnostics-token"},
+    )
     assert response.status_code == 200
     
     data = response.json()
