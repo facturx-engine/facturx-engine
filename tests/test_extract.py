@@ -151,6 +151,9 @@ def test_end_to_end_convert_validate_extract(client):
     invoice_json = extract_data["invoice_json"]
     print(f"\nDEBUG_INVOICE_JSON: {json.dumps(invoice_json, indent=2)}")
     assert invoice_json is not None
+    assert "_meta" in invoice_json
+    assert "limitations" in invoice_json["_meta"]
+    assert isinstance(invoice_json["_meta"]["limitations"], list)
     assert invoice_json["invoice_number"] == "E2E-EXTRACT-001"
     assert invoice_json["invoice_date"] == "20260113"
     assert invoice_json.get("due_date") is not None
@@ -211,5 +214,26 @@ def test_diagnostics_endpoint(client):
     assert any("mode:" in f for f in features)
 
 
+
+def test_extract_limitations_on_minimum_profile(client):
+    """Minimum profile extraction exposes heuristic limitations transparently."""
+    with open("tests/corpus/valid/Facture_FR_MINIMUM.pdf", "rb") as f:
+        pdf_content = f.read()
+
+    response = client.post(
+        "/v1/extract",
+        files={"file": ("minimum.pdf", pdf_content, "application/pdf")}
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["invoice_json"] is not None
+    meta = data["invoice_json"].get("_meta", {})
+    limitations = meta.get("limitations")
+    assert isinstance(limitations, list)
+    assert "heuristic_mapping" in limitations
+    assert "missing_line_items" in limitations
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v", "-s"])
+

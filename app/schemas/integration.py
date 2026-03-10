@@ -3,7 +3,7 @@ Business-Ready JSON schemas for Factur-X/ZUGFeRD Extraction.
 Designed for ERP integration and automated accounting.
 """
 from pydantic import BaseModel, Field
-from typing import List, Optional, Dict
+from typing import List, Optional, Literal, Union
 from decimal import Decimal
 from datetime import date
 
@@ -56,25 +56,54 @@ class BusinessReadyInvoice(BaseModel):
     invoice_date: date
     due_date: Optional[date] = None
     currency: str = Field(default="EUR")
-    
+
     buyer_reference: Optional[str] = Field(None, description="Buyer reference (BT-10)")
     contract_reference: Optional[str] = Field(None, description="Contract reference (BT-12)")
-    
+
     seller: PartySchema
     buyer: PartySchema
-    
+
     line_items: List[LineItemSchema]
     tax_breakdown: List[TaxBreakdownSchema]
-    
+
     # Financial Totals (Decimal precision)
     total_net_amount: Decimal
     total_tax_amount: Decimal
     total_gross_amount: Decimal
     amount_due: Decimal
-    
+
     # Metadata
     format: str = Field(..., description="factur-x / zugferd / xrechnung / ubl")
     profile: str = Field(..., description="minimum / basic / en16931 / extended / xrechnung_3.0")
+
+
+FallbackScalarValue = Union[str, int, float, bool]
+
+
+class FallbackApplied(BaseModel):
+    """Single fallback operation applied during /serialize processing."""
+
+    field: str = Field(..., description="Stable invoice dot-path (for example: invoice.seller.address.country_code)")
+    fallback_type: Literal[
+        "default_value",
+        "placeholder_value",
+        "derived_value",
+        "coercion",
+        "xml_parser_recovery",
+        "line_skipped",
+        "line_truncated",
+    ]
+    original_state: Literal[
+        "missing",
+        "invalid",
+        "malformed",
+        "unparseable",
+        "truncated",
+    ]
+    applied_value: Optional[FallbackScalarValue] = Field(
+        default=None,
+        description="Applied scalar value (or null when no value was injected).",
+    )
 
 
 class SerializationResponse(BaseModel):
@@ -90,4 +119,12 @@ class SerializationResponse(BaseModel):
         description="Factur-X Engine version that produced this response."
     )
     invoice: Optional[BusinessReadyInvoice] = None
-    errors: List[Dict[str, str]] = []
+    xml_recovery_applied: bool = Field(
+        default=False,
+        description="True when XML parser recovery mode had to repair malformed XML."
+    )
+    fallbacks_applied: List[FallbackApplied] = Field(
+        default_factory=list,
+        description="Transparent list of fallback operations applied during serialization."
+    )
+    errors: List[dict[str, str]] = Field(default_factory=list)

@@ -50,8 +50,7 @@ async def convert_to_facturx(
     """
     Attach Factur-X/CII XML to an existing standard PDF invoice (BYOPDF).
     
-    The input must be a valid PDF file (Max 20MB). The API will generate the XML 
-    from the metadata and embed it into the PDF to create a PDF/A-3 compliant Factur-X invoice.
+    The input must be a valid PDF file (max upload size is controlled by MAX_UPLOAD_SIZE_MB, default 10MB). The API generates XML from metadata and embeds it into the PDF to create a Factur-X document. Use /v1/validate to verify final PDF/A status when needed.
     """
     import time
     from app.metrics import metrics
@@ -68,7 +67,7 @@ async def convert_to_facturx(
                 detail={"error": "INVALID_FILE_TYPE", "message": "Only PDF files are accepted"}
             )
 
-        # Read PDF content (async I/O — avoids blocking the event loop)
+        # Read PDF content (async I/O - avoids blocking the event loop)
         pdf_content = await pdf.read()
         if not pdf_content:
             raise HTTPException(
@@ -76,7 +75,7 @@ async def convert_to_facturx(
                 detail={"error": "EMPTY_FILE", "message": "PDF file is empty"}
             )
 
-        # Validate magic bytes (second pass — catches renamed non-PDF files)
+        # Validate magic bytes (second pass - catches renamed non-PDF files)
         if not _check_pdf_magic(pdf_content):
             raise HTTPException(
                 status_code=400,
@@ -234,7 +233,7 @@ async def validate_facturx(
     metrics.inc_gauge("active_requests")
     
     try:
-        # Read file content (async I/O — avoids blocking the event loop)
+        # Read file content (async I/O - avoids blocking the event loop)
         file_content = await file.read()
         if not file_content:
             raise HTTPException(
@@ -404,7 +403,7 @@ async def extract_facturx(
     file: UploadFile = File(..., description="Factur-X PDF file to extract data from")
 ):
     """
-    Extract Factur-X XML from a PDF and return structured invoice data as JSON.
+    Extract Factur-X XML from a PDF and return heuristic best-effort invoice JSON.
     
     This endpoint is designed for invoice reception workflows:
     1. Detects if the PDF contains embedded Factur-X/ZUGFeRD XML
@@ -424,7 +423,7 @@ async def extract_facturx(
     metrics.inc_gauge("active_requests")
     
     try:
-        # Read file content (async I/O — avoids blocking the event loop)
+        # Read file content (async I/O - avoids blocking the event loop)
         file_content = await file.read()
         if not file_content:
             raise HTTPException(
@@ -482,11 +481,9 @@ async def serialize_facturx(
     """
     Business-Ready JSON Serialization (Pro Feature).
     
-    Transforms XML data into a normalized, high-precision JSON format 
-    designed for ERP and accounting system integration.
+    Transforms XML data into normalized ERP integration JSON with fallback transparency.
     
-    **Trial Mode**: Available for reference files.
-    **Community Mode**: Not available — returns 403 with a link to obtain a license key.
+    **Community Mode**: Not available - returns 403 with a link to obtain a license key.
     """
     import time
     from app.metrics import metrics
@@ -499,7 +496,7 @@ async def serialize_facturx(
     metrics.inc_gauge("active_requests")
     
     try:
-        # Read file content (async I/O — avoids blocking the event loop)
+        # Read file content (async I/O - avoids blocking the event loop)
         file_content = await file.read()
         if not file_content:
             raise HTTPException(
@@ -566,15 +563,17 @@ async def serialize_facturx(
 
         # Serialize
         try:
-            invoice_data = BusinessReadySerializer.serialize(
-                xml_data, 
+            invoice_data, fallbacks_applied, xml_recovery_applied = BusinessReadySerializer.serialize_with_diagnostics(
+                xml_data,
                 is_pro=is_pro_tier
             )
             
             return SerializationResponse(
                 success=True,
                 engine_version=__version__,
-                invoice=invoice_data
+                invoice=invoice_data,
+                fallbacks_applied=fallbacks_applied,
+                xml_recovery_applied=xml_recovery_applied,
             )
         except Exception as e:
             logger.exception(f"Serialization failed: {e}")
@@ -603,10 +602,10 @@ async def serialize_facturx(
              tags=["Core Workflows"],
              response_class=StreamingResponse,
              responses={
-                 200: {"description": "Factur-X PDF with embedded XML"},
+                 200: {"description": "Factur-X PDF with embedded XML (final PDF/A status not asserted)"},
                  400: {"model": ProblemDetails, "description": "Invalid file type"},
                  409: {"model": ProblemDetails, "description": "PDF already contains Factur-X XML"},
-                 422: {"model": ProblemDetails, "description": "Not PDF/A-3b or invalid XML"},
+                 422: {"model": ProblemDetails, "description": "Input not PDF/A-3b or invalid XML"},
                  500: {"model": ProblemDetails, "description": "Server error"},
              })
 async def merge_facturx(
@@ -615,14 +614,17 @@ async def merge_facturx(
     format: Optional[str] = Form(None, description="Optional format override: factur-x, zugferd, or xrechnung"),
 ):
     """
-    Embed an existing XML (Factur-X/ZUGFeRD/XRechnung) into a PDF/A-3b.
+    Embed an existing XML (Factur-X/ZUGFeRD/XRechnung) into a PDF container.
 
-    **Community endpoint** — no license required.
+    **Community endpoint** - no license required.
+
+    This endpoint validates input constraints, but does not prove final PDF/A compliance of the produced file.
+    Use /v1/validate on the output when PDF/A evidence is required.
 
     Errors:
     - **400** Bad file (not PDF or not XML)
     - **409** PDF already contains embedded Factur-X XML
-    - **422** PDF is not PDF/A-3b compliant, or XML fails EN 16931 validation
+    - **422** Input PDF is not declared PDF/A-3b, or XML fails EN 16931 validation
     """
     import time
     from app.metrics import metrics
@@ -647,7 +649,7 @@ async def merge_facturx(
                 detail={"error": "INVALID_FILE_TYPE", "message": "Second upload must be a valid XML file"}
             )
 
-        # 409 — PDF already has embedded Factur-X XML
+        # 409 - PDF already has embedded Factur-X XML
         _, existing_xml = get_xml_from_pdf(BytesIO(pdf_content), check_xsd=False)
         if existing_xml is not None:
             raise HTTPException(
@@ -658,7 +660,7 @@ async def merge_facturx(
                 }
             )
 
-        # 422 — PDF is not PDF/A-3b (XMP metadata check)
+        # 422 - PDF is not PDF/A-3b (XMP metadata check)
         if not is_pdfa3b(pdf_content):
             raise HTTPException(
                 status_code=422,
@@ -702,3 +704,5 @@ async def merge_facturx(
     finally:
         metrics.dec_gauge("active_requests")
         metrics.observe("request_duration_seconds", time.time() - start_time)
+
+
