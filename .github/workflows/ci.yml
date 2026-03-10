@@ -5,7 +5,6 @@ on:
     branches: ["**"]
     paths-ignore:
       - 'README.md'
-      - 'DOCKER_HUB_README.md'
       - 'docs/**'
       - 'examples/**'
       - '_INTERNAL/**'
@@ -13,7 +12,6 @@ on:
     branches: ["**"]
     paths-ignore:
       - 'README.md'
-      - 'DOCKER_HUB_README.md'
       - 'docs/**'
 
 jobs:
