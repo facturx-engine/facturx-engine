@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XRechnung to JSON API | Normalize EN 16931 Invoices for ERP</title>
+    <meta name="description"
+        content="Normalize XRechnung invoices into ERP-ready JSON. Validate incoming EN 16931 files, extract embedded data, and serialize with fallback transparency via a self-hosted API.">
+    <link rel="canonical" href="https://facturx-engine.github.io/facturx-engine/guides/xrechnung-to-json.html" />
+    <link rel="icon" href="https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png" type="image/png">
+
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://facturx-engine.github.io/facturx-engine/guides/xrechnung-to-json.html">
+    <meta property="og:title" content="XRechnung to JSON API | Normalize EN 16931 Invoices for ERP">
+    <meta property="og:description"
+        content="Validate incoming XRechnung files and normalize them into ERP-ready JSON with a self-hosted EN 16931 API.">
+    <meta property="og:image" content="https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="XRechnung to JSON API | ERP JSON Normalization">
+    <meta name="twitter:description"
+        content="Turn XRechnung XML into ERP-ready JSON with explicit validation and fallback transparency.">
+    <meta name="twitter:image" content="https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        amber: { 500: '#f59e0b', 600: '#d97706' },
+                        slate: { 950: '#020617' }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "TechArticle",
+      "headline": "XRechnung to JSON API",
+      "alternativeHeadline": "Normalize incoming EN 16931 invoices into ERP-ready JSON",
+      "image": "https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png",
+      "author": {
+        "@type": "Organization",
+        "name": "Factur-X Engine"
+      },
+      "keywords": "xrechnung to json, xrechnung api, erp json normalization, EN 16931 ingestion, invoice ingestion api"
+    }
+    </script>
+</head>
+
+<body class="bg-slate-950 text-slate-300 font-sans selection:bg-amber-500 selection:text-black leading-relaxed">
+
+    <nav
+        class="fixed top-0 w-full z-50 border-b border-white/5 bg-slate-950/80 backdrop-blur-md h-20 flex items-center">
+        <div class="max-w-7xl mx-auto px-6 w-full flex items-center justify-between">
+            <a href="../index.html" class="flex items-center gap-3">
+                <div
+                    class="w-10 h-10 border-2 border-amber-500 flex items-center justify-center rounded-sm bg-slate-900">
+                    <span class="font-mono font-bold text-amber-500">FX</span>
+                </div>
+                <span class="text-xl font-bold tracking-tighter text-white uppercase">Factur-X <span
+                        class="text-amber-500">Engine</span></span>
+            </a>
+            <div class="flex items-center gap-4">
+                <a href="../ref/api-overview.html"
+                    class="text-slate-400 hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest">Reference</a>
+                <a href="https://github.com/facturx-engine/facturx-engine"
+                    class="px-4 py-2 border border-white/10 rounded text-xs font-bold uppercase tracking-widest hover:bg-white/5 transition-colors">GitHub</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-40 pb-20">
+        <article class="max-w-3xl mx-auto px-6">
+            <header class="mb-16">
+                <div
+                    class="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-500 text-[10px] uppercase tracking-widest font-bold mb-6">
+                    Guide / Inbound JSON
+                </div>
+                <h1 class="text-4xl md:text-5xl font-black text-white tracking-tight mb-8 leading-tight">
+                    Turn <span class="text-amber-500">XRechnung XML</span> into ERP JSON
+                </h1>
+                <p class="text-xl text-slate-400 font-light leading-relaxed">
+                    If your ERP receives XRechnung files, the hard part is not parsing XML. The hard part is validating the invoice,
+                    understanding what was actually checked, and returning a JSON payload your integration can trust.
+                </p>
+            </header>
+
+            <section class="mb-20">
+                <h2 class="text-2xl font-bold text-white mb-6">Recommended Pipeline</h2>
+                <div class="bg-[#0d1117] rounded-lg border border-white/10 overflow-hidden">
+                    <div class="px-4 py-2 border-b border-white/5 text-xs font-mono text-slate-500">Pipeline Flow</div>
+                    <pre class="p-6 overflow-x-auto text-sm font-mono text-slate-300"><code>
+  XRechnung XML
+       |
+       v
+  /v1/validate    -> EN 16931 compliance + validation completeness
+       |
+       v
+  /v1/serialize   -> ERP-ready JSON + fallbacks_applied (Pro)
+       |
+       v
+  /v1/extract     -> heuristic JSON fallback (Community)
+                    </code></pre>
+                </div>
+            </section>
+
+            <section class="mb-20 space-y-6">
+                <h2 class="text-2xl font-bold text-white">Validate First</h2>
+                <p class="text-slate-400">
+                    Start with <code>/v1/validate</code> so your application knows whether the invoice passed EN 16931 checks,
+                    whether PDF/A validation ran, and whether the validation report is complete or partial.
+                </p>
+                <div class="bg-black border border-white/10 rounded-lg p-6 overflow-x-auto">
+                    <div class="text-xs text-slate-500 font-mono mb-2 uppercase tracking-widest">cURL</div>
+                    <pre class="font-mono text-sm text-slate-300"><code>curl -X POST "http://localhost:8000/v1/validate" \
+  -F "file=@invoice-xrechnung.xml"</code></pre>
+                </div>
+                <div class="bg-black border border-white/10 rounded-lg p-6 overflow-x-auto">
+                    <div class="text-xs text-slate-500 font-mono mb-2 uppercase tracking-widest">Response Highlights</div>
+                    <pre class="font-mono text-sm text-slate-300"><code>{
+  "valid": true,
+  "format": "ubl",
+  "flavor": "xrechnung_3.0",
+  "pdfa_valid": null,
+  "validation_completeness": "full"
+}</code></pre>
+                </div>
+            </section>
+
+            <section class="mb-20 space-y-6">
+                <h2 class="text-2xl font-bold text-white">Normalize into ERP JSON</h2>
+                <p class="text-slate-400">
+                    For production-grade ingestion, use <code>/v1/serialize</code>. It returns typed invoice data plus
+                    <code>fallbacks_applied</code> and <code>xml_recovery_applied</code>, so your integration can decide what is acceptable.
+                </p>
+                <div class="bg-black border border-white/10 rounded-lg p-6 overflow-x-auto">
+                    <div class="text-xs text-slate-500 font-mono mb-2 uppercase tracking-widest">cURL</div>
+                    <pre class="font-mono text-sm text-slate-300"><code>curl -X POST "http://localhost:8000/v1/serialize" \
+  -F "file=@invoice-xrechnung.xml"</code></pre>
+                </div>
+                <div class="bg-black border border-white/10 rounded-lg p-6 overflow-x-auto">
+                    <div class="text-xs text-slate-500 font-mono mb-2 uppercase tracking-widest">Response Highlights</div>
+                    <pre class="font-mono text-sm text-slate-300"><code>{
+  "success": true,
+  "invoice": {
+    "invoice_number": "R-2026-0042",
+    "format": "ubl",
+    "profile": "xrechnung_3.0"
+  },
+  "xml_recovery_applied": false,
+  "fallbacks_applied": []
+}</code></pre>
+                </div>
+            </section>
+
+            <section class="mb-20 space-y-6">
+                <h2 class="text-2xl font-bold text-white">Community Fallback</h2>
+                <p class="text-slate-400">
+                    If you only need best-effort extraction, <code>/v1/extract</code> returns invoice JSON with
+                    <code>invoice_json._meta.limitations</code> so your team can distinguish heuristic mapping from strict normalization.
+                </p>
+                <div class="bg-black border border-white/10 rounded-lg p-6 overflow-x-auto">
+                    <div class="text-xs text-slate-500 font-mono mb-2 uppercase tracking-widest">Limitations Example</div>
+                    <pre class="font-mono text-sm text-slate-300"><code>{
+  "invoice_json": {
+    "_meta": {
+      "limitations": ["heuristic_mapping", "fallback_values_used"]
+    }
+  }
+}</code></pre>
+                </div>
+            </section>
+
+            <section class="mb-16 pt-12 border-t border-white/5">
+                <h2 class="text-sm font-bold text-white mb-4 uppercase tracking-widest">See Also</h2>
+                <div class="grid md:grid-cols-3 gap-4">
+                    <a href="receive-invoices.html" class="bg-slate-900 border border-white/10 rounded-lg p-4 hover:border-amber-500/30 transition-colors">
+                        <div class="text-amber-500 font-mono text-xs uppercase tracking-widest mb-1">Guide</div>
+                        <div class="text-white font-bold text-sm">Receive Invoices</div>
+                    </a>
+                    <a href="../ref/json-schema.html" class="bg-slate-900 border border-white/10 rounded-lg p-4 hover:border-amber-500/30 transition-colors">
+                        <div class="text-amber-500 font-mono text-xs uppercase tracking-widest mb-1">Reference</div>
+                        <div class="text-white font-bold text-sm">Serialize JSON Schema</div>
+                    </a>
+                    <a href="../ref/api-reference.html" class="bg-slate-900 border border-white/10 rounded-lg p-4 hover:border-amber-500/30 transition-colors">
+                        <div class="text-amber-500 font-mono text-xs uppercase tracking-widest mb-1">Reference</div>
+                        <div class="text-white font-bold text-sm">Full API Reference</div>
+                    </a>
+                </div>
+            </section>
+
+            <section class="text-center py-10 border-t border-white/5">
+                <h2 class="text-2xl font-bold text-white mb-4">Start Normalizing XRechnung</h2>
+                <div class="bg-black border border-white/10 rounded-lg p-4 max-w-lg mx-auto mb-8">
+                    <pre class="font-mono text-sm text-slate-300"><code>docker run -d -p 8000:8000 facturxengine/facturx-engine:latest</code></pre>
+                </div>
+                <div class="flex justify-center gap-4 flex-wrap">
+                    <a href="../ref/api-reference.html"
+                        class="inline-flex items-center justify-center px-8 py-4 bg-amber-500 text-black font-bold uppercase tracking-widest hover:bg-amber-400 transition-colors">
+                        API Reference
+                    </a>
+                    <a href="../ref/json-schema.html"
+                        class="inline-flex items-center justify-center px-8 py-4 border border-white/10 text-white font-bold uppercase tracking-widest hover:bg-white/5 transition-colors">
+                        JSON Schema
+                    </a>
+                </div>
+            </section>
+        </article>
+    </main>
+
+    <footer class="py-12 bg-slate-900 border-t border-white/5">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <a href="../"
+                class="text-slate-500 hover:text-white transition-colors text-xs font-bold uppercase tracking-widest">Back
+                to Home</a>
+        </div>
+    </footer>
+</body>
+
+</html>

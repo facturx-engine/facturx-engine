@@ -177,7 +177,7 @@
                 </h1>
                 <p class="max-w-2xl mx-auto text-xl md:text-2xl text-slate-400 leading-relaxed font-light mb-12">
                     The self-hosted bridge between your <span class="text-white">ERP</span> and e-invoicing.
-                    Ingest, validate, and normalize Factur-X, ZUGFeRD, and XRechnung into usable JSON — or
+                    Ingest, validate, and normalize Factur-X, ZUGFeRD, and XRechnung into usable JSON - or
                     generate compliant XML from your business data.
                 </p>
                 <div class="flex flex-wrap gap-4">
@@ -236,7 +236,7 @@
                     <h3 class="text-2xl font-bold text-white">Integration Recipes</h3>
                     <div class="h-px bg-white/10 flex-grow"></div>
                 </div>
-                <div class="grid md:grid-cols-3 gap-4">
+                <div class="grid md:grid-cols-2 xl:grid-cols-5 gap-4">
                     <a href="./tutorials/python-facturx.html"
                         class="group block p-6 bg-black border border-white/10 rounded hover:border-amber-500 transition-colors">
                         <div class="text-amber-500 font-mono text-xs mb-2">PYTHON</div>
@@ -254,6 +254,18 @@
                         <div class="text-amber-500 font-mono text-xs mb-2">PHP</div>
                         <div class="text-white font-bold mb-2 group-hover:text-amber-500">Guzzle</div>
                         <p class="text-xs text-slate-500">Symfony, Laravel, WordPress guide.</p>
+                    </a>
+                    <a href="./guides/facturx-validator-api.html"
+                        class="group block p-6 bg-black border border-white/10 rounded hover:border-amber-500 transition-colors">
+                        <div class="text-amber-500 font-mono text-xs mb-2">VALIDATE</div>
+                        <div class="text-white font-bold mb-2 group-hover:text-amber-500">Validator API</div>
+                        <p class="text-xs text-slate-500">Check EN 16931, completeness, and PDF/A semantics.</p>
+                    </a>
+                    <a href="./guides/xrechnung-to-json.html"
+                        class="group block p-6 bg-black border border-white/10 rounded hover:border-amber-500 transition-colors">
+                        <div class="text-amber-500 font-mono text-xs mb-2">INGEST</div>
+                        <div class="text-white font-bold mb-2 group-hover:text-amber-500">XRechnung to JSON</div>
+                        <p class="text-xs text-slate-500">Normalize inbound invoices into ERP-ready JSON.</p>
                     </a>
                 </div>
             </div>
@@ -366,7 +378,7 @@
                     <div class="text-amber-500 font-mono text-xs tracking-widest uppercase">02 / Architecture</div>
                     <h3 class="text-2xl font-bold text-white">Isolated Subprocesses</h3>
                     <p class="text-sm text-slate-500 leading-relaxed">Saxon-HE and VeraPDF run as sandboxed Java subprocesses.
-                        Memory is instantly reclaimed by the OS — no JVM leaks under load.</p>
+                        Memory is instantly reclaimed by the OS - no JVM leaks under load.</p>
                 </div>
                 <div class="space-y-4">
                     <div class="text-amber-500 font-mono text-xs tracking-widest uppercase">03 / Integrity</div>
@@ -509,7 +521,7 @@
                                 stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M5 13l4 4L19 7"></path>
-                            </svg> <strong>Receive:</strong> /v1/extract — raw XML fields</li>
+                            </svg> <strong>Receive:</strong> /v1/extract - raw XML fields</li>
                         <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500" fill="none"
                                 stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -545,12 +557,12 @@
                                 stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M5 13l4 4L19 7"></path>
-                            </svg> <strong>Receive:</strong> /v1/serialize — normalized, typed JSON</li>
+                            </svg> <strong>Receive:</strong> /v1/serialize - normalized, typed JSON</li>
                         <li class="flex items-center gap-2"><svg class="w-4 h-4 text-amber-500" fill="none"
                                 stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M5 13l4 4L19 7"></path>
-                            </svg> <strong>Validate:</strong> Smart Diagnostics — human-readable errors</li>
+                            </svg> <strong>Validate:</strong> Smart Diagnostics - human-readable errors</li>
                         <li class="flex items-center gap-2"><svg class="w-4 h-4 text-amber-500" fill="none"
                                 stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -562,7 +574,7 @@
                         Pricing & Start Evaluation</a>
                 </div>
             </div>
-            <p class="text-center text-sm text-slate-500 mt-8">OEM and Enterprise licenses available — <a href="https://facturx-engine.lemonsqueezy.com" class="text-amber-500 hover:underline">see all options</a></p>
+            <p class="text-center text-sm text-slate-500 mt-8">OEM and Enterprise licenses available - <a href="https://facturx-engine.lemonsqueezy.com" class="text-amber-500 hover:underline">see all options</a></p>
         </div>
     </section>
 
@@ -632,7 +644,7 @@
                         extracts the raw XML fields from PDFs into a standard JSON format. The <strong>Pro
                             Edition</strong> (<code>/v1/serialize</code>) goes further with
                         <strong>ERP-Ready Serialization</strong>: it normalizes complex CII and UBL XML into a
-                        typed JSON with a versioned schema — ready for direct database insertion.
+                        typed JSON with a versioned schema - ready for direct database insertion.
                     </p>
                 </div>
                 <div class="space-y-2">
@@ -714,6 +726,8 @@
                     <span class="text-slate-700 font-bold mb-1">Guides</span>
                     <a href="./guides/erp-integration.html" class="hover:text-amber-500 transition-colors">ERP Integration</a>
                     <a href="./guides/receive-invoices.html" class="hover:text-amber-500 transition-colors">Receive Invoices</a>
+                    <a href="./guides/xrechnung-to-json.html" class="hover:text-amber-500 transition-colors">XRechnung to JSON</a>
+                    <a href="./guides/facturx-validator-api.html" class="hover:text-amber-500 transition-colors">Validator API</a>
                     <a href="./guides/mustang-vs-engine.html" class="hover:text-amber-500 transition-colors">Mustang vs Engine</a>
                     <a href="./guides/france-2026.html" class="hover:text-amber-500 transition-colors">France 2026</a>
                     <a href="./guides/python-no-java.html" class="hover:text-amber-500 transition-colors">Python vs Java</a>
@@ -729,7 +743,7 @@
             </div>
 
             <div class="text-[10px] font-mono text-slate-600 uppercase tracking-widest">
-                © <span id="year"></span> FACTUR-X ENGINE. ALL RIGHTS RESERVED.
+                &copy; <span id="year"></span> FACTUR-X ENGINE. ALL RIGHTS RESERVED.
             </div>
         </div>
     </footer>
@@ -770,7 +784,7 @@
       "name": "Factur-X Engine",
       "operatingSystem": "Docker, Linux, Windows, macOS",
       "applicationCategory": "DeveloperApplication, BusinessApplication",
-      "description": "The self-hosted translation layer between your ERP and e-invoicing. Ingest, validate, and normalize Factur-X, ZUGFeRD, and XRechnung into usable JSON — or generate compliant XML from your business data.",
+      "description": "The self-hosted translation layer between your ERP and e-invoicing. Ingest, validate, and normalize Factur-X, ZUGFeRD, and XRechnung into usable JSON - or generate compliant XML from your business data.",
       "url": "https://facturx-engine.github.io/facturx-engine/",
       "softwareVersion": "latest",
       "codeRepository": "https://github.com/facturx-engine/facturx-engine",
