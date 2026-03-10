@@ -4,24 +4,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>How to Receive and Process E-Invoices via API | Factur-X Engine</title>
+    <title>Receive Factur-X and XRechnung as ERP JSON | Factur-X Engine</title>
     <meta name="description"
-        content="Step-by-step guide to receiving Factur-X, ZUGFeRD, and XRechnung invoices via REST API. Validate, extract, and serialize into ERP-ready JSON.">
+        content="Validate incoming EN 16931 invoices, extract embedded XML, and normalize Factur-X, ZUGFeRD, and XRechnung into ERP-ready JSON.">
     <link rel="canonical" href="https://facturx-engine.github.io/facturx-engine/guides/receive-invoices.html" />
     <link rel="icon" href="https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png" type="image/png">
 
     <!-- Open Graph -->
     <meta property="og:type" content="article">
     <meta property="og:url" content="https://facturx-engine.github.io/facturx-engine/guides/receive-invoices.html">
-    <meta property="og:title" content="How to Receive and Process E-Invoices via API | Factur-X Engine">
+    <meta property="og:title" content="Receive Factur-X and XRechnung as ERP JSON | Factur-X Engine">
     <meta property="og:description"
-        content="Complete guide: validate, extract, and serialize Factur-X/ZUGFeRD invoices into ERP-ready JSON with code examples.">
+        content="Validate incoming EN 16931 invoices and normalize Factur-X, ZUGFeRD, and XRechnung into ERP-ready JSON with code examples.">
     <meta property="og:image" content="https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png">
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Receive E-Invoices via API | Factur-X Engine">
+    <meta name="twitter:title" content="Receive Factur-X and XRechnung as ERP JSON">
     <meta name="twitter:description"
-        content="Step-by-step: validate, extract, serialize Factur-X invoices. Python, Node.js, and curl examples.">
+        content="Step-by-step: validate incoming EN 16931 invoices and normalize them into ERP JSON. Python, Node.js, and curl examples.">
     <meta name="twitter:image" content="https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -49,14 +49,14 @@
     {
       "@context": "https://schema.org",
       "@type": "TechArticle",
-      "headline": "How to Receive and Process E-Invoices via API",
-      "alternativeHeadline": "Validate, extract, and serialize Factur-X invoices into ERP-ready JSON",
+      "headline": "Receive Factur-X and XRechnung as ERP JSON",
+      "alternativeHeadline": "Validate incoming EN 16931 invoices and normalize them into ERP-ready JSON",
       "image": "https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png",
       "author": {
         "@type": "Organization",
         "name": "Factur-X Engine"
       },
-      "keywords": "receive e-invoices, process Factur-X, extract invoice data, validate ZUGFeRD, e-invoice API, invoice ingestion pipeline"
+      "keywords": "receive Factur-X, XRechnung to JSON, ERP invoice ingestion, validate EN 16931, invoice normalization API"
     }
     </script>
 </head>
@@ -92,10 +92,10 @@
                     Guide / Receive
                 </div>
                 <h1 class="text-4xl md:text-5xl font-black text-white tracking-tight mb-8 leading-tight">
-                    How to Receive and Process <span class="text-amber-500">E-Invoices</span>
+                    Receive <span class="text-amber-500">Factur-X and XRechnung</span> as ERP JSON
                 </h1>
                 <p class="text-xl text-slate-400 font-light leading-relaxed">
-                    A supplier sends you a Factur-X PDF. Your application needs to validate it, extract the data, and push it to your database.
+                    A supplier sends you a Factur-X PDF or XRechnung XML. Your application needs to validate it, normalize the payload, and push clean invoice data to your ERP.
                     This guide walks through the complete receive pipeline, step by step.
                 </p>
             </header>
