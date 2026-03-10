@@ -1,6 +1,6 @@
 # Factur-X Engine
 
-> **The self-hosted translation layer between your ERP and e-invoicing.** Ingest, validate, and normalize Factur-X, UBL, and CII into usable JSON - or generate compliant XML from your business data.
+> **Self-hosted EN 16931 infrastructure for ERP pipelines.** Generate compliant outbound invoices, validate incoming files, and normalize Factur-X, UBL, and CII into usable JSON.
 
 ![Docker Pulls](https://img.shields.io/docker/pulls/facturxengine/facturx-engine) [![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Live%20Demo-blue)](https://huggingface.co/spaces/Facturx-engine/factur-x-engine-demo) [![GitHub](https://img.shields.io/badge/github-repo-181717?logo=github)](https://github.com/facturx-engine/facturx-engine) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT) ![Standard](https://img.shields.io/badge/standard-EN16931-green.svg) ![Privacy First](https://img.shields.io/badge/Privacy-Air_Gapped-success?logo=shield-dog) ![Saxon-HE](https://img.shields.io/badge/Powered_By-Saxon--HE-blue)
 
