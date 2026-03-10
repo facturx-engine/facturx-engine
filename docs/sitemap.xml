@@ -49,6 +49,18 @@
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
+  <url>
+    <loc>https://facturx-engine.github.io/facturx-engine/guides/xrechnung-to-json.html</loc>
+    <lastmod>2026-03-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://facturx-engine.github.io/facturx-engine/guides/facturx-validator-api.html</loc>
+    <lastmod>2026-03-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
   <!-- Reference Pages -->
   <url>
     <loc>https://facturx-engine.github.io/facturx-engine/ref/api-overview.html</loc>

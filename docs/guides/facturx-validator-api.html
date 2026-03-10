@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Factur-X Validator API | Self-Hosted EN 16931 Validation</title>
+    <meta name="description"
+        content="Validate Factur-X, XRechnung, and ZUGFeRD files with a self-hosted validator API. EN 16931 checks, validation completeness, and explicit PDF/A semantics.">
+    <link rel="canonical" href="https://facturx-engine.github.io/facturx-engine/guides/facturx-validator-api.html" />
+    <link rel="icon" href="https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png" type="image/png">
+
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://facturx-engine.github.io/facturx-engine/guides/facturx-validator-api.html">
+    <meta property="og:title" content="Factur-X Validator API | Self-Hosted EN 16931 Validation">
+    <meta property="og:description"
+        content="Use a self-hosted validator API for Factur-X, XRechnung, and ZUGFeRD with explicit validation completeness and PDF/A semantics.">
+    <meta property="og:image" content="https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Factur-X Validator API | Self-Hosted EN 16931 Validation">
+    <meta name="twitter:description"
+        content="Validate Factur-X, XRechnung, and ZUGFeRD files with explicit validation completeness and tri-state PDF/A reporting.">
+    <meta name="twitter:image" content="https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        amber: { 500: '#f59e0b', 600: '#d97706' },
+                        slate: { 950: '#020617' }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "TechArticle",
+      "headline": "Factur-X Validator API",
+      "alternativeHeadline": "Self-hosted EN 16931 validation for Factur-X, XRechnung, and ZUGFeRD",
+      "image": "https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png",
+      "author": {
+        "@type": "Organization",
+        "name": "Factur-X Engine"
+      },
+      "keywords": "factur-x validator api, xrechnung validator api, EN 16931 validation api, zugferd validation"
+    }
+    </script>
+</head>
+
+<body class="bg-slate-950 text-slate-300 font-sans selection:bg-amber-500 selection:text-black leading-relaxed">
+
+    <nav
+        class="fixed top-0 w-full z-50 border-b border-white/5 bg-slate-950/80 backdrop-blur-md h-20 flex items-center">
+        <div class="max-w-7xl mx-auto px-6 w-full flex items-center justify-between">
+            <a href="../index.html" class="flex items-center gap-3">
+                <div
+                    class="w-10 h-10 border-2 border-amber-500 flex items-center justify-center rounded-sm bg-slate-900">
+                    <span class="font-mono font-bold text-amber-500">FX</span>
+                </div>
+                <span class="text-xl font-bold tracking-tighter text-white uppercase">Factur-X <span
+                        class="text-amber-500">Engine</span></span>
+            </a>
+            <div class="flex items-center gap-4">
+                <a href="../ref/api-overview.html"
+                    class="text-slate-400 hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest">Reference</a>
+                <a href="https://github.com/facturx-engine/facturx-engine"
+                    class="px-4 py-2 border border-white/10 rounded text-xs font-bold uppercase tracking-widest hover:bg-white/5 transition-colors">GitHub</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-40 pb-20">
+        <article class="max-w-3xl mx-auto px-6">
+            <header class="mb-16">
+                <div
+                    class="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-500 text-[10px] uppercase tracking-widest font-bold mb-6">
+                    Guide / Validation API
+                </div>
+                <h1 class="text-4xl md:text-5xl font-black text-white tracking-tight mb-8 leading-tight">
+                    Use a <span class="text-amber-500">Factur-X Validator API</span>, not a fragile validation stack
+                </h1>
+                <p class="text-xl text-slate-400 font-light leading-relaxed">
+                    If your ERP or middleware needs to reject broken invoices before they hit your database, a validator API is the
+                    simplest control point. The key is not just returning valid or invalid, but exposing what actually ran.
+                </p>
+            </header>
+
+            <section class="mb-20 space-y-6">
+                <h2 class="text-2xl font-bold text-white">What the API Gives You</h2>
+                <ul class="list-disc list-inside space-y-3 text-slate-400">
+                    <li>EN 16931 validation for XML and Factur-X PDFs</li>
+                    <li><code>validation_completeness</code> so you know whether all applicable layers ran</li>
+                    <li><code>pdfa_valid</code> with tri-state semantics: true, false, or null</li>
+                    <li>Structured errors you can log, surface, or map into workflow rules</li>
+                </ul>
+            </section>
+
+            <section class="mb-20 space-y-6">
+                <h2 class="text-2xl font-bold text-white">Validate XML or PDF</h2>
+                <div class="bg-black border border-white/10 rounded-lg p-6 overflow-x-auto">
+                    <div class="text-xs text-slate-500 font-mono mb-2 uppercase tracking-widest">XML Validation</div>
+                    <pre class="font-mono text-sm text-slate-300"><code>curl -X POST "http://localhost:8000/v1/validate" \
+  -F "file=@invoice.xml"</code></pre>
+                </div>
+                <div class="bg-black border border-white/10 rounded-lg p-6 overflow-x-auto">
+                    <div class="text-xs text-slate-500 font-mono mb-2 uppercase tracking-widest">PDF Validation</div>
+                    <pre class="font-mono text-sm text-slate-300"><code>curl -X POST "http://localhost:8000/v1/validate" \
+  -F "file=@invoice.pdf"</code></pre>
+                </div>
+            </section>
+
+            <section class="mb-20 space-y-6">
+                <h2 class="text-2xl font-bold text-white">Interpret the Result Safely</h2>
+                <p class="text-slate-400">
+                    For PDF/A, the API distinguishes three states. That matters operationally because "not checked" is not the same thing as
+                    "checked and failed".
+                </p>
+                <div class="bg-black border border-white/10 rounded-lg p-6 overflow-x-auto">
+                    <div class="text-xs text-slate-500 font-mono mb-2 uppercase tracking-widest">Response Example</div>
+                    <pre class="font-mono text-sm text-slate-300"><code>{
+  "valid": true,
+  "format": "factur-x",
+  "pdfa_valid": null,
+  "validation_completeness": "partial",
+  "layers_executed": ["xsd"],
+  "layers_skipped": [
+    {"layer": "pdfa", "reason": "verapdf_unavailable"}
+  ]
+}</code></pre>
+                </div>
+                <ul class="list-disc list-inside space-y-3 text-slate-400">
+                    <li><code>pdfa_valid = true</code>: VeraPDF ran and the PDF passed</li>
+                    <li><code>pdfa_valid = false</code>: VeraPDF ran and the PDF failed</li>
+                    <li><code>pdfa_valid = null</code>: PDF/A was not checked or did not apply</li>
+                </ul>
+            </section>
+
+            <section class="mb-20 space-y-6">
+                <h2 class="text-2xl font-bold text-white">Where It Fits</h2>
+                <div class="bg-[#0d1117] rounded-lg border border-white/10 overflow-hidden">
+                    <div class="px-4 py-2 border-b border-white/5 text-xs font-mono text-slate-500">Control Point</div>
+                    <pre class="p-6 overflow-x-auto text-sm font-mono text-slate-300"><code>
+  Supplier XML/PDF
+       |
+       v
+  /v1/validate  -> reject, quarantine, or route
+       |
+       v
+  /v1/serialize -> ERP-ready JSON
+                    </code></pre>
+                </div>
+            </section>
+
+            <section class="mb-16 pt-12 border-t border-white/5">
+                <h2 class="text-sm font-bold text-white mb-4 uppercase tracking-widest">See Also</h2>
+                <div class="grid md:grid-cols-3 gap-4">
+                    <a href="../tools/validator.html" class="bg-slate-900 border border-white/10 rounded-lg p-4 hover:border-amber-500/30 transition-colors">
+                        <div class="text-amber-500 font-mono text-xs uppercase tracking-widest mb-1">Tool</div>
+                        <div class="text-white font-bold text-sm">Validator Tool</div>
+                    </a>
+                    <a href="error-codes.html" class="bg-slate-900 border border-white/10 rounded-lg p-4 hover:border-amber-500/30 transition-colors">
+                        <div class="text-amber-500 font-mono text-xs uppercase tracking-widest mb-1">Guide</div>
+                        <div class="text-white font-bold text-sm">Error Codes Reference</div>
+                    </a>
+                    <a href="../ref/api-reference.html" class="bg-slate-900 border border-white/10 rounded-lg p-4 hover:border-amber-500/30 transition-colors">
+                        <div class="text-amber-500 font-mono text-xs uppercase tracking-widest mb-1">Reference</div>
+                        <div class="text-white font-bold text-sm">Full API Reference</div>
+                    </a>
+                </div>
+            </section>
+
+            <section class="text-center py-10 border-t border-white/5">
+                <h2 class="text-2xl font-bold text-white mb-4">Start Validating Invoices</h2>
+                <div class="bg-black border border-white/10 rounded-lg p-4 max-w-lg mx-auto mb-8">
+                    <pre class="font-mono text-sm text-slate-300"><code>docker run -d -p 8000:8000 facturxengine/facturx-engine:latest</code></pre>
+                </div>
+                <div class="flex justify-center gap-4 flex-wrap">
+                    <a href="../ref/api-reference.html"
+                        class="inline-flex items-center justify-center px-8 py-4 bg-amber-500 text-black font-bold uppercase tracking-widest hover:bg-amber-400 transition-colors">
+                        API Reference
+                    </a>
+                    <a href="../tools/validator.html"
+                        class="inline-flex items-center justify-center px-8 py-4 border border-white/10 text-white font-bold uppercase tracking-widest hover:bg-white/5 transition-colors">
+                        Validator Tool
+                    </a>
+                </div>
+            </section>
+        </article>
+    </main>
+
+    <footer class="py-12 bg-slate-900 border-t border-white/5">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <a href="../"
+                class="text-slate-500 hover:text-white transition-colors text-xs font-bold uppercase tracking-widest">Back
+                to Home</a>
+        </div>
+    </footer>
+</body>
+
+</html>

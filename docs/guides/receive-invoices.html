@@ -109,23 +109,23 @@
                     </div>
                     <pre class="p-6 overflow-x-auto text-sm font-mono text-slate-300"><code>
   Supplier PDF/XML
-       │
-       ▼
-  <span class="text-amber-500">┌─────────────────┐</span>
-  <span class="text-amber-500">│  /v1/validate   │</span>  →  Is this invoice EN 16931 compliant?
-  <span class="text-amber-500">└────────┬────────┘</span>
-       │ valid?
-       ▼
-  <span class="text-amber-500">┌─────────────────┐</span>
-  <span class="text-amber-500">│  /v1/extract    │</span>  →  Pull raw XML fields as JSON (Community)
-  <span class="text-amber-500">└────────┬────────┘</span>
-       │
-       ▼
-  <span class="text-amber-500">┌─────────────────┐</span>
-  <span class="text-amber-500">│  /v1/serialize  │</span>  →  Normalized, typed JSON with schema (Pro)
-  <span class="text-amber-500">└────────┬────────┘</span>
-       │
-       ▼
+       |
+       v
+  +-----------------+
+  |  /v1/validate   |  ->  Is this invoice EN 16931 compliant?
+  +--------+--------+
+       | valid?
+       v
+  +-----------------+
+  |  /v1/extract    |  ->  Pull raw XML fields as JSON (Community)
+  +--------+--------+
+       |
+       v
+  +-----------------+
+  |  /v1/serialize  |  ->  Normalized, typed JSON with schema (Pro)
+  +--------+--------+
+       |
+       v
   Your Database / ERP
 </code></pre>
                 </div>
@@ -384,10 +384,14 @@
             <!-- See Also -->
             <section class="mb-16 pt-12 border-t border-white/5">
                 <h2 class="text-sm font-bold text-white mb-4 uppercase tracking-widest">See Also</h2>
-                <div class="grid md:grid-cols-3 gap-4">
+                <div class="grid md:grid-cols-4 gap-4">
                     <a href="erp-integration.html" class="bg-slate-900 border border-white/10 rounded-lg p-4 hover:border-amber-500/30 transition-colors">
                         <div class="text-amber-500 font-mono text-xs uppercase tracking-widest mb-1">Guide</div>
                         <div class="text-white font-bold text-sm">ERP Integration Guide</div>
+                    </a>
+                    <a href="xrechnung-to-json.html" class="bg-slate-900 border border-white/10 rounded-lg p-4 hover:border-amber-500/30 transition-colors">
+                        <div class="text-amber-500 font-mono text-xs uppercase tracking-widest mb-1">Guide</div>
+                        <div class="text-white font-bold text-sm">XRechnung to JSON</div>
                     </a>
                     <a href="../ref/json-schema.html" class="bg-slate-900 border border-white/10 rounded-lg p-4 hover:border-amber-500/30 transition-colors">
                         <div class="text-amber-500 font-mono text-xs uppercase tracking-widest mb-1">Reference</div>

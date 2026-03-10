@@ -57,7 +57,7 @@
         "name": "Factur-X Engine"
       },
       "keywords": "ERP integration, e-invoicing middleware, Factur-X API, ZUGFeRD REST API, XRechnung integration, EN 16931",
-      "articleBody": "Factur-X Engine acts as a translation layer between your ERP and e-invoicing regulations. Receive supplier invoices as clean JSON, send compliant XML or PDF — all through a single REST API."
+      "articleBody": "Factur-X Engine acts as a translation layer between your ERP and e-invoicing regulations. Receive supplier invoices as clean JSON, send compliant XML or PDF - all through a single REST API."
     }
     </script>
 </head>
@@ -128,17 +128,17 @@
                     <pre class="p-6 overflow-x-auto text-sm font-mono text-slate-300"><code>
   <span class="text-amber-500">RECEIVE (Supplier invoices)</span>
 
-  Supplier PDF/XML ──&gt; <span class="text-amber-500">Factur-X Engine</span> ──&gt; Clean JSON ──&gt; Your ERP / DB
-                       │ /v1/validate │
-                       │ /v1/extract  │
-                       │ /v1/serialize│
+  Supplier PDF/XML --> <span class="text-amber-500">Factur-X Engine</span> --> Clean JSON --> Your ERP / DB
+                       | /v1/validate |
+                       | /v1/extract  |
+                       | /v1/serialize|
 
   <span class="text-amber-500">SEND (Your invoices)</span>
 
-  Your ERP JSON ──&gt; <span class="text-amber-500">Factur-X Engine</span> ──&gt; Compliant PDF/XML ──&gt; Client
-                    │ /v1/xml     │
-                    │ /v1/convert │
-                    │ /v1/merge   │
+  Your ERP JSON --> <span class="text-amber-500">Factur-X Engine</span> --> Compliant PDF/XML --> Client
+                    | /v1/xml     |
+                    | /v1/convert |
+                    | /v1/merge   |
 </code></pre>
                 </div>
             </section>
@@ -247,7 +247,7 @@
 
 ENGINE = <span class="text-green-400">"http://localhost:8000"</span>
 
-<span class="text-slate-500"># ── RECEIVE: Supplier sends a Factur-X PDF ──</span>
+<span class="text-slate-500"># RECEIVE: Supplier sends a Factur-X PDF</span>
 <span class="text-pink-400">def</span> <span class="text-blue-400">ingest_supplier_invoice</span>(pdf_path):
     <span class="text-slate-500"># Step 1: Validate compliance</span>
     r = requests.post(f<span class="text-green-400">"{ENGINE}/v1/validate"</span>,
@@ -261,7 +261,7 @@ ENGINE = <span class="text-green-400">"http://localhost:8000"</span>
         files={<span class="text-green-400">"file"</span>: open(pdf_path, <span class="text-green-400">"rb"</span>)})
     <span class="text-pink-400">return</span> r.json()[<span class="text-green-400">"invoice_json"</span>]
 
-<span class="text-slate-500"># ── SEND: Generate a compliant invoice ──</span>
+<span class="text-slate-500"># SEND: Generate a compliant invoice</span>
 <span class="text-pink-400">def</span> <span class="text-blue-400">generate_invoice</span>(pdf_path, metadata):
     r = requests.post(f<span class="text-green-400">"{ENGINE}/v1/convert"</span>,
         files={<span class="text-green-400">"pdf"</span>: open(pdf_path, <span class="text-green-400">"rb"</span>)},
@@ -275,10 +275,14 @@ ENGINE = <span class="text-green-400">"http://localhost:8000"</span>
             <!-- See Also -->
             <section class="mb-16 pt-12 border-t border-white/5">
                 <h2 class="text-sm font-bold text-white mb-4 uppercase tracking-widest">See Also</h2>
-                <div class="grid md:grid-cols-3 gap-4">
+                <div class="grid md:grid-cols-4 gap-4">
                     <a href="receive-invoices.html" class="bg-slate-900 border border-white/10 rounded-lg p-4 hover:border-amber-500/30 transition-colors">
                         <div class="text-amber-500 font-mono text-xs uppercase tracking-widest mb-1">Guide</div>
                         <div class="text-white font-bold text-sm">Receive &amp; Process E-Invoices</div>
+                    </a>
+                    <a href="xrechnung-to-json.html" class="bg-slate-900 border border-white/10 rounded-lg p-4 hover:border-amber-500/30 transition-colors">
+                        <div class="text-amber-500 font-mono text-xs uppercase tracking-widest mb-1">Guide</div>
+                        <div class="text-white font-bold text-sm">XRechnung to JSON</div>
                     </a>
                     <a href="mustang-vs-engine.html" class="bg-slate-900 border border-white/10 rounded-lg p-4 hover:border-amber-500/30 transition-colors">
                         <div class="text-amber-500 font-mono text-xs uppercase tracking-widest mb-1">Comparison</div>
