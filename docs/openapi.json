@@ -3,7 +3,7 @@
   "info": {
     "title": "Factur-X Engine",
     "description": "Production-ready REST API for Factur-X (ZUGFeRD 2.4) conversions and data extraction.",
-    "version": "1.6.7"
+    "version": "1.6.9"
   },
   "paths": {
     "/v1/convert": {
@@ -12,7 +12,7 @@
           "Advanced Integration"
         ],
         "summary": "Convert To Facturx",
-        "description": "Attach Factur-X/CII XML to an existing standard PDF invoice (BYOPDF).\n\nThe input must be a valid PDF file (Max 20MB). The API will generate the XML \nfrom the metadata and embed it into the PDF to create a PDF/A-3 compliant Factur-X invoice.",
+        "description": "Attach Factur-X/CII XML to an existing standard PDF invoice (BYOPDF).\n\nThe input must be a valid PDF file (max upload size is controlled by MAX_UPLOAD_SIZE_MB, default 10MB). The API generates XML from metadata and embeds it into the PDF to create a Factur-X document. Use /v1/validate to verify final PDF/A status when needed.",
         "operationId": "convert_to_facturx_v1_convert_post",
         "requestBody": {
           "content": {
@@ -192,7 +192,7 @@
           "Core Workflows"
         ],
         "summary": "Extract Facturx",
-        "description": "Extract Factur-X XML from a PDF and return structured invoice data as JSON.\n\nThis endpoint is designed for invoice reception workflows:\n1. Detects if the PDF contains embedded Factur-X/ZUGFeRD XML\n2. Extracts and parses the XML\n3. Returns structured invoice data (parties, totals, line items)\n\nUse cases:\n- Automated invoice reception\n- ERP integration\n- Invoice validation before processing",
+        "description": "Extract Factur-X XML from a PDF and return heuristic best-effort invoice JSON.\n\nThis endpoint is designed for invoice reception workflows:\n1. Detects if the PDF contains embedded Factur-X/ZUGFeRD XML\n2. Extracts and parses the XML\n3. Returns structured invoice data (parties, totals, line items)\n\nUse cases:\n- Automated invoice reception\n- ERP integration\n- Invoice validation before processing",
         "operationId": "extract_facturx_v1_extract_post",
         "requestBody": {
           "content": {
@@ -254,7 +254,7 @@
           "Advanced Integration"
         ],
         "summary": "Serialize Facturx",
-        "description": "Business-Ready JSON Serialization (Pro Feature).\n\nTransforms XML data into a normalized, high-precision JSON format \ndesigned for ERP and accounting system integration.\n\n**Trial Mode**: Available for reference files.\n**Community Mode**: Returns obfuscated (masked) data for schema testing.",
+        "description": "Business-Ready JSON Serialization (Pro Feature).\n\nTransforms XML data into normalized ERP integration JSON with fallback transparency.\n\n**Community Mode**: Not available - returns 403 with a link to obtain a license key.",
         "operationId": "serialize_facturx_v1_serialize_post",
         "requestBody": {
           "content": {
@@ -316,7 +316,7 @@
           "Core Workflows"
         ],
         "summary": "Merge Facturx",
-        "description": "Embed an existing XML (Factur-X/ZUGFeRD/XRechnung) into a PDF/A-3b.\n\n**Community endpoint** \u2014 no license required.\n\nErrors:\n- **400** Bad file (not PDF or not XML)\n- **409** PDF already contains embedded Factur-X XML\n- **422** PDF is not PDF/A-3b compliant, or XML fails EN 16931 validation",
+        "description": "Embed an existing XML (Factur-X/ZUGFeRD/XRechnung) into a PDF container.\n\n**Community endpoint** - no license required.\n\nThis endpoint validates input constraints, but does not prove final PDF/A compliance of the produced file.\nUse /v1/validate on the output when PDF/A evidence is required.\n\nErrors:\n- **400** Bad file (not PDF or not XML)\n- **409** PDF already contains embedded Factur-X XML\n- **422** Input PDF is not declared PDF/A-3b, or XML fails EN 16931 validation",
         "operationId": "merge_facturx_v1_merge_post",
         "requestBody": {
           "content": {
@@ -330,7 +330,7 @@
         },
         "responses": {
           "200": {
-            "description": "Factur-X PDF with embedded XML"
+            "description": "Factur-X PDF with embedded XML (final PDF/A status not asserted)"
           },
           "400": {
             "description": "Invalid file type",
@@ -353,7 +353,7 @@
             }
           },
           "422": {
-            "description": "Not PDF/A-3b or invalid XML",
+            "description": "Input not PDF/A-3b or invalid XML",
             "content": {
               "application/json": {
                 "schema": {
@@ -694,22 +694,18 @@
           },
           "total_net_amount": {
             "type": "string",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Total Net Amount"
           },
           "total_tax_amount": {
             "type": "string",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Total Tax Amount"
           },
           "total_gross_amount": {
             "type": "string",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Total Gross Amount"
           },
           "amount_due": {
             "type": "string",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Amount Due"
           },
           "format": {
@@ -884,7 +880,6 @@
           "context": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -1081,6 +1076,68 @@
           "xml_extracted"
         ],
         "title": "ExtractionResult"
+      },
+      "FallbackApplied": {
+        "properties": {
+          "field": {
+            "type": "string",
+            "title": "Field",
+            "description": "Stable invoice dot-path (for example: invoice.seller.address.country_code)"
+          },
+          "fallback_type": {
+            "type": "string",
+            "enum": [
+              "default_value",
+              "placeholder_value",
+              "derived_value",
+              "coercion",
+              "xml_parser_recovery",
+              "line_skipped",
+              "line_truncated"
+            ],
+            "title": "Fallback Type"
+          },
+          "original_state": {
+            "type": "string",
+            "enum": [
+              "missing",
+              "invalid",
+              "malformed",
+              "unparseable",
+              "truncated"
+            ],
+            "title": "Original State"
+          },
+          "applied_value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Applied Value",
+            "description": "Applied scalar value (or null when no value was injected)."
+          }
+        },
+        "type": "object",
+        "required": [
+          "field",
+          "fallback_type",
+          "original_state"
+        ],
+        "title": "FallbackApplied",
+        "description": "Single fallback operation applied during /serialize processing."
       },
       "HTTPValidationError": {
         "properties": {
@@ -1316,7 +1373,6 @@
           },
           "quantity": {
             "type": "string",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Quantity"
           },
           "unit_code": {
@@ -1338,19 +1394,16 @@
           },
           "net_price": {
             "type": "string",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Net Price",
             "description": "Net unit price"
           },
           "line_total": {
             "type": "string",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Line Total",
             "description": "Net line total (Qty * Price)"
           },
           "vat_rate": {
             "type": "string",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Vat Rate",
             "description": "VAT percentage (e.g., 20.00)"
           },
@@ -1533,6 +1586,28 @@
             ],
             "title": "Pdfa Valid",
             "description": "PDF/A-3b compliance (null if input was raw XML or VeraPDF unavailable)"
+          },
+          "validation_completeness": {
+            "type": "string",
+            "title": "Validation Completeness",
+            "description": "full if all applicable layers ran, partial if some were skipped",
+            "default": "full"
+          },
+          "layers_executed": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Layers Executed",
+            "description": "Validation layers that actually ran"
+          },
+          "layers_skipped": {
+            "items": {
+              "$ref": "#/components/schemas/SkippedLayer"
+            },
+            "type": "array",
+            "title": "Layers Skipped",
+            "description": "Validation layers that were skipped with reasons"
           }
         },
         "type": "object",
@@ -1588,7 +1663,6 @@
           "extensions": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -1734,6 +1808,18 @@
             "type": "boolean",
             "title": "Success"
           },
+          "schema_version": {
+            "type": "string",
+            "title": "Schema Version",
+            "description": "Semantic version of the BusinessReadyInvoice schema. Minor bumps = new optional fields. Major bumps = breaking changes.",
+            "default": "1.0.0"
+          },
+          "engine_version": {
+            "type": "string",
+            "title": "Engine Version",
+            "description": "Factur-X Engine version that produced this response.",
+            "default": "0.0.0"
+          },
           "invoice": {
             "anyOf": [
               {
@@ -1744,6 +1830,20 @@
               }
             ]
           },
+          "xml_recovery_applied": {
+            "type": "boolean",
+            "title": "Xml Recovery Applied",
+            "description": "True when XML parser recovery mode had to repair malformed XML.",
+            "default": false
+          },
+          "fallbacks_applied": {
+            "items": {
+              "$ref": "#/components/schemas/FallbackApplied"
+            },
+            "type": "array",
+            "title": "Fallbacks Applied",
+            "description": "Transparent list of fallback operations applied during serialization."
+          },
           "errors": {
             "items": {
               "additionalProperties": {
@@ -1752,8 +1852,7 @@
               "type": "object"
             },
             "type": "array",
-            "title": "Errors",
-            "default": []
+            "title": "Errors"
           }
         },
         "type": "object",
@@ -1762,6 +1861,27 @@
         ],
         "title": "SerializationResponse",
         "description": "Response model for the /serialize endpoint."
+      },
+      "SkippedLayer": {
+        "properties": {
+          "layer": {
+            "type": "string",
+            "title": "Layer",
+            "description": "Layer name (xsd, schematron, pdfa3b, br_fr_ctc)"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason",
+            "description": "Why this layer was skipped (e.g. tool_missing:saxon_jar)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "layer",
+          "reason"
+        ],
+        "title": "SkippedLayer",
+        "description": "A validation layer that was skipped, with the reason why."
       },
       "TaxBreakdownItem": {
         "properties": {
@@ -1821,17 +1941,14 @@
           },
           "rate": {
             "type": "string",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Rate"
           },
           "basis_amount": {
             "type": "string",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Basis Amount"
           },
           "tax_amount": {
             "type": "string",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Tax Amount"
           }
         },
@@ -1985,7 +2102,7 @@
               }
             ],
             "title": "Format",
-            "description": "Detected format (factur-x, zugferd, order-x)"
+            "description": "Detected format (factur-x, zugferd, ubl)"
           },
           "flavor": {
             "anyOf": [
@@ -2030,6 +2147,28 @@
             ],
             "title": "Pdfa Valid",
             "description": "PDF/A-3b compliance (null if input was raw XML or VeraPDF unavailable)"
+          },
+          "validation_completeness": {
+            "type": "string",
+            "title": "Validation Completeness",
+            "description": "full if all applicable layers ran, partial if some were skipped",
+            "default": "full"
+          },
+          "layers_executed": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Layers Executed",
+            "description": "Validation layers that actually ran (xsd, schematron, pdfa3b, br_fr_ctc)"
+          },
+          "layers_skipped": {
+            "items": {
+              "$ref": "#/components/schemas/SkippedLayer"
+            },
+            "type": "array",
+            "title": "Layers Skipped",
+            "description": "Validation layers that were skipped with reasons"
           }
         },
         "type": "object",

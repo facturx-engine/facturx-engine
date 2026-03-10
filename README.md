@@ -1,6 +1,6 @@
 # Factur-X Engine
 
-> **The self-hosted translation layer between your ERP and e-invoicing.** Ingest, validate, and normalize Factur-X, UBL, and CII into usable JSON — or generate compliant XML from your business data.
+> **The self-hosted translation layer between your ERP and e-invoicing.** Ingest, validate, and normalize Factur-X, UBL, and CII into usable JSON - or generate compliant XML from your business data.
 
 ![Docker Pulls](https://img.shields.io/docker/pulls/facturxengine/facturx-engine) [![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Live%20Demo-blue)](https://huggingface.co/spaces/Facturx-engine/factur-x-engine-demo) [![GitHub](https://img.shields.io/badge/github-repo-181717?logo=github)](https://github.com/facturx-engine/facturx-engine) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT) ![Standard](https://img.shields.io/badge/standard-EN16931-green.svg) ![Privacy First](https://img.shields.io/badge/Privacy-Air_Gapped-success?logo=shield-dog) ![Saxon-HE](https://img.shields.io/badge/Powered_By-Saxon--HE-blue)
 
@@ -20,11 +20,11 @@ docker run -d -p 8000:8000 --name facturx-engine facturxengine/facturx-engine:la
 
 ---
 
-## Receive — Ingest Supplier Invoices
+## Receive - Ingest Supplier Invoices
 
 Your ERP receives a raw XML or PDF from a supplier. The engine validates it, extracts the data, and gives you clean JSON.
 
-### 1. Validate — Compliance Gate
+### 1. Validate - Compliance Gate
 
 Check any CII or UBL invoice (PDF or XML) against EN 16931 Schematron rules before ingesting into your database.
 
@@ -35,7 +35,7 @@ curl -X POST "http://localhost:8000/v1/validate" \
 
 The response includes `validation_completeness` (`full` or `partial`) and `layers_executed` so your application knows exactly which checks ran.
 
-### 2. Extract — Raw XML Fields
+### 2. Extract - Raw XML Fields
 
 Pull structured data from a received Factur-X/ZUGFeRD PDF or standalone XML.
 
@@ -44,9 +44,9 @@ curl -X POST "http://localhost:8000/v1/extract" \
   -F "file=@invoice.pdf"
 ```
 
-### 3. Serialize — ERP-Ready JSON (Pro)
+### 3. Serialize - ERP-Ready JSON (Pro)
 
-Unlike raw extraction, `/v1/serialize` returns a normalized, typed JSON object with a [versioned schema](docs/schemas/serialize-response.v1.schema.json) — ready for direct database insertion.
+Unlike raw extraction, `/v1/serialize` returns normalized ERP integration JSON with a [versioned schema](docs/schemas/serialize-response.v1.schema.json) and explicit `fallbacks_applied` transparency.
 
 ```bash
 curl -X POST "http://localhost:8000/v1/serialize" \
@@ -81,11 +81,11 @@ curl -X POST "http://localhost:8000/v1/serialize" \
 
 ---
 
-## Send — Generate Compliant Invoices
+## Send - Generate Compliant Invoices
 
 Your ERP has business data. The engine transforms it into regulation-compliant XML or PDF.
 
-### 4. Generate XML — Business Data to CII
+### 4. Generate XML - Business Data to CII
 
 Transform your ERP JSON metadata into a Cross-Industry Invoice XML.
 
@@ -95,7 +95,7 @@ curl -X POST "http://localhost:8000/v1/xml" \
   -o invoice.xml
 ```
 
-### 5. Convert — One-Step PDF Generation
+### 5. Convert - One-Step PDF Generation
 
 Generates XML from JSON metadata and embeds it into your PDF in a single call.
 
@@ -103,18 +103,18 @@ Generates XML from JSON metadata and embeds it into your PDF in a single call.
 curl -X POST "http://localhost:8000/v1/convert" \
   -F "pdf=@examples/invoice_raw.pdf" \
   -F "metadata=$(cat examples/simple_invoice.json)" \
-  --output invoice_compliant.pdf
+  --output invoice_facturx.pdf
 ```
 
-### 6. Merge — Assemble PDF + XML
+### 6. Merge - Assemble PDF + XML
 
-Embed an existing XML (Factur-X, ZUGFeRD, XRechnung) into a PDF/A-3b container.
+Embed an existing XML (Factur-X, ZUGFeRD, XRechnung) into a PDF container. Use `/v1/validate` on the output when PDF/A evidence is required.
 
 ```bash
 curl -X POST "http://localhost:8000/v1/merge" \
   -F "pdf=@examples/invoice_raw.pdf" \
   -F "xml=@invoice.xml" \
-  --output invoice_compliant.pdf
+  --output invoice_facturx.pdf
 ```
 
 **Windows users:** Replace `curl` with `curl.exe` and use PowerShell syntax for file reading.
@@ -123,9 +123,9 @@ curl -X POST "http://localhost:8000/v1/merge" \
 
 ## Why Not Roll Your Own?
 
-You can parse CII XML in a day. But EN 16931 compliance isn't parsing — it's **ongoing maintenance**:
+You can parse CII XML in a day. But EN 16931 compliance isn't parsing - it's **ongoing maintenance**:
 
-- **Regulatory watch**: Schematron rules change with every spec revision (XRechnung 3.0.2, Factur-X 1.0.07…). Who updates your validation logic when Chorus Pro or KoSIT ships new business rules?
+- **Regulatory watch**: Schematron rules change with every spec revision (XRechnung 3.0.2, Factur-X 1.0.07...). Who updates your validation logic when Chorus Pro or KoSIT ships new business rules?
 - **Edge-case coverage**: Real-world invoices contain malformed IBANs, amounts with 3+ decimal places that cause silent rounding errors, dates in the past, negative totals masquerading as standard invoices. The engine's test corpus covers 200+ of these cases.
 - **Validation depth**: A syntactically valid invoice can still break your accounting pipeline. The engine runs the same Schematron rules as Chorus Pro and KoSIT, catching issues before they corrupt your database.
 
@@ -135,11 +135,11 @@ The engine absorbs that maintenance so your team doesn't have to.
 
 ## Documentation
 
-**[Full API Reference](https://facturx-engine.github.io/facturx-engine/ref/api-reference.html)** — All endpoints, parameters, and response formats
-**[Integration Recipes](https://facturx-engine.github.io/facturx-engine/#api)** — Python, Node.js, PHP integration guides
-**[JSON Schema (v1)](docs/schemas/serialize-response.v1.schema.json)** — Versioned response contract for `/v1/serialize`
-**[OpenAPI Specification](https://raw.githubusercontent.com/facturx-engine/facturx-engine/main/docs/openapi.json)** — Machine-readable API spec
-**[Changelog](https://github.com/facturx-engine/facturx-engine/releases)** — Version history and release notes
+**[Full API Reference](https://facturx-engine.github.io/facturx-engine/ref/api-reference.html)** - All endpoints, parameters, and response formats
+**[Integration Recipes](https://facturx-engine.github.io/facturx-engine/#api)** - Python, Node.js, PHP integration guides
+**[JSON Schema (v1)](docs/schemas/serialize-response.v1.schema.json)** - Versioned response contract for `/v1/serialize`
+**[OpenAPI Specification](https://raw.githubusercontent.com/facturx-engine/facturx-engine/main/docs/openapi.json)** - Machine-readable API spec
+**[Changelog](https://github.com/facturx-engine/facturx-engine/releases)** - Version history and release notes
 
 ---
 
@@ -149,9 +149,9 @@ This **Community** edition is production-ready. Open Core (transparent Python, M
 
 | | Community | Pro |
 | :--- | :--- | :--- |
-| **Receive** | `/v1/extract` — raw XML fields | `/v1/serialize` — normalized, typed JSON with [versioned schema](docs/schemas/serialize-response.v1.schema.json) |
-| **Validate** | EN 16931 Schematron (raw XPath errors) | **Smart Diagnostics** — human-readable errors + proactive scan |
-| **PDF/A-3** | — | VeraPDF compliance check |
+| **Receive** | `/v1/extract` - heuristic best-effort extraction JSON | `/v1/serialize` - normalized ERP integration JSON with [versioned schema](docs/schemas/serialize-response.v1.schema.json) + fallback transparency |
+| **Validate** | EN 16931 Schematron (raw XPath errors) | **Smart Diagnostics** - human-readable errors + proactive scan |
+| **PDF/A-3** | - | VeraPDF compliance check |
 | **Support** | GitHub Issues | Priority email |
 
 **Pricing & license options** (Pro, OEM, Enterprise): **[facturx-engine.lemonsqueezy.com](https://facturx-engine.lemonsqueezy.com)**
@@ -190,7 +190,7 @@ Test 100% of the Pro features on your own files, within your own infrastructure.
 
 ### Architecture
 
-Schematron (Saxon-HE) and PDF/A-3 (VeraPDF) validations run as isolated Java subprocesses. Memory is instantly reclaimed by the OS — no JVM memory leaks under load.
+Schematron (Saxon-HE) and PDF/A-3 (VeraPDF) validations run as isolated Java subprocesses. Memory is instantly reclaimed by the OS - no JVM memory leaks under load.
 
 ### Configuration
 
@@ -226,3 +226,4 @@ Schematron (Saxon-HE) and PDF/A-3 (VeraPDF) validations run as isolated Java sub
 ---
 
 *Maintained by the Factur-X Engine Team.*
+

@@ -189,6 +189,69 @@
       "title": "BusinessReadyInvoice",
       "type": "object"
     },
+    "FallbackApplied": {
+      "description": "Single fallback operation applied during /serialize processing.",
+      "properties": {
+        "field": {
+          "description": "Stable invoice dot-path (for example: invoice.seller.address.country_code)",
+          "title": "Field",
+          "type": "string"
+        },
+        "fallback_type": {
+          "enum": [
+            "default_value",
+            "placeholder_value",
+            "derived_value",
+            "coercion",
+            "xml_parser_recovery",
+            "line_skipped",
+            "line_truncated"
+          ],
+          "title": "Fallback Type",
+          "type": "string"
+        },
+        "original_state": {
+          "enum": [
+            "missing",
+            "invalid",
+            "malformed",
+            "unparseable",
+            "truncated"
+          ],
+          "title": "Original State",
+          "type": "string"
+        },
+        "applied_value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Applied scalar value (or null when no value was injected).",
+          "title": "Applied Value"
+        }
+      },
+      "required": [
+        "field",
+        "fallback_type",
+        "original_state"
+      ],
+      "title": "FallbackApplied",
+      "type": "object"
+    },
     "LineItemSchema": {
       "description": "High-precision invoice line item.",
       "properties": {
@@ -435,8 +498,21 @@
       ],
       "default": null
     },
+    "xml_recovery_applied": {
+      "default": false,
+      "description": "True when XML parser recovery mode had to repair malformed XML.",
+      "title": "Xml Recovery Applied",
+      "type": "boolean"
+    },
+    "fallbacks_applied": {
+      "description": "Transparent list of fallback operations applied during serialization.",
+      "items": {
+        "$ref": "#/$defs/FallbackApplied"
+      },
+      "title": "Fallbacks Applied",
+      "type": "array"
+    },
     "errors": {
-      "default": [],
       "items": {
         "additionalProperties": {
           "type": "string"
@@ -451,7 +527,5 @@
     "success"
   ],
   "title": "SerializationResponse",
-  "type": "object",
-  "$id": "https://github.com/facturx-engine/facturx-engine/blob/main/docs/schemas/serialize-response.v1.schema.json",
-  "$schema": "https://json-schema.org/draft/2020-12/schema"
+  "type": "object"
 }
