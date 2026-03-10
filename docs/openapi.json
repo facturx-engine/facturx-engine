@@ -393,6 +393,12 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Missing or invalid diagnostics token"
+          },
+          "403": {
+            "description": "Diagnostics endpoint disabled or forbidden"
           }
         }
       }

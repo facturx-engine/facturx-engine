@@ -35,7 +35,7 @@ curl -X POST "http://localhost:8000/v1/validate" \
 
 The response includes `validation_completeness` (`full` or `partial`) and `layers_executed` so your application knows exactly which checks ran.
 
-### 2. Extract - Raw XML Fields
+### 2. Extract - Heuristic Best-Effort JSON
 
 Pull structured data from a received Factur-X/ZUGFeRD PDF or standalone XML.
 

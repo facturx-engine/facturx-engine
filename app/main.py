@@ -235,7 +235,7 @@ async def startup_event():
             else:
                 logger.info("✅ PRO LICENSE VERIFIED. Full Engine Capabilities Unlocked.")
         else:
-            logger.warning("ℹ️ No LICENSE_KEY found. Engine running in LIMITED DEMO MODE.")
+            logger.warning("ℹ️ No LICENSE_KEY found. Engine running in Community Mode.")
             
     except ImportError:
         # Community Edition
@@ -439,14 +439,19 @@ async def readiness_check():
 
     verapdf_status = check_jar(verapdf_jar)
     saxon_status = check_jar(saxon_jar)
+    dependency_statuses = [verapdf_status.get("status"), saxon_status.get("status")]
+    has_hard_failure = any(s not in ("available", "not_configured") for s in dependency_statuses)
+    has_config_gap = any(s == "not_configured" for s in dependency_statuses)
 
-    overall = "healthy"
-    if verapdf_status.get("status") not in ("available", "not_configured"):
+    if has_hard_failure:
         overall = "degraded"
-    if saxon_status.get("status") not in ("available", "not_configured"):
+        status_code = 503
+    elif has_config_gap:
         overall = "degraded"
-
-    status_code = 200 if overall == "healthy" else 503
+        status_code = 200
+    else:
+        overall = "healthy"
+        status_code = 200
 
     from fastapi.responses import JSONResponse
     return JSONResponse(

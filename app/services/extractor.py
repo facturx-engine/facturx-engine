@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 class ExtractionService:
     """
     Community Edition Extractor.
-    Parses Factur-X/ZUGFeRD and UBL (XRechnung) XML and generates a coherent DEMO invoice structure.
+    Parses Factur-X/ZUGFeRD and UBL (XRechnung) XML and generates a coherent Community invoice structure.
     """
 
     _SECURE_PARSER = etree.XMLParser(
