@@ -57,7 +57,7 @@ curl -X POST "http://localhost:8000/v1/serialize" \
 {
   "success": true,
   "schema_version": "1.0.0",
-  "engine_version": "1.6.9",
+  "engine_version": "1.x.x",
   "invoice": {
     "invoice_number": "INV-2025-0042",
     "invoice_date": "2025-03-01",

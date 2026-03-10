@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - 2026-03-10
+
+### Added
+- **Serialize**: `/v1/serialize` responses now include `fallbacks_applied` (always present, `[]` by default) and `xml_recovery_applied` fields for full fallback transparency.
+- **Extract**: `/v1/extract` responses now include `_meta.limitations` listing heuristic behaviors (e.g. `max_20_lines_cii`, `fallback_values_used`).
+- **Diagnostics**: `/diagnostics` endpoint now protected by `DIAGNOSTICS_TOKEN` (401/403 when exposed publicly).
+
+### Changed
+- **Healthz**: `not_configured` dependencies now return `degraded` instead of `healthy` on `/healthz`.
+- **Wording**: All "DEMO" references replaced by "Community" in startup logs, extractor, and documentation.
+- **Wording**: "SaxonC" replaced by "Saxon-HE" across all landing pages (EN/FR/DE).
+- **Wording**: `/v1/serialize` documented as "normalized ERP integration JSON" instead of "direct database insertion".
+- **Wording**: `/v1/extract` documented as "heuristic best-effort extraction" instead of "raw XML fields".
+- **Wording**: `/v1/convert` and `/v1/merge` no longer claim PDF/A-3 compliance without verification.
+
+### Removed
+- **Serialize**: Removed phantom "Trial Mode" mention from `/v1/serialize` documentation.
+
 ## [1.6.9] - 2026-03-06
 
 ### Added
