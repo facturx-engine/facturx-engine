@@ -1,8 +1,9 @@
 """
 Tests for the /v1/xml endpoint — raw XML generation without PDF wrapper.
 """
-import pytest
 import json
+
+import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app

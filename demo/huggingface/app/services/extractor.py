@@ -3,11 +3,13 @@ Extraction service for Community Edition (Open Core).
 Parses Factur-X/ZUGFeRD XML and returns FULL invoice data.
 Pro edition adds advanced validation and compliance features.
 """
-import logging
 import asyncio
+import logging
 from io import BytesIO
-from typing import Dict, Any
+from typing import Any, Dict
+
 from lxml import etree
+
 from app.services.pdf_utils import get_xml_from_pdf
 from app.services.validation_utils import detect_format
 

@@ -7,7 +7,7 @@ does not natively recognize.
 """
 import logging
 from io import BytesIO
-from typing import Tuple, Optional
+from typing import Optional, Tuple
 
 from facturx import get_xml_from_pdf as _upstream_get_xml_from_pdf
 

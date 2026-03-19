@@ -1,5 +1,7 @@
 import pytest
+
 from app.metrics import MetricsCollector
+
 
 class TestMetricsUnit:
     @pytest.fixture(autouse=True)

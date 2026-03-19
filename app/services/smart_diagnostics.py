@@ -6,12 +6,13 @@ EN 16931 Schematron validation errors, going beyond raw technical codes.
 
 Pro Feature: Transforms technical errors into actionable diagnostics.
 """
-from dataclasses import dataclass, field
-from typing import Optional, List, Dict, Any, Callable
-from decimal import Decimal, InvalidOperation
-import re
 import logging
+import re
+from dataclasses import dataclass, field
 from datetime import datetime
+from decimal import Decimal, InvalidOperation
+from typing import Any, Callable, Dict, List, Optional
+
 from lxml import etree
 
 logger = logging.getLogger(__name__)

@@ -1,9 +1,10 @@
-import gradio as gr
-import subprocess
-import time
-import httpx
 import os
+import subprocess
 import sys
+import time
+
+import gradio as gr
+import httpx
 
 # 1. Start the Backend (FastAPI) in a subprocess
 # Forward the environment so that LICENSE_KEY is picked up from Hugging Face Settings

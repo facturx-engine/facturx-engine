@@ -1,15 +1,18 @@
 import logging
 from io import BytesIO
 from pathlib import Path
-from typing import Tuple, Optional, List
+from typing import List, Optional, Tuple
+
 from facturx import xml_check_xsd
-from app.services.pdf_utils import get_xml_from_pdf
 from lxml import etree
+
+from app.services.pdf_utils import get_xml_from_pdf
 
 logger = logging.getLogger(__name__)
 
 
-from app.services.validation_utils import humanize_errors, detect_format
+from app.services.validation_utils import detect_format, humanize_errors
+
 
 class ValidationService:
     """Service for validating Factur-X/ZUGFeRD files."""

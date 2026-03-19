@@ -1,12 +1,13 @@
 """
 FastAPI route handlers for Factur-X API.
 """
-import logging
 import json
-from typing import Union
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException
-from fastapi.responses import StreamingResponse
+import logging
 from io import BytesIO
+from typing import Union
+
+from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+from fastapi.responses import StreamingResponse
 
 # Magic-byte signatures for supported file types
 _PDF_MAGIC = b"%PDF-"
@@ -21,10 +22,14 @@ def _check_xml_magic(content: bytes) -> bool:
     stripped = content.lstrip(b"\xef\xbb\xbf \t\r\n")  # strip UTF-8 BOM + whitespace
     return stripped[:5] == b"<?xml" or stripped[:4] in (b"<rsm", b"<ubl", b"<Cro")
 
-from app.schemas.validation import InvoiceMetadata, ValidationResult, ProValidationResult
 from app.schemas.errors import ProblemDetails
 from app.schemas.extraction import ExtractionResult
 from app.schemas.integration import SerializationResponse
+from app.schemas.validation import (
+    InvoiceMetadata,
+    ProValidationResult,
+    ValidationResult,
+)
 from app.services.generator import GeneratorService
 from app.services.validator import ValidationService
 
@@ -51,6 +56,7 @@ async def convert_to_facturx(
     from the metadata and embed it into the PDF to create a PDF/A-3 compliant Factur-X invoice.
     """
     import time
+
     from app.metrics import metrics
     start_time = time.time()
     metrics.inc("requests_total")
@@ -145,6 +151,7 @@ async def generate_facturx_xml(
     without the PDF wrapper.
     """
     import time
+
     from app.metrics import metrics
     start_time = time.time()
     metrics.inc("requests_total")
@@ -218,10 +225,11 @@ async def validate_facturx(
     **Pro Edition**: Smart Diagnostics with actionable human-readable fixes.
     **Community Edition**: Full raw validation report (Standard EN16931 error codes).
     """
-    import time
     import os
-    from app.metrics import metrics
+    import time
+
     from app.license import is_licensed
+    from app.metrics import metrics
     
     start_time = time.time()
     metrics.inc("requests_total")
@@ -304,8 +312,8 @@ async def validate_facturx(
         
         if is_pro:
             # PRO MODE: Smart Diagnostics with human-readable explanations
+            from app.schemas.validation import DiagnosticDetail, ProValidationResult
             from app.services.smart_diagnostics import get_diagnostics_engine
-            from app.schemas.validation import ProValidationResult, DiagnosticDetail
             
             engine = get_diagnostics_engine()
             diagnostics = engine.analyze(all_errors)
@@ -390,6 +398,7 @@ async def extract_facturx(
     - Invoice validation before processing
     """
     import time
+
     from app.metrics import metrics
     start_time = time.time()
     metrics.inc("requests_total")
@@ -461,8 +470,9 @@ async def serialize_facturx(
     **Community Mode**: Returns obfuscated (masked) data for schema testing.
     """
     import time
-    from app.metrics import metrics
+
     from app.license import is_licensed
+    from app.metrics import metrics
     from app.services.business_serializer import BusinessReadySerializer
     
     start_time = time.time()

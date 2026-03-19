@@ -6,7 +6,9 @@ corpus does not contain a PDF/A-3b file without embedded XML (all corpus PDF/A-3
 files are already Factur-X). Error-path tests use real corpus files.
 """
 from unittest.mock import patch
+
 from fastapi.testclient import TestClient
+
 from app.main import app
 
 client = TestClient(app)

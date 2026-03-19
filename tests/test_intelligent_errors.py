@@ -1,7 +1,13 @@
 
-from app.services.validator import ValidationService
+from app.schemas.validation import (
+    BuyerInfo,
+    InvoiceMetadata,
+    MonetaryAmounts,
+    SellerInfo,
+)
 from app.services.generator import GeneratorService
-from app.schemas.validation import InvoiceMetadata, SellerInfo, BuyerInfo, MonetaryAmounts
+from app.services.validator import ValidationService
+
 
 def get_valid_xml_base():
     metadata = InvoiceMetadata(

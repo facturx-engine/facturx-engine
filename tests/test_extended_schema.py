@@ -1,8 +1,9 @@
 import json
 import xml.etree.ElementTree as ET
+from io import BytesIO
+
 from fastapi.testclient import TestClient
 from reportlab.pdfgen import canvas
-from io import BytesIO
 
 from app.main import app
 
@@ -114,8 +115,9 @@ def test_extended_fields_roundtrip():
     
     # We also want to check the raw XML for specific tags
     # This is hidden in the validator's teaser or we can just extract it again
-    from facturx import get_xml_from_pdf
     from io import BytesIO
+
+    from facturx import get_xml_from_pdf
     _, xml_content = get_xml_from_pdf(BytesIO(facturx_pdf))
     
     # Parse XML and check tags

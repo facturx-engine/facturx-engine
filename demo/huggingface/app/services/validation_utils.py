@@ -1,7 +1,8 @@
 import logging
-from typing import List, Tuple, Optional
-from lxml import etree
+from typing import List, Optional, Tuple
+
 from facturx import get_flavor, get_level
+from lxml import etree
 
 logger = logging.getLogger(__name__)
 

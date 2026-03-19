@@ -1,13 +1,15 @@
 """
 Tests for the /v1/extract endpoint and end-to-end flow.
 """
-import pytest
-from fastapi.testclient import TestClient
 import json
 from io import BytesIO
+
+import pytest
+from fastapi.testclient import TestClient
 from reportlab.pdfgen import canvas
 
 from app.main import app
+
 
 @pytest.fixture
 def client():

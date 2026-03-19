@@ -1,5 +1,6 @@
 from app.services.business_serializer import BusinessReadySerializer
 
+
 def test_serializer_xrechnung_profile_detection():
     """
     BUG REPRODUCTION: Verify that serializer incorrectly tags XRechnung as en16931.
