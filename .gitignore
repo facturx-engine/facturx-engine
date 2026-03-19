@@ -53,3 +53,4 @@ generate_*.py
 .vercel
 .env*.local
 .claude/
+examples/**/out/

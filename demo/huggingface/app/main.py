@@ -10,6 +10,9 @@ import subprocess
 if os.name == 'nt':
     multiprocessing.freeze_support()
 
+# Configure logging
+import json
+import sys
 from pathlib import Path
 
 from fastapi import FastAPI, Request
@@ -18,9 +21,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api import router
 from app.diagnostics import router as diagnostics_router
 
-# Configure logging
-import json
-import sys
 
 # Structured JSON Logging for Industrial Grade Observability
 class JsonFormatter(logging.Formatter):
@@ -52,6 +52,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 from fastapi.responses import RedirectResponse
+
 from app.constants import PRODUCT_NAME
 from app.version import __version__
 
@@ -67,10 +68,12 @@ app.include_router(router)
 app.include_router(diagnostics_router)
 
 
+from fastapi import HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from fastapi import HTTPException
+
 from app.schemas.errors import ProblemDetails
+
 
 def _sanitize_validation_errors(errors: list) -> list:
     """
@@ -233,6 +236,7 @@ async def shutdown_event():
 
 from starlette.responses import Response
 from starlette.types import ASGIApp, Receive, Scope, Send
+
 
 # SECURITY: DoS Protection via Max Upload Size
 class LimitUploadSize:
@@ -432,10 +436,12 @@ async def metrics_endpoint(request: Request):
     - Community Edition: Disabled (HTTP 403).
     - Pro Edition: Disabled by default. Requires METRICS_ENABLED=true and METRICS_TOKEN=<secret>.
     """
-    from fastapi.responses import PlainTextResponse, JSONResponse
-    from app.metrics import metrics
-    from app.license import is_licensed
     import os
+
+    from fastapi.responses import JSONResponse, PlainTextResponse
+
+    from app.license import is_licensed
+    from app.metrics import metrics
     
     is_pro = os.getenv("LICENSE_KEY") and is_licensed()
     
@@ -507,8 +513,9 @@ async def sitemap():
 
 
 if __name__ == "__main__":
-    import uvicorn
     import os
+
+    import uvicorn
     
     reload_policy = os.getenv("UVICORN_RELOAD", "false").lower() == "true"
     port = int(os.getenv("PORT", "8000"))

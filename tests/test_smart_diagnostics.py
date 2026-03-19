@@ -1,8 +1,9 @@
-import unittest
 import asyncio
-from unittest.mock import patch
-from fastapi import UploadFile
+import unittest
 from io import BytesIO
+from unittest.mock import patch
+
+from fastapi import UploadFile
 
 from app.api import validate_facturx
 

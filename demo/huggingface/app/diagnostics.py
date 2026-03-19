@@ -1,16 +1,17 @@
 """
 System diagnostics and health check endpoints.
 """
+import os
 import platform
 import sys
-import os
-import psutil
 from datetime import datetime
-from fastapi import APIRouter
-from pydantic import BaseModel, Field
 from typing import List
 
-from app.version import __version__, __git_hash__, __build_date__
+import psutil
+from fastapi import APIRouter
+from pydantic import BaseModel, Field
+
+from app.version import __build_date__, __git_hash__, __version__
 
 router = APIRouter(tags=["diagnostics"])
 

@@ -1,8 +1,10 @@
 """
 RFC 9457 Problem Details for HTTP APIs
 """
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
+
 from pydantic import BaseModel, Field
+
 
 class ProblemDetails(BaseModel):
     """

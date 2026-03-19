@@ -9,12 +9,13 @@ Usage:
 Output:
     support_bundle.zip in current directory
 """
-import os
 import json
+import os
 import zipfile
-import requests
 from datetime import datetime
 from pathlib import Path
+
+import requests
 
 
 def generate_support_bundle():

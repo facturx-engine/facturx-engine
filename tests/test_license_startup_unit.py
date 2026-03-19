@@ -1,7 +1,10 @@
-from fastapi.testclient import TestClient
-from app.main import app
 import os
 from unittest.mock import patch
+
+from fastapi.testclient import TestClient
+
+from app.main import app
+
 
 def test_startup_crash_on_invalid_key():
     print("\n[TEST] Startup Crash on Invalid Key")

@@ -4,9 +4,11 @@ Factur-X PDF generation service using Jinja2 templating and factur-x library.
 import logging
 from pathlib import Path
 from typing import Optional, Tuple
-from jinja2 import FileSystemLoader, select_autoescape
-from jinja2.sandbox import SandboxedEnvironment # SECURITY: Prevents SSTI/RCE
+
 from facturx import generate_from_binary
+from jinja2 import FileSystemLoader, select_autoescape
+from jinja2.sandbox import SandboxedEnvironment  # SECURITY: Prevents SSTI/RCE
+
 from app.schemas.validation import InvoiceMetadata
 
 logger = logging.getLogger(__name__)
@@ -134,8 +136,9 @@ class GeneratorService:
             ValueError: If XML parsing or validation fails.
         """
         from lxml import etree
-        from app.services.validation_utils import detect_format
+
         from app.services.hybrid_validation_service import HybridValidationService
+        from app.services.validation_utils import detect_format
 
         # 1. Parse XML securely and detect format
         secure_parser = etree.XMLParser(resolve_entities=False, no_network=True, recover=False)

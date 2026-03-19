@@ -1,6 +1,8 @@
 from lxml import etree
+
 from app.services.hybrid_validation_service import HybridValidationService
 from app.services.validation_utils import detect_format
+
 
 def test_xrechnung_30_detection():
     """Test that XRechnung 3.0.x URN is correctly detected."""
@@ -48,7 +50,10 @@ def test_xrechnung_30_validation_path_selection():
 </rsm:CrossIndustryInvoice>"""
 
     # We can check if the paths exist
-    from app.services.hybrid_validation_service import XRECHNUNG_30_XSD, XRECHNUNG_30_XSLT
+    from app.services.hybrid_validation_service import (
+        XRECHNUNG_30_XSD,
+        XRECHNUNG_30_XSLT,
+    )
     
     assert XRECHNUNG_30_XSD.exists(), f"XRechnung 3.0 XSD not found at {XRECHNUNG_30_XSD}"
     assert XRECHNUNG_30_XSLT.exists(), f"XRechnung 3.0 XSLT not found at {XRECHNUNG_30_XSLT}"

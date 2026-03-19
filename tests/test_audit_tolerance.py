@@ -1,6 +1,13 @@
+from app.schemas.validation import (
+    BuyerInfo,
+    InvoiceMetadata,
+    LineItem,
+    MonetaryAmounts,
+    SellerInfo,
+)
 from app.services.generator import GeneratorService
 from app.services.validator import ValidationService
-from app.schemas.validation import InvoiceMetadata, SellerInfo, BuyerInfo, MonetaryAmounts, LineItem
+
 
 def test_strict_tolerance_rejection():
     # 1. Create metadata for EN16931 (which triggers Schematron)

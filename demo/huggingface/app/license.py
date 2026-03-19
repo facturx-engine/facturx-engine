@@ -4,18 +4,19 @@ License verification for Factur-X Engine Pro.
 Simple Ed25519 signature verification without Cython complexity.
 The real protection is in the value of the service, not code obfuscation.
 """
-import os
-import logging
-import json
 import base64
-import time
 import hashlib
+import json
+import logging
+import os
 import threading
+import time
 from datetime import datetime, timezone
-import nacl.signing
+from typing import Dict, Optional
+
 import nacl.encoding
 import nacl.exceptions
-from typing import Optional, Dict
+import nacl.signing
 
 logger = logging.getLogger(__name__)
 
