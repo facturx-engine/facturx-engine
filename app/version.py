@@ -1,4 +1,4 @@
 # Version and build info - auto-generated
 __version__ = "1.7.0"
-__git_hash__ = "dev"
-__build_date__ = "2026-03-10"
+__git_hash__ = "2462745"
+__build_date__ = "2026-03-19"
