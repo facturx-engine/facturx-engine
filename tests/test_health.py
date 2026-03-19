@@ -2,6 +2,7 @@
 Tests for the /health and /healthz endpoints.
 """
 from fastapi.testclient import TestClient
+
 from app.main import app
 
 

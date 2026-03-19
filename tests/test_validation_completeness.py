@@ -4,12 +4,13 @@ Tests for validation_completeness, layers_executed, and layers_skipped fields.
 Verifies that the API response correctly reports which validation layers
 actually ran vs. which were skipped (and why).
 """
-import unittest
 import os
+import unittest
 from unittest.mock import patch
-from fastapi.testclient import TestClient
-from app.main import app
 
+from fastapi.testclient import TestClient
+
+from app.main import app
 
 # Minimal valid CII EN16931 XML for testing (no PDF wrapper needed)
 MINIMAL_CII_XML = b"""<?xml version="1.0" encoding="UTF-8"?>

@@ -1,6 +1,8 @@
 
-import pytest
 from pathlib import Path
+
+import pytest
+
 from app.services.hybrid_validation_service import HybridValidationService
 
 # Path to corpus

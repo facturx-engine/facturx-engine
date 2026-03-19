@@ -1,5 +1,7 @@
 import pytest
+
 from app.services.smart_diagnostics import SmartDiagnosticsEngine
+
 
 @pytest.fixture
 def engine():

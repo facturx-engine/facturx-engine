@@ -6,8 +6,9 @@ VERAPDF_JAR is not set (e.g. in CI without Java). Schema-level tests
 run unconditionally.
 """
 import os
-import pytest
 from pathlib import Path
+
+import pytest
 
 VERAPDF_JAR = os.getenv("VERAPDF_JAR", "")
 VERAPDF_AVAILABLE = bool(VERAPDF_JAR and os.path.exists(VERAPDF_JAR))
@@ -109,7 +110,7 @@ def test_validate_pdfa3_returns_errors_for_non_compliant():
 @pytest.mark.skipif(not VERAPDF_AVAILABLE, reason="VERAPDF_JAR not configured or not found")
 def test_validate_pdfa3_errors_have_correct_layer():
     """VeraPDF errors must be tagged with layer=pdf_a."""
-    from app.services.hybrid_validator import validate_pdfa3, ValidationLayer
+    from app.services.hybrid_validator import ValidationLayer, validate_pdfa3
 
     plain_pdf = CORPUS_DIR / "valid" / "bare_invoice.pdf"
     if not plain_pdf.exists():

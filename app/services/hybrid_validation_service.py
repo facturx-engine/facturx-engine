@@ -5,17 +5,18 @@ Uses:
 - lxml for XSD structure validation (fast, secure)
 - Saxon-HE Subprocess for Schematron business rules (Zero memory leaks)
 """
+import asyncio
 import logging
 import os
 from io import BytesIO
 from pathlib import Path
-from typing import Dict, Any
-import asyncio
+from typing import Any, Dict
 
-from app.services.validation_utils import detect_format
-from app.services.pdf_utils import get_xml_from_pdf
 from lxml import etree
+
 from app.services.hybrid_validator import HybridValidator
+from app.services.pdf_utils import get_xml_from_pdf
+from app.services.validation_utils import detect_format
 
 logger = logging.getLogger(__name__)
 

@@ -1,5 +1,7 @@
+from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel
-from typing import List, Optional, Any, Dict
+
 
 class ErrorDetail(BaseModel):
     code: str

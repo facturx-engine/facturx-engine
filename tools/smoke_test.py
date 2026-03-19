@@ -11,13 +11,13 @@ Usage:
 
     Default BASE_URL: http://localhost:8000
 """
-import sys
-import json
-import time
 import base64
-import urllib.request
+import json
+import sys
+import time
 import urllib.error
-from typing import Dict, Any, Tuple
+import urllib.request
+from typing import Any, Dict, Tuple
 
 # --- Configuration ---
 DEFAULT_URL = "http://localhost:8000"
