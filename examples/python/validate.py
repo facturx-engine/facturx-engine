@@ -1,6 +1,7 @@
-import requests
-import sys
 import os
+import sys
+
+import requests
 
 # Usage: python validate.py <file_path>
 

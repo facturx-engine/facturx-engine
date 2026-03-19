@@ -6,6 +6,7 @@ import time
 from threading import Lock
 from typing import Dict
 
+
 class MetricsCollector:
     """Thread-safe metrics collector for basic observability."""
     

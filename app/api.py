@@ -1,13 +1,23 @@
 """
 FastAPI route handlers for Factur-X API.
 """
-import logging
 import json
-from app.version import __version__
-from typing import Optional, Union
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException
-from fastapi.responses import StreamingResponse
+import logging
+import re
 from io import BytesIO
+from typing import Optional, Union
+
+from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+from fastapi.responses import StreamingResponse
+
+from app.version import __version__
+
+# Sanitize user-supplied values before injecting into HTTP headers
+_UNSAFE_HEADER_RE = re.compile(r'[\r\n\x00-\x1f"\\]')
+
+def _sanitize_header_value(name: str) -> str:
+    """Strip characters unsafe for Content-Disposition header values."""
+    return _UNSAFE_HEADER_RE.sub("_", name)[:200]
 
 # Magic-byte signatures for supported file types
 _PDF_MAGIC = b"%PDF-"
@@ -22,10 +32,15 @@ def _check_xml_magic(content: bytes) -> bool:
     stripped = content.lstrip(b"\xef\xbb\xbf \t\r\n")  # strip UTF-8 BOM + whitespace
     return stripped[:5] == b"<?xml" or stripped[:4] in (b"<rsm", b"<ubl", b"<Cro")
 
-from app.schemas.validation import InvoiceMetadata, ValidationResult, ProValidationResult, SkippedLayer
 from app.schemas.errors import ProblemDetails
 from app.schemas.extraction import ExtractionResult
 from app.schemas.integration import SerializationResponse
+from app.schemas.validation import (
+    InvoiceMetadata,
+    ProValidationResult,
+    SkippedLayer,
+    ValidationResult,
+)
 from app.services.generator import GeneratorService
 from app.services.pdf_utils import get_xml_from_pdf, is_pdfa3b
 from app.services.validator import ValidationService
@@ -53,6 +68,7 @@ async def convert_to_facturx(
     The input must be a valid PDF file (max upload size is controlled by MAX_UPLOAD_SIZE_MB, default 10MB). The API generates XML from metadata and embeds it into the PDF to create a Factur-X document. Use /v1/validate to verify final PDF/A status when needed.
     """
     import time
+
     from app.metrics import metrics
     start_time = time.time()
     metrics.inc("requests_total")
@@ -111,7 +127,7 @@ async def convert_to_facturx(
             BytesIO(facturx_pdf),
             media_type="application/pdf",
             headers={
-                "Content-Disposition": f"attachment; filename=facturx_{invoice_metadata.invoice_number}.pdf"
+                "Content-Disposition": f'attachment; filename="facturx_{_sanitize_header_value(invoice_metadata.invoice_number)}.pdf"'
             }
         )
         
@@ -148,6 +164,7 @@ async def generate_facturx_xml(
     without the PDF wrapper.
     """
     import time
+
     from app.metrics import metrics
     start_time = time.time()
     metrics.inc("requests_total")
@@ -184,7 +201,7 @@ async def generate_facturx_xml(
             BytesIO(xml_content.encode('utf-8')),
             media_type="application/xml",
             headers={
-                "Content-Disposition": f"attachment; filename=facturx_{invoice_metadata.invoice_number}.xml"
+                "Content-Disposition": f'attachment; filename="facturx_{_sanitize_header_value(invoice_metadata.invoice_number)}.xml"'
             }
         )
         
@@ -222,10 +239,11 @@ async def validate_facturx(
     **Pro Edition**: Smart Diagnostics with actionable human-readable fixes.
     **Community Edition**: Full raw validation report (Standard EN16931 error codes).
     """
-    import time
     import os
-    from app.metrics import metrics
+    import time
+
     from app.license import is_licensed
+    from app.metrics import metrics
     
     start_time = time.time()
     metrics.inc("requests_total")
@@ -308,8 +326,8 @@ async def validate_facturx(
         
         if is_pro:
             # PRO MODE: Smart Diagnostics with human-readable explanations
+            from app.schemas.validation import DiagnosticDetail, ProValidationResult
             from app.services.smart_diagnostics import get_diagnostics_engine
-            from app.schemas.validation import ProValidationResult, DiagnosticDetail
             
             engine = get_diagnostics_engine()
             # Pass XML content for proactive scan (VAT mismatch, negative totals, forbidden chars, etc.)
@@ -320,8 +338,9 @@ async def validate_facturx(
                     xml_for_scan = file_content
                 elif file_content.startswith(b'%PDF'):
                     try:
-                        from app.services.pdf_utils import get_xml_from_pdf
                         from io import BytesIO
+
+                        from app.services.pdf_utils import get_xml_from_pdf
                         _, xml_bytes = get_xml_from_pdf(BytesIO(file_content), check_xsd=False)
                         if xml_bytes:
                             xml_for_scan = xml_bytes
@@ -356,7 +375,7 @@ async def validate_facturx(
             )
         else:
             # COMMUNITY MODE: Open Validation (full error list, structured format)
-            from app.schemas.validation import ValidationErrorDetail
+            from app.schemas.validation import ProHint, ValidationErrorDetail
             structured_errors = []
             for e in all_errors:
                 structured_errors.append(ValidationErrorDetail(
@@ -364,7 +383,27 @@ async def validate_facturx(
                     message=e.get("message", str(e)),
                     severity=e.get("severity", "error")
                 ))
-                
+
+            # Build pro_hint teaser so Community users see what they're missing
+            n_errors = len([e for e in all_errors if e.get("severity", "error") == "error"])
+            n_warnings = len([e for e in all_errors if e.get("severity") == "warning"])
+            pro_hint = None
+            if n_errors or n_warnings:
+                parts = []
+                if n_errors:
+                    parts.append(f"{n_errors} error{'s' if n_errors > 1 else ''}")
+                if n_warnings:
+                    parts.append(f"{n_warnings} warning{'s' if n_warnings > 1 else ''}")
+                pro_hint = ProHint(
+                    error_count=n_errors,
+                    warning_count=n_warnings,
+                    message=(
+                        f"Pro Smart Diagnostics would provide human-readable explanations "
+                        f"and fix suggestions for {' and '.join(parts)}. "
+                        f"Get your 30-day evaluation key at https://facturx-engine.lemonsqueezy.com"
+                    ),
+                )
+
             return ValidationResult(
                 valid=result["is_valid"],
                 format=result.get("format_detected"),
@@ -375,6 +414,7 @@ async def validate_facturx(
                 validation_completeness=result.get("validation_completeness", "full"),
                 layers_executed=result.get("layers_executed", []),
                 layers_skipped=[SkippedLayer(**s) for s in result.get("layers_skipped", [])],
+                pro_hint=pro_hint,
             )
         
     except HTTPException:
@@ -416,6 +456,7 @@ async def extract_facturx(
     - Invoice validation before processing
     """
     import time
+
     from app.metrics import metrics
     start_time = time.time()
     metrics.inc("requests_total")
@@ -486,8 +527,9 @@ async def serialize_facturx(
     **Community Mode**: Not available - returns 403 with a link to obtain a license key.
     """
     import time
-    from app.metrics import metrics
+
     from app.license import is_licensed
+    from app.metrics import metrics
     from app.services.business_serializer import BusinessReadySerializer
     
     start_time = time.time()
@@ -627,6 +669,7 @@ async def merge_facturx(
     - **422** Input PDF is not declared PDF/A-3b, or XML fails EN 16931 validation
     """
     import time
+
     from app.metrics import metrics
     start_time = time.time()
     metrics.inc("requests_total")

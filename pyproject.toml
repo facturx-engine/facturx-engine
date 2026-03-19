@@ -11,18 +11,40 @@ exclude = [
 ]
 
 [tool.ruff.lint]
-# Enable default rules (E, F, W)
-select = ["E", "F", "W"]
+# Core rules + security + quality
+select = ["E", "F", "W", "S", "B", "I", "C90"]
 
 # Rules to ignore globally
 ignore = [
-    "E402", # Module level import not at top (intentional in app/main.py and app/license.py)
-    "E501", # Line too long (not enforced in this project)
-    "W291", # Trailing whitespace (cosmetic)
-    "W293", # Blank line contains whitespace (cosmetic)
+    "E501",  # Line too long (not enforced in this project)
+    "W291",  # Trailing whitespace (cosmetic)
+    "W293",  # Blank line contains whitespace (cosmetic)
+    "S101",  # assert used — acceptable in tests and startup checks
+    "S603",  # subprocess call with shell=False — intentional for Java subprocesses
+    "S607",  # partial executable path — java is resolved at runtime
+    "B008",  # function-call-in-default-argument — FastAPI File(...)/Form(...) pattern
+    "E402",  # module-import-not-at-top — deferred imports in route handlers
+    "B904",  # raise-without-from-inside-except — intentional in FastAPI handlers (no chain to client)
+    "S110",  # try-except-pass — used for optional feature detection (VeraPDF, Saxon)
+    "S104",  # hardcoded-bind-all-interfaces — intentional for Docker containers
 ]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 25
 
 [tool.ruff.lint.per-file-ignores]
 # Ignore unused imports in __init__.py files (common in Odoo/packages)
 "**/__init__.py" = ["F401"]
 "integrations/odoo/**" = ["F401"]
+# Allow deferred imports in main.py and license.py
+"app/main.py" = ["E402"]
+"app/license.py" = ["E402", "B905"]
+# Tests may use assert, hardcoded passwords for fixtures, etc.
+"tests/**" = ["S101", "S105", "S106", "S314"]
+# Complex parsers — refactoring tracked separately
+"app/services/extractor.py" = ["C901"]
+"app/services/hybrid_validation_service.py" = ["C901"]
+# Demo/tools — relaxed security rules
+"demo/**" = ["B905"]
+"tools/**" = ["S310", "S113"]
+"examples/**" = ["S310", "S113"]

@@ -3,9 +3,11 @@ Factur-X PDF generation service using Jinja2 templating and factur-x library.
 """
 import logging
 from pathlib import Path
-from jinja2 import FileSystemLoader, select_autoescape
-from jinja2.sandbox import SandboxedEnvironment # SECURITY: Prevents SSTI/RCE
+
 from facturx import generate_from_binary
+from jinja2 import FileSystemLoader, select_autoescape
+from jinja2.sandbox import SandboxedEnvironment  # SECURITY: Prevents SSTI/RCE
+
 from app.schemas.validation import InvoiceMetadata
 
 logger = logging.getLogger(__name__)

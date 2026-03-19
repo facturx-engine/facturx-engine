@@ -1,7 +1,8 @@
 """
 Pydantic models for API request/response validation.
 """
-from typing import Optional, Literal, List, Union, Dict, Any
+from typing import Any, Dict, List, Literal, Optional, Union
+
 from pydantic import BaseModel, Field
 
 
@@ -160,6 +161,13 @@ class SkippedLayer(BaseModel):
     reason: str = Field(..., description="Why this layer was skipped (e.g. tool_missing:saxon_jar)")
 
 
+class ProHint(BaseModel):
+    """Teaser showing what Pro Smart Diagnostics would provide."""
+    error_count: int = Field(..., description="Number of errors Pro would explain")
+    warning_count: int = Field(..., description="Number of warnings Pro would explain")
+    message: str = Field(..., description="Human-readable upgrade hint")
+
+
 class ValidationResult(BaseModel):
     """Validation result response."""
     valid: bool = Field(..., description="Whether the file is valid")
@@ -171,6 +179,7 @@ class ValidationResult(BaseModel):
     validation_completeness: str = Field(default="full", description="full if all applicable layers ran, partial if some were skipped")
     layers_executed: List[str] = Field(default_factory=list, description="Validation layers that actually ran (xsd, schematron, pdfa3b, br_fr_ctc)")
     layers_skipped: List[SkippedLayer] = Field(default_factory=list, description="Validation layers that were skipped with reasons")
+    pro_hint: Optional[ProHint] = Field(None, description="Teaser: what Pro Smart Diagnostics would provide for these results")
 
 
 class DiagnosticDetail(BaseModel):

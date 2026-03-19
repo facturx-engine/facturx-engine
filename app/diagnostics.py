@@ -11,7 +11,7 @@ import psutil
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
 
-from app.version import __version__, __git_hash__, __build_date__
+from app.version import __build_date__, __git_hash__, __version__
 
 router = APIRouter(tags=["Operations"])
 
