@@ -147,8 +147,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt && \
-    pip install --no-cache-dir "wheel>=0.46.2" "jaraco.context>=6.1.0"
+    pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY app/ app/
