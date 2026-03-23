@@ -112,7 +112,7 @@ RUN DETECTED_VERA=$(jdeps --ignore-missing-deps --print-module-deps /verapdf.jar
 # ----------------------------------------
 # Stage 2: Runtime image
 # ----------------------------------------
-FROM python:3.11-slim-bookworm
+FROM python:3.14-slim-bookworm
 
 LABEL maintainer="Factur-X Engine"
 LABEL description="Self-hosted Factur-X API with EN16931 + PDF/A-3b validation"
