@@ -47,6 +47,49 @@
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://facturx-engine.github.io/facturx-engine/"},
+        {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://facturx-engine.github.io/facturx-engine/guides/"},
+        {"@type": "ListItem", "position": 3, "name": "XRechnung to JSON", "item": "https://facturx-engine.github.io/facturx-engine/guides/xrechnung-to-json.html"}
+      ]
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How do I convert XRechnung XML to JSON?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Send the XRechnung XML file to POST /v1/extract on Factur-X Engine. The API returns structured JSON with all invoice fields: seller, buyer, line items, totals, and tax breakdown. For production use, POST /v1/serialize (Pro) returns a typed, ERP-ready JSON with a versioned schema and explicit fallback transparency. Deploy the engine with: docker run -p 8000:8000 facturxengine/facturx-engine:latest"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between /v1/extract and /v1/serialize for XRechnung?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "/v1/extract uses heuristic mapping and returns invoice JSON with a _meta.limitations array indicating where fallback values were used. It works in community mode and is suitable for best-effort ingestion. /v1/serialize (Pro) returns strictly typed, normalized JSON with fallbacks_applied and xml_recovery_applied flags, a versioned schema, and guaranteed field coverage — suitable for direct database insertion in production ERP pipelines."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does Factur-X Engine validate XRechnung 3.0 Schematron rules?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. POST /v1/validate runs the EN 16931 Schematron ruleset (including XRechnung 3.0 extension rules) via Saxon-HE. The response includes valid, a list of rule violations with their BR codes, and validation_completeness to indicate whether all checks ran. Community mode returns open_community diagnostics; Pro mode returns pro_smart_diagnostics with error counts and prioritized warnings."
+          }
+        }
+      ]
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
       "@type": "TechArticle",
       "headline": "XRechnung to JSON API",
       "alternativeHeadline": "Normalize incoming EN 16931 invoices into ERP-ready JSON",
@@ -98,6 +141,7 @@
                     If your ERP receives XRechnung files, the hard part is not parsing XML. The hard part is validating the invoice,
                     understanding what was actually checked, and returning a JSON payload your integration can trust.
                 </p>
+                <p class="text-xs text-slate-600 mt-6">Updated <time datetime="2026-03-27">March 27, 2026</time></p>
             </header>
 
             <section class="mb-20">
@@ -183,6 +227,166 @@
     }
   }
 }</code></pre>
+                </div>
+            </section>
+
+            <!-- Extract vs Serialize comparison -->
+            <section class="mb-20">
+                <h2 class="text-2xl font-bold text-white mb-6">Extract vs Serialize &mdash; Which Should You Use?</h2>
+                <p class="mb-6 text-slate-400">
+                    Both endpoints return invoice JSON from an XRechnung file. The difference is in
+                    schema guarantees, field coverage, and what happens when the XML is ambiguous.
+                </p>
+                <div class="overflow-x-auto mb-6">
+                    <table class="w-full text-sm border-collapse">
+                        <thead>
+                            <tr class="border-b border-white/10">
+                                <th class="text-left py-3 px-4 text-slate-400 font-semibold w-1/3"></th>
+                                <th class="text-left py-3 px-4 text-amber-500 font-mono text-xs uppercase tracking-widest">/v1/extract</th>
+                                <th class="text-left py-3 px-4 text-amber-500 font-mono text-xs uppercase tracking-widest">/v1/serialize <span class="text-slate-500 normal-case tracking-normal font-sans text-xs">Pro</span></th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-white/5">
+                            <tr>
+                                <td class="py-3 px-4 text-slate-400 font-semibold">Availability</td>
+                                <td class="py-3 px-4 text-slate-300">Community + Pro</td>
+                                <td class="py-3 px-4 text-slate-300">Pro only</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 text-slate-400 font-semibold">Mapping strategy</td>
+                                <td class="py-3 px-4 text-slate-300">Heuristic best-effort</td>
+                                <td class="py-3 px-4 text-slate-300">Strict, typed, versioned</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 text-slate-400 font-semibold">Fallback transparency</td>
+                                <td class="py-3 px-4 text-slate-300"><code>_meta.limitations[]</code></td>
+                                <td class="py-3 px-4 text-slate-300"><code>fallbacks_applied[]</code> + <code>xml_recovery_applied</code></td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 text-slate-400 font-semibold">Schema version</td>
+                                <td class="py-3 px-4 text-slate-300">No versioning</td>
+                                <td class="py-3 px-4 text-slate-300">Versioned JSON schema</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 text-slate-400 font-semibold">Best for</td>
+                                <td class="py-3 px-4 text-slate-300">Prototyping, low-risk ingestion</td>
+                                <td class="py-3 px-4 text-slate-300">Production AP pipelines, DB insertion</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Python integration example -->
+            <section class="mb-20">
+                <h2 class="text-2xl font-bold text-white mb-6">Python Integration Example</h2>
+                <p class="mb-6 text-slate-400">
+                    A complete validation-then-extract pipeline in Python — the pattern used in most ERP webhook handlers:
+                </p>
+                <div class="bg-[#0d1117] rounded-lg border border-white/10 overflow-hidden">
+                    <div class="px-4 py-2 border-b border-white/5 text-xs font-mono text-slate-500 flex justify-between">
+                        <span>ingest_xrechnung.py</span>
+                        <span>Python</span>
+                    </div>
+                    <pre class="p-4 overflow-x-auto text-sm font-mono text-slate-300"><code><span class="text-pink-400">import</span> requests
+
+ENGINE = <span class="text-green-400">"http://localhost:8000"</span>
+
+<span class="text-pink-400">def</span> <span class="text-blue-400">ingest_xrechnung</span>(xml_path: str) -&gt; dict:
+    <span class="text-pink-400">with</span> open(xml_path, <span class="text-green-400">"rb"</span>) <span class="text-pink-400">as</span> f:
+        data = f.read()
+
+    <span class="text-slate-500"># Step 1: Validate against EN 16931 + XRechnung 3.0 rules</span>
+    r = requests.post(f<span class="text-green-400">"{ENGINE}/v1/validate"</span>,
+        files={<span class="text-green-400">"file"</span>: (<span class="text-green-400">"invoice.xml"</span>, data, <span class="text-green-400">"application/xml"</span>)})
+    report = r.json()
+
+    <span class="text-pink-400">if not</span> report[<span class="text-green-400">"valid"</span>]:
+        errors = report.get(<span class="text-green-400">"errors"</span>, [])
+        <span class="text-pink-400">raise</span> ValueError(f<span class="text-green-400">"EN 16931 violation: {errors[0]}"</span> <span class="text-pink-400">if</span> errors <span class="text-pink-400">else</span> <span class="text-green-400">"Invalid"</span>)
+
+    <span class="text-slate-500"># Step 2: Extract structured data</span>
+    r = requests.post(f<span class="text-green-400">"{ENGINE}/v1/extract"</span>,
+        files={<span class="text-green-400">"file"</span>: (<span class="text-green-400">"invoice.xml"</span>, data, <span class="text-green-400">"application/xml"</span>)})
+    result = r.json()
+
+    invoice = result[<span class="text-green-400">"invoice_json"</span>]
+    limitations = invoice.get(<span class="text-green-400">"_meta"</span>, {}).get(<span class="text-green-400">"limitations"</span>, [])
+    <span class="text-pink-400">if</span> limitations:
+        <span class="text-blue-400">print</span>(f<span class="text-green-400">"Warning: heuristic fields used: {limitations}"</span>)
+
+    <span class="text-pink-400">return</span> invoice</code></pre>
+                </div>
+            </section>
+
+            <!-- Node.js example -->
+            <section class="mb-20">
+                <h2 class="text-2xl font-bold text-white mb-6">Node.js Integration Example</h2>
+                <p class="mb-6 text-slate-400">
+                    Using native <code class="bg-slate-800 px-1 py-0.5 rounded text-amber-500">fetch</code> (Node 18+) — no dependencies:
+                </p>
+                <div class="bg-[#0d1117] rounded-lg border border-white/10 overflow-hidden">
+                    <div class="px-4 py-2 border-b border-white/5 text-xs font-mono text-slate-500 flex justify-between">
+                        <span>ingest-xrechnung.mjs</span>
+                        <span>Node.js</span>
+                    </div>
+                    <pre class="p-4 overflow-x-auto text-sm font-mono text-slate-300"><code><span class="text-pink-400">import</span> { readFile } <span class="text-pink-400">from</span> <span class="text-green-400">'node:fs/promises'</span>
+
+<span class="text-pink-400">const</span> ENGINE = <span class="text-green-400">'http://localhost:8000'</span>
+
+<span class="text-pink-400">async function</span> <span class="text-blue-400">ingestXRechnung</span>(xmlPath) {
+  <span class="text-pink-400">const</span> data = <span class="text-pink-400">await</span> readFile(xmlPath)
+  <span class="text-pink-400">const</span> blob = <span class="text-pink-400">new</span> Blob([data], { type: <span class="text-green-400">'application/xml'</span> })
+
+  <span class="text-slate-500">// Validate first</span>
+  <span class="text-pink-400">const</span> form = <span class="text-pink-400">new</span> FormData()
+  form.append(<span class="text-green-400">'file'</span>, blob, <span class="text-green-400">'invoice.xml'</span>)
+  <span class="text-pink-400">const</span> vRes = <span class="text-pink-400">await</span> fetch(`${ENGINE}/v1/validate`, { method: <span class="text-green-400">'POST'</span>, body: form })
+  <span class="text-pink-400">const</span> report = <span class="text-pink-400">await</span> vRes.json()
+  <span class="text-pink-400">if</span> (!report.valid) <span class="text-pink-400">throw new</span> Error(`Invalid: ${report.errors?.[<span class="text-amber-500">0</span>]}`)
+
+  <span class="text-slate-500">// Extract JSON</span>
+  <span class="text-pink-400">const</span> form2 = <span class="text-pink-400">new</span> FormData()
+  form2.append(<span class="text-green-400">'file'</span>, blob, <span class="text-green-400">'invoice.xml'</span>)
+  <span class="text-pink-400">const</span> eRes = <span class="text-pink-400">await</span> fetch(`${ENGINE}/v1/extract`, { method: <span class="text-green-400">'POST'</span>, body: form2 })
+  <span class="text-pink-400">const</span> { invoice_json } = <span class="text-pink-400">await</span> eRes.json()
+  <span class="text-pink-400">return</span> invoice_json
+}</code></pre>
+                </div>
+            </section>
+
+            <!-- FAQ -->
+            <section class="mb-20">
+                <h2 class="text-2xl font-bold text-white mb-8">Frequently Asked Questions</h2>
+                <div class="space-y-6">
+                    <div class="border-b border-white/5 pb-6">
+                        <h3 class="text-lg font-bold text-white mb-2">How do I convert XRechnung XML to JSON?</h3>
+                        <p class="text-slate-400">
+                            Send the XML file to <code class="bg-slate-800 px-1 rounded text-amber-500">POST /v1/extract</code>.
+                            The API returns structured JSON with all invoice fields. For production pipelines requiring strict
+                            typing and fallback transparency, use <code class="bg-slate-800 px-1 rounded text-amber-500">POST /v1/serialize</code> (Pro).
+                            Both accept CII (Factur-X, ZUGFeRD) and UBL (XRechnung) formats — no pre-conversion needed.
+                        </p>
+                    </div>
+                    <div class="border-b border-white/5 pb-6">
+                        <h3 class="text-lg font-bold text-white mb-2">Does Factur-X Engine validate XRechnung 3.0 Schematron rules?</h3>
+                        <p class="text-slate-400">
+                            Yes. <code class="bg-slate-800 px-1 rounded text-amber-500">/v1/validate</code> runs the full
+                            EN 16931 Schematron ruleset including XRechnung 3.0 extension rules via Saxon-HE. The response
+                            includes <code class="text-amber-500">flavor: "xrechnung_3.0"</code>, a list of BR-code violations,
+                            and <code class="text-amber-500">validation_completeness</code> so you know whether all checks ran.
+                        </p>
+                    </div>
+                    <div class="pb-6">
+                        <h3 class="text-lg font-bold text-white mb-2">Can I run this without a Pro license?</h3>
+                        <p class="text-slate-400">
+                            Yes. <code class="bg-slate-800 px-1 rounded text-amber-500">/v1/validate</code> and
+                            <code class="bg-slate-800 px-1 rounded text-amber-500">/v1/extract</code> are fully available in
+                            community mode (no license required). <code class="bg-slate-800 px-1 rounded text-amber-500">/v1/serialize</code>
+                            requires a Pro license and returns <code class="text-amber-500">403 LICENSE_REQUIRED</code> otherwise.
+                            Start with <code class="text-amber-500">extract</code> and upgrade when you need guaranteed schema stability.
+                        </p>
+                    </div>
                 </div>
             </section>
 
