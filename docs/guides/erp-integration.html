@@ -48,6 +48,17 @@
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://facturx-engine.github.io/facturx-engine/"},
+        {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://facturx-engine.github.io/facturx-engine/guides/"},
+        {"@type": "ListItem", "position": 3, "name": "ERP Integration", "item": "https://facturx-engine.github.io/facturx-engine/guides/erp-integration.html"}
+      ]
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
       "@type": "TechArticle",
       "headline": "How to Integrate E-Invoicing into Your ERP",
       "alternativeHeadline": "Add Factur-X, ZUGFeRD, and XRechnung to any backend via REST API",
@@ -133,6 +144,7 @@
                     Your ERP shouldn't need to understand CII, UBL, Schematron, or PDF/A-3. It should send JSON and receive JSON.
                     Factur-X Engine is the translation layer that handles the rest.
                 </p>
+                <p class="text-xs text-slate-600 mt-6">Updated <time datetime="2026-03-27">March 27, 2026</time></p>
             </header>
 
             <!-- The Problem -->
@@ -262,6 +274,143 @@
   -F "metadata=@invoice_data.json" \
   --output invoice_compliant.pdf</code></pre>
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Docker Compose -->
+            <section class="mb-20">
+                <h2 class="text-2xl font-bold text-white mb-6">Docker Compose Setup</h2>
+                <p class="mb-6">
+                    For production ERP deployments, run Factur-X Engine as a sidecar next to your application. A minimal
+                    <code class="bg-slate-800 px-1 py-0.5 rounded text-amber-500">docker-compose.yml</code> that pins the image
+                    and exposes the engine only on the internal network:
+                </p>
+                <div class="bg-[#0d1117] rounded-lg border border-white/10 overflow-hidden">
+                    <div class="px-4 py-2 border-b border-white/5 text-xs font-mono text-slate-500 flex justify-between">
+                        <span>docker-compose.yml</span>
+                        <span>YAML</span>
+                    </div>
+                    <pre class="p-4 overflow-x-auto text-sm font-mono text-slate-300"><code><span class="text-blue-400">services</span>:
+  <span class="text-blue-400">app</span>:
+    <span class="text-slate-400">build: .</span>
+    <span class="text-blue-400">environment</span>:
+      <span class="text-green-400">FACTURX_ENGINE_URL: http://facturx-engine:8000</span>
+    <span class="text-blue-400">depends_on</span>:
+      <span class="text-slate-400">- facturx-engine</span>
+
+  <span class="text-blue-400">facturx-engine</span>:
+    <span class="text-slate-400">image: facturxengine/facturx-engine:1.7.2</span>
+    <span class="text-blue-400">environment</span>:
+      <span class="text-green-400">LICENSE_KEY: ${FACTURX_LICENSE_KEY}</span>
+    <span class="text-blue-400">healthcheck</span>:
+      <span class="text-slate-400">test: ["CMD", "curl", "-f", "http://localhost:8000/health"]</span>
+      <span class="text-slate-400">interval: 30s</span>
+      <span class="text-slate-400">retries: 3</span>
+    <span class="text-slate-500"># Not exposed externally — only reachable by app service</span></code></pre>
+                </div>
+                <p class="mt-4 text-slate-400 text-sm">
+                    Pin to a specific image tag (e.g. <code class="text-amber-500">1.7.2</code>) rather than <code class="text-amber-500">latest</code>
+                    for reproducible deployments. Rotate the <code class="text-amber-500">LICENSE_KEY</code> via your secrets manager without rebuilding.
+                </p>
+            </section>
+
+            <!-- Error Handling -->
+            <section class="mb-20">
+                <h2 class="text-2xl font-bold text-white mb-6">Error Handling &amp; Retry Patterns</h2>
+                <p class="mb-6">
+                    Factur-X Engine returns RFC 9457 Problem Details for all errors. Your ERP integration should handle three categories:
+                </p>
+                <div class="overflow-x-auto mb-8">
+                    <table class="w-full text-sm border-collapse">
+                        <thead>
+                            <tr class="border-b border-white/10">
+                                <th class="text-left py-3 px-4 text-amber-500 font-mono text-xs uppercase tracking-widest">HTTP Status</th>
+                                <th class="text-left py-3 px-4 text-slate-400 font-semibold">Cause</th>
+                                <th class="text-left py-3 px-4 text-slate-400 font-semibold">ERP Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-white/5">
+                            <tr>
+                                <td class="py-3 px-4 font-mono text-slate-300">400</td>
+                                <td class="py-3 px-4 text-slate-400">Malformed request, missing field</td>
+                                <td class="py-3 px-4 text-slate-400">Log <code>detail</code>, reject, no retry</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-mono text-slate-300">409 / 422</td>
+                                <td class="py-3 px-4 text-slate-400">Already Factur-X / not PDF/A-3</td>
+                                <td class="py-3 px-4 text-slate-400">Route to manual review queue</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-mono text-slate-300">413</td>
+                                <td class="py-3 px-4 text-slate-400">File too large</td>
+                                <td class="py-3 px-4 text-slate-400">Split invoice batches, no retry</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-mono text-slate-300">429</td>
+                                <td class="py-3 px-4 text-slate-400">Rate limit exceeded</td>
+                                <td class="py-3 px-4 text-slate-400">Exponential backoff (2s, 4s, 8s)</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-mono text-slate-300">500 / 503</td>
+                                <td class="py-3 px-4 text-slate-400">Engine overload / restart</td>
+                                <td class="py-3 px-4 text-slate-400">Retry 3× with jitter, then alert</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="bg-[#0d1117] rounded-lg border border-white/10 overflow-hidden">
+                    <div class="px-4 py-2 border-b border-white/5 text-xs font-mono text-slate-500 flex justify-between">
+                        <span>retry_client.py</span>
+                        <span>Python</span>
+                    </div>
+                    <pre class="p-4 overflow-x-auto text-sm font-mono text-slate-300"><code><span class="text-pink-400">import</span> requests, time, random
+
+<span class="text-pink-400">def</span> <span class="text-blue-400">engine_post</span>(url, **kwargs, max_retries=<span class="text-amber-500">3</span>):
+    <span class="text-pink-400">for</span> attempt <span class="text-pink-400">in</span> range(max_retries):
+        r = requests.post(url, **kwargs, timeout=<span class="text-amber-500">30</span>)
+        <span class="text-pink-400">if</span> r.status_code &lt; <span class="text-amber-500">500</span>:
+            <span class="text-pink-400">return</span> r  <span class="text-slate-500"># 4xx: no retry</span>
+        delay = (<span class="text-amber-500">2</span> ** attempt) + random.uniform(<span class="text-amber-500">0</span>, <span class="text-amber-500">1</span>)
+        time.sleep(delay)
+    r.raise_for_status()  <span class="text-slate-500"># Final attempt failed</span></code></pre>
+                </div>
+            </section>
+
+            <!-- ERP-specific use cases -->
+            <section class="mb-20">
+                <h2 class="text-2xl font-bold text-white mb-6">ERP-Specific Integration Patterns</h2>
+
+                <div class="space-y-8">
+                    <div class="bg-slate-900/50 border border-white/10 rounded-lg p-6">
+                        <h3 class="text-lg font-bold text-white mb-2">SAP / Odoo — Webhook on Invoice Post</h3>
+                        <p class="text-slate-400 text-sm">
+                            In SAP S/4HANA or Odoo, hook into the invoice posting event. When a customer invoice transitions
+                            to <em>Posted</em>, call <code class="text-amber-500">/v1/convert</code> asynchronously (Celery task,
+                            SAP Business Event). Store the resulting Factur-X PDF in the document management system (DMS) and
+                            attach the URL to the invoice record. The ERP never touches XML directly.
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-900/50 border border-white/10 rounded-lg p-6">
+                        <h3 class="text-lg font-bold text-white mb-2">Accounts Payable — Automated Compliance Gate</h3>
+                        <p class="text-slate-400 text-sm">
+                            For inbound supplier invoices, add a validation step before the invoice enters the AP approval workflow.
+                            Call <code class="text-amber-500">/v1/validate</code>. If <code class="text-amber-500">valid: false</code>,
+                            route to a rejection queue with the Schematron errors pre-filled in the rejection reason. Only valid
+                            invoices proceed to <code class="text-amber-500">/v1/extract</code> for data normalization. This pattern
+                            eliminates manual XML inspection and makes compliance audits trivial — every rejection has a structured log.
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-900/50 border border-white/10 rounded-lg p-6">
+                        <h3 class="text-lg font-bold text-white mb-2">Custom ERP — Batch Processing at End of Day</h3>
+                        <p class="text-slate-400 text-sm">
+                            For custom ERP systems without event hooks, run a nightly batch that converts all invoices created
+                            that day. Parallelise with a thread pool (8 workers covers most hardware). Each worker reads from a
+                            job queue, calls <code class="text-amber-500">/v1/convert</code>, and writes the PDF back to object
+                            storage (S3, MinIO). Failed jobs are requeued with the RFC 9457 error detail stored for triage.
+                        </p>
                     </div>
                 </div>
             </section>
