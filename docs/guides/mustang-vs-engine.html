@@ -48,6 +48,23 @@
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [{
+        "@type": "ListItem", "position": 1,
+        "name": "Home", "item": "https://facturx-engine.github.io/facturx-engine/"
+      },{
+        "@type": "ListItem", "position": 2,
+        "name": "Guides", "item": "https://facturx-engine.github.io/facturx-engine/guides/"
+      },{
+        "@type": "ListItem", "position": 3,
+        "name": "Mustangproject vs Factur-X Engine",
+        "item": "https://facturx-engine.github.io/facturx-engine/guides/mustang-vs-engine.html"
+      }]
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
       "@type": "TechArticle",
       "headline": "Mustangproject vs Factur-X Engine — Choosing the Right E-Invoicing Tool",
       "alternativeHeadline": "Java library vs REST API middleware for Factur-X and ZUGFeRD",
@@ -139,6 +156,7 @@
                 <p class="text-xl text-slate-400 font-light leading-relaxed">
                     Both tools generate and validate EN 16931 e-invoices. They solve the same problem with fundamentally different architectures. This page helps you pick the right one for your stack.
                 </p>
+                <p class="text-xs text-slate-600 font-mono mt-4">Updated <time datetime="2026-03-10">March 2026</time></p>
             </header>
 
             <!-- Acknowledgment -->
@@ -291,6 +309,85 @@ curl -X POST <span class="text-green-400">"http://localhost:8000/v1/convert"</sp
   --output facturx.pdf</code></pre>
                     </div>
                 </div>
+            </section>
+
+            <!-- Performance -->
+            <section class="mb-20">
+                <h2 class="text-2xl font-bold text-white mb-6">Performance & Memory Under Load</h2>
+                <p class="text-slate-400 mb-6">
+                    When embedded as a Java library, Mustangproject shares the JVM heap with your application.
+                    Saxon-HE (the XSLT engine for Schematron) allocates 50–150 MB per concurrent validation thread.
+                    Under sustained load — for example, validating 500 invoices per hour — this creates GC pressure
+                    in your primary application JVM.
+                </p>
+                <p class="text-slate-400 mb-6">
+                    Factur-X Engine runs Saxon-HE as an <strong class="text-white">isolated subprocess</strong>.
+                    Each validation spawns a short-lived Java process, uses its memory, and exits — the OS
+                    reclaims all memory immediately. The FastAPI + Uvicorn layer adds less than 80 MB of baseline RAM.
+                    The full engine runs comfortably on a <strong class="text-white">512 MB VPS</strong>.
+                </p>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-slate-400 border border-white/10 rounded-lg">
+                        <thead>
+                            <tr class="border-b border-white/10 text-slate-300">
+                                <th class="text-left px-4 py-3">Metric</th>
+                                <th class="text-left px-4 py-3">Mustangproject (embedded)</th>
+                                <th class="text-left px-4 py-3 text-amber-400">Factur-X Engine</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-white/5">
+                            <tr>
+                                <td class="px-4 py-3 font-medium text-white">Baseline RAM</td>
+                                <td class="px-4 py-3">JVM heap (256 MB min)</td>
+                                <td class="px-4 py-3 text-amber-400">~80 MB (Python + Uvicorn)</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 font-medium text-white">Per-validation overhead</td>
+                                <td class="px-4 py-3">Shared heap, GC pressure</td>
+                                <td class="px-4 py-3 text-amber-400">Subprocess, freed on exit</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 font-medium text-white">Min host RAM</td>
+                                <td class="px-4 py-3">512 MB + your app heap</td>
+                                <td class="px-4 py-3 text-amber-400">512 MB total</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 font-medium text-white">Concurrency model</td>
+                                <td class="px-4 py-3">Java threads</td>
+                                <td class="px-4 py-3 text-amber-400">Gunicorn workers (configurable)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Migration -->
+            <section class="mb-20">
+                <h2 class="text-2xl font-bold text-white mb-6">Migrating from Mustangproject to Factur-X Engine</h2>
+                <p class="text-slate-400 mb-4">
+                    If you have an existing Mustangproject integration and want to move to a language-agnostic REST API,
+                    the migration is a two-step process:
+                </p>
+                <ol class="space-y-4 text-slate-400">
+                    <li class="flex gap-3">
+                        <span class="text-amber-500 font-mono font-bold shrink-0">1.</span>
+                        <span><strong class="text-white">Start the engine alongside your app</strong> —
+                        <code>docker run -d -p 8000:8000 facturxengine/facturx-engine:latest</code>.
+                        No changes to your app server required.</span>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-amber-500 font-mono font-bold shrink-0">2.</span>
+                        <span><strong class="text-white">Replace the Mustangproject call</strong> with an HTTP POST
+                        to <code>/v1/convert</code> (generation) or <code>/v1/validate</code> (validation).
+                        Pass your PDF and JSON metadata as multipart form fields.</span>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-amber-500 font-mono font-bold shrink-0">3.</span>
+                        <span><strong class="text-white">Remove the Maven/Gradle dependency</strong> and JVM heap
+                        configuration from your application. Your service is now stateless with respect to
+                        e-invoice processing.</span>
+                    </li>
+                </ol>
             </section>
 
             <!-- Key Differences -->
