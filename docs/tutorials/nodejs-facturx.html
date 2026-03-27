@@ -70,11 +70,47 @@
     {
       "@context": "https://schema.org",
       "@type": "TechArticle",
-      "headline": "Node.js Factur-X API Integration",
-      "author": { "@type": "Organization", "name": "Factur-X Engine" },
+      "headline": "Node.js Factur-X & XRechnung API Integration — Without NPM Packages",
+      "description": "How to generate and validate EN 16931 e-invoices from Node.js, NestJS, and Express using a self-hosted Docker API instead of fragile NPM packages.",
+      "author": { "@type": "Organization", "name": "Factur-X Engine", "url": "https://facturx-engine.github.io/facturx-engine/" },
       "url": "https://facturx-engine.github.io/facturx-engine/tutorials/nodejs-facturx.html",
       "datePublished": "2025-12-01",
-      "dateModified": "2026-03-10"
+      "dateModified": "2026-03-10",
+      "keywords": ["Node.js Factur-X", "XRechnung Node.js", "e-invoice Node.js", "factur-x npm", "NestJS e-invoice", "Express invoice generation", "EN 16931 JavaScript"],
+      "articleSection": "Tutorials"
+    }
+    </script>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Is there a reliable NPM package for generating Factur-X or XRechnung invoices?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No mature NPM package handles the full EN 16931 Schematron validation required for legal compliance in France, Germany, and Belgium. The correct approach for Node.js is to call a self-hosted REST API (such as Factur-X Engine) via axios or the native fetch API. This keeps your Node.js environment lightweight while the Docker container handles Saxon-HE Schematron validation and PDF/A-3 embedding internally."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I generate a Factur-X PDF from Node.js?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Use the FormData API (or the form-data NPM package) to POST a multipart request to /v1/convert with your base PDF and a JSON metadata string. Set responseType: 'arraybuffer' (axios) or use response.arrayBuffer() (fetch) to handle the binary PDF response. Write the buffer to disk with fs.writeFileSync or stream it directly to S3."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I use the native fetch API in Node.js 18+ instead of axios?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Node.js 18 ships with a built-in fetch API. Use the FormData global and pass your file as a Blob. This removes the axios and form-data dependencies entirely from your project."
+          }
+        }
+      ]
     }
     </script>
 </head>
@@ -164,41 +200,194 @@ convertToFacturX('./input.pdf', myMetadata);</code></pre>
                 <div class="space-y-4">
                     <h2 class="text-2xl font-bold text-white">NPM Packages vs Docker API</h2>
                     <p class="text-slate-400">
-                        Instead of relying on an outdated <strong>factur-x npm</strong> or <strong>xrechnung
-                            npm</strong> package that might fail strict German E-Rechnung 2025 mandates, outsourcing the
-                        heavy XML validation (via SaxonC) to an isolated Docker container ensures your Node.js backend
-                        remains lightweight and fully compliant.
+                        There is no mature NPM package that handles the full EN 16931 Schematron validation stack.
+                        Existing packages generate XML but skip the business-rule validation required by French, German,
+                        and Belgian mandates. The Docker API approach keeps Node.js dependency-free while the engine
+                        handles Saxon-HE and VeraPDF internally.
                     </p>
+                    <div class="overflow-x-auto mt-4">
+                        <table class="w-full text-sm text-slate-400 border border-white/10 rounded-lg">
+                            <thead>
+                                <tr class="border-b border-white/10 text-slate-300">
+                                    <th class="text-left px-4 py-3">Approach</th>
+                                    <th class="text-left px-4 py-3">Schematron</th>
+                                    <th class="text-left px-4 py-3">NPM deps</th>
+                                    <th class="text-left px-4 py-3">PDF/A-3</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-white/5">
+                                <tr>
+                                    <td class="px-4 py-3 text-white font-medium">factur-x (npm)</td>
+                                    <td class="px-4 py-3 text-red-400">None</td>
+                                    <td class="px-4 py-3">xml2js, pdflib</td>
+                                    <td class="px-4 py-3 text-red-400">Partial</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-3 text-white font-medium">CLI wrappers (Mustang)</td>
+                                    <td class="px-4 py-3 text-green-400">Yes</td>
+                                    <td class="px-4 py-3">child_process + JVM</td>
+                                    <td class="px-4 py-3 text-green-400">Yes</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-3 text-amber-400 font-medium">Factur-X Engine API</td>
+                                    <td class="px-4 py-3 text-green-400">Yes (Saxon-HE)</td>
+                                    <td class="px-4 py-3">axios or fetch only</td>
+                                    <td class="px-4 py-3 text-green-400">Yes (VeraPDF)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
-                <div class="bg-white/5 border-l-4 border-amber-500 p-6 rounded-r-lg mt-8">
+                <!-- Native fetch (no deps) -->
+                <div class="space-y-4">
+                    <h2 class="text-2xl font-bold text-white">Use Case: Native Fetch API (Node.js 18+, Zero Dependencies)</h2>
+                    <p class="text-slate-400">
+                        Node.js 18 ships with a built-in <code>fetch</code> and <code>FormData</code>. No <code>axios</code>
+                        or <code>form-data</code> packages needed:
+                    </p>
+                    <div class="bg-black border border-white/10 rounded-lg p-6 overflow-x-auto">
+                        <pre class="font-mono text-sm text-slate-300"><code>import { readFileSync } from 'fs';
+
+async function generateInvoice(pdfPath, metadata) {
+  const form = new FormData();
+  form.append('pdf', new Blob([readFileSync(pdfPath)]), 'invoice.pdf');
+  form.append('metadata', JSON.stringify(metadata));
+
+  const res = await fetch('http://localhost:8000/v1/convert', {
+    method: 'POST',
+    body: form,
+  });
+
+  if (!res.ok) throw new Error(await res.text());
+  return Buffer.from(await res.arrayBuffer()); // binary PDF
+}</code></pre>
+                    </div>
+                </div>
+
+                <!-- NestJS use case -->
+                <div class="space-y-4">
+                    <h2 class="text-2xl font-bold text-white">Use Case: NestJS Injectable Service</h2>
+                    <p class="text-slate-400">
+                        Wrap the API call in a NestJS <code>@Injectable()</code> service. Inject <code>HttpService</code>
+                        (from <code>@nestjs/axios</code>) and return the PDF buffer directly to the controller:
+                    </p>
+                    <div class="bg-black border border-white/10 rounded-lg p-6 overflow-x-auto">
+                        <pre class="font-mono text-sm text-slate-300"><code>import { Injectable } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
+import * as FormData from 'form-data';
+import * as fs from 'fs';
+
+@Injectable()
+export class InvoiceService {
+  constructor(private readonly http: HttpService) {}
+
+  async generateFacturX(pdfPath: string, metadata: object): Promise&lt;Buffer&gt; {
+    const form = new FormData();
+    form.append('pdf', fs.createReadStream(pdfPath));
+    form.append('metadata', JSON.stringify(metadata));
+
+    const { data } = await firstValueFrom(
+      this.http.post('http://facturx-engine:8000/v1/convert', form, {
+        headers: form.getHeaders(),
+        responseType: 'arraybuffer',
+      }),
+    );
+    return Buffer.from(data);
+  }
+}</code></pre>
+                    </div>
+                </div>
+
+                <!-- Validation use case -->
+                <div class="space-y-4">
+                    <h2 class="text-2xl font-bold text-white">Use Case: Validate Before Sending with Express Middleware</h2>
+                    <p class="text-slate-400">
+                        Add a validation gate in your Express upload route. Reject non-compliant invoices before they
+                        reach your ERP or document archive:
+                    </p>
+                    <div class="bg-black border border-white/10 rounded-lg p-6 overflow-x-auto">
+                        <pre class="font-mono text-sm text-slate-300"><code>const express = require('express');
+const multer  = require('multer');
+const FormData = require('form-data');
+const axios = require('axios');
+
+const upload = multer({ storage: multer.memoryStorage() });
+const app = express();
+
+app.post('/invoices/upload', upload.single('invoice'), async (req, res) => {
+  const form = new FormData();
+  form.append('file', req.file.buffer, req.file.originalname);
+
+  const { data } = await axios.post(
+    'http://localhost:8000/v1/validate', form,
+    { headers: form.getHeaders() }
+  );
+
+  if (!data.is_valid) {
+    return res.status(422).json({ errors: data.errors });
+  }
+  // proceed to archive / ERP injection
+  res.json({ status: 'accepted' });
+});</code></pre>
+                    </div>
+                </div>
+
+                <!-- FAQ -->
+                <div class="space-y-6">
+                    <h2 class="text-2xl font-bold text-white">Frequently Asked Questions</h2>
+                    <div class="space-y-4">
+                        <div class="border border-white/10 rounded-lg p-6">
+                            <h3 class="text-white font-bold mb-2">Does this work with TypeScript?</h3>
+                            <p class="text-slate-400 text-sm">Yes. The API is language-agnostic. Use <code>axios</code>
+                            with <code>AxiosResponse&lt;ArrayBuffer&gt;</code> typing or the native <code>fetch</code>
+                            with <code>Response.arrayBuffer()</code>. No type definitions for the engine are needed —
+                            the JSON metadata payload is a plain object.</p>
+                        </div>
+                        <div class="border border-white/10 rounded-lg p-6">
+                            <h3 class="text-white font-bold mb-2">Can I stream the PDF response to a browser download?</h3>
+                            <p class="text-slate-400 text-sm">Yes. Set <code>responseType: 'stream'</code> in axios and
+                            pipe the response directly to <code>res</code> in Express:
+                            <code>apiResponse.data.pipe(res)</code>. Set
+                            <code>Content-Disposition: attachment; filename="invoice.pdf"</code> on your response headers.</p>
+                        </div>
+                        <div class="border border-white/10 rounded-lg p-6">
+                            <h3 class="text-white font-bold mb-2">How do I handle the engine being unavailable?</h3>
+                            <p class="text-slate-400 text-sm">Wrap calls in a try/catch and check <code>GET /health</code>
+                            first if you need a pre-flight check. For production, use Docker Compose healthchecks to
+                            ensure the engine is ready before your Node.js service starts (<code>depends_on: condition: service_healthy</code>).</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white/5 border-l-4 border-amber-500 p-6 rounded-r-lg">
                     <h3 class="text-xl font-bold text-white mb-2">AI Tip</h3>
                     <p class="text-slate-400">
-                        If you are using Copilot or GPT to generate your frontend code, provide the
-                        <code>openapi.json</code> to it. This ensures it correctly implements the multipart/form-data
-                        pattern required by the engine.
+                        When using Copilot or ChatGPT to scaffold your integration, paste the
+                        <a href="../openapi.json" class="text-amber-400 hover:text-amber-300">openapi.json</a>
+                        into context. It ensures the AI correctly generates the <code>multipart/form-data</code>
+                        pattern and <code>arraybuffer</code> response handling.
                     </p>
                 </div>
 
                 <div class="mt-12 border-t border-white/10 pt-12">
-                    <h2 class="text-2xl font-bold text-white mb-6">Next Steps</h2>
-                    <div class="grid md:grid-cols-2 gap-6">
-                        <a href="../ref/api-reference.html"
-                            class="block p-6 bg-slate-900 border border-white/10 rounded-lg hover:border-amber-500/50 transition-colors group">
-                            <div class="text-amber-500 font-mono text-xs uppercase tracking-widest mb-2">Documentation
-                            </div>
-                            <h3 class="text-lg font-bold text-white mb-2 group-hover:text-amber-500 transition-colors">
-                                API Reference &rarr;</h3>
-                            <p class="text-slate-400 text-sm">Explore all endpoints including validation and extraction.
-                            </p>
+                    <h2 class="text-2xl font-bold text-white mb-6">See Also</h2>
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <a href="../tutorials/python-facturx.html"
+                            class="bg-slate-900 border border-white/10 rounded-lg p-4 hover:border-amber-500/30 transition-colors">
+                            <div class="text-amber-500 font-mono text-xs uppercase tracking-widest mb-1">Tutorial</div>
+                            <div class="text-white font-bold text-sm">Python Integration</div>
                         </a>
-                        <a href="https://github.com/facturx-engine/facturx-engine#pro-edition"
-                            class="block p-6 bg-slate-900 border border-white/10 rounded-lg hover:border-amber-500/50 transition-colors group">
-                            <div class="text-amber-500 font-mono text-xs uppercase tracking-widest mb-2">Pro Feature
-                            </div>
-                            <h3 class="text-lg font-bold text-white mb-2 group-hover:text-amber-500 transition-colors">
-                                Validated Serialization &rarr;</h3>
-                            <p class="text-slate-400 text-sm">Transform your PDFs into clean, ERP-ready JSON data.</p>
+                        <a href="../tutorials/php-facturx.html"
+                            class="bg-slate-900 border border-white/10 rounded-lg p-4 hover:border-amber-500/30 transition-colors">
+                            <div class="text-amber-500 font-mono text-xs uppercase tracking-widest mb-1">Tutorial</div>
+                            <div class="text-white font-bold text-sm">PHP Integration</div>
+                        </a>
+                        <a href="../ref/api-reference.html"
+                            class="bg-slate-900 border border-white/10 rounded-lg p-4 hover:border-amber-500/30 transition-colors">
+                            <div class="text-amber-500 font-mono text-xs uppercase tracking-widest mb-1">Reference</div>
+                            <div class="text-white font-bold text-sm">Full API Reference</div>
                         </a>
                     </div>
                 </div>
