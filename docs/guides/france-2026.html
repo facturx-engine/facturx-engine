@@ -48,6 +48,23 @@
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [{
+        "@type": "ListItem", "position": 1,
+        "name": "Accueil", "item": "https://facturx-engine.github.io/facturx-engine/"
+      },{
+        "@type": "ListItem", "position": 2,
+        "name": "Guides", "item": "https://facturx-engine.github.io/facturx-engine/guides/"
+      },{
+        "@type": "ListItem", "position": 3,
+        "name": "Facture Électronique France 2026",
+        "item": "https://facturx-engine.github.io/facturx-engine/guides/france-2026.html"
+      }]
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
       "@type": "TechArticle",
       "headline": "Facture Électronique France 2026 — Obligation B2B et Intégration Technique",
       "alternativeHeadline": "Guide développeur pour la facturation électronique obligatoire en France",
@@ -140,6 +157,7 @@
                 <p class="text-xl text-slate-400 font-light leading-relaxed">
                     La facturation électronique B2B devient obligatoire en France. Ce guide couvre le calendrier, les formats acceptés, et comment intégrer la conformité dans votre stack technique.
                 </p>
+                <p class="text-xs text-slate-600 font-mono mt-4">Mis à jour <time datetime="2026-03-10">mars 2026</time></p>
             </header>
 
             <!-- Timeline -->
@@ -209,6 +227,100 @@
                         </p>
                     </div>
                 </div>
+            </section>
+
+            <!-- E-reporting -->
+            <section class="mb-20">
+                <h2 class="text-2xl font-bold text-white mb-6">E-reporting : l'Obligation Parallèle</h2>
+                <p class="text-slate-400 mb-4">
+                    L'e-invoicing (facturation électronique) ne concerne que les transactions B2B entre assujettis
+                    à la TVA établis en France. Pour les transactions hors périmètre — <strong class="text-white">B2C,
+                    B2B international, et B2G</strong> — une obligation complémentaire s'applique : l'<strong class="text-white">e-reporting</strong>.
+                </p>
+                <p class="text-slate-400 mb-6">
+                    L'e-reporting consiste à transmettre à l'administration fiscale (DGFiP) des données de
+                    transaction agrégées, sans envoyer la facture complète. Il couvre :
+                </p>
+                <div class="overflow-x-auto mb-6">
+                    <table class="w-full text-sm text-slate-400 border border-white/10 rounded-lg">
+                        <thead>
+                            <tr class="border-b border-white/10 text-slate-300">
+                                <th class="text-left px-4 py-3">Type de transaction</th>
+                                <th class="text-left px-4 py-3">Obligation</th>
+                                <th class="text-left px-4 py-3">Via</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-white/5">
+                            <tr>
+                                <td class="px-4 py-3 text-white font-medium">B2B France (assujettis TVA)</td>
+                                <td class="px-4 py-3 text-amber-400">E-invoicing</td>
+                                <td class="px-4 py-3">PPF ou PDP</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 text-white font-medium">B2C (particuliers)</td>
+                                <td class="px-4 py-3 text-amber-400">E-reporting</td>
+                                <td class="px-4 py-3">PPF ou PDP</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 text-white font-medium">B2B international</td>
+                                <td class="px-4 py-3 text-amber-400">E-reporting</td>
+                                <td class="px-4 py-3">PPF ou PDP</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 text-white font-medium">B2G (État, collectivités)</td>
+                                <td class="px-4 py-3">Chorus Pro existant</td>
+                                <td class="px-4 py-3">Chorus Pro</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-slate-400">
+                    Pour les développeurs SaaS ou ERP, cela signifie que <strong class="text-white">toutes les
+                    transactions doivent être tracées</strong> — pas seulement les factures B2B structurées.
+                    Factur-X Engine couvre la génération et la validation des factures B2B ; l'e-reporting
+                    nécessite une intégration directe avec le PPF ou une PDP accréditée.
+                </p>
+            </section>
+
+            <!-- Sanctions -->
+            <section class="mb-20">
+                <h2 class="text-2xl font-bold text-white mb-6">Sanctions en Cas de Non-Conformité</h2>
+                <p class="text-slate-400 mb-6">
+                    Le non-respect des obligations de facturation électronique et d'e-reporting expose les
+                    entreprises à des amendes prévues par l'article 1737 du Code Général des Impôts :
+                </p>
+                <div class="space-y-4">
+                    <div class="flex gap-4 items-start border border-white/10 rounded-lg p-5 bg-slate-900">
+                        <div class="shrink-0 w-32 text-red-400 font-mono font-bold text-sm pt-0.5">15 € / facture</div>
+                        <div>
+                            <p class="text-white font-bold mb-1">Défaut d'émission électronique</p>
+                            <p class="text-sm text-slate-400">Amende par facture émise en dehors du circuit électronique
+                            obligatoire, plafonnée à <strong class="text-white">15 000 € par an</strong>.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 items-start border border-white/10 rounded-lg p-5 bg-slate-900">
+                        <div class="shrink-0 w-32 text-red-400 font-mono font-bold text-sm pt-0.5">250 € / trans.</div>
+                        <div>
+                            <p class="text-white font-bold mb-1">Défaut d'e-reporting</p>
+                            <p class="text-sm text-slate-400">Amende par transaction non déclarée dans les délais,
+                            plafonnée à <strong class="text-white">15 000 € par an</strong>.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 items-start border border-white/10 rounded-lg p-5 bg-slate-900">
+                        <div class="shrink-0 w-32 text-red-400 font-mono font-bold text-sm pt-0.5">Récidive</div>
+                        <div>
+                            <p class="text-white font-bold mb-1">Majoration en cas de récidive</p>
+                            <p class="text-sm text-slate-400">En cas de manquement répété, l'administration
+                            peut appliquer les procédures de contrôle fiscal accélérées prévues par le
+                            livre des procédures fiscales.</p>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-slate-400 mt-6 text-sm">
+                    <strong class="text-white">Note :</strong> Ces montants sont issus du projet de loi de
+                    finances 2024 et peuvent évoluer par décret. Consultez le site
+                    <strong class="text-white">impots.gouv.fr</strong> pour les textes consolidés.
+                </p>
             </section>
 
             <!-- What Developers Need -->
