@@ -57,7 +57,41 @@
         "name": "Factur-X Engine"
       },
       "keywords": "ERP integration, e-invoicing middleware, Factur-X API, ZUGFeRD REST API, XRechnung integration, EN 16931",
-      "articleBody": "Factur-X Engine acts as a translation layer between your ERP and e-invoicing regulations. Receive supplier invoices as clean JSON, send compliant XML or PDF - all through a single REST API."
+      "articleBody": "Factur-X Engine acts as a translation layer between your ERP and e-invoicing regulations. Receive supplier invoices as clean JSON, send compliant XML or PDF - all through a single REST API.",
+      "datePublished": "2025-12-01",
+      "dateModified": "2026-03-10"
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How do I integrate Factur-X invoice generation into my ERP?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Deploy Factur-X Engine as a Docker container (docker run -p 8000:8000 facturxengine/facturx-engine), then call POST /v1/convert with a multipart request containing your standard PDF and a JSON metadata payload. The API returns a compliant Factur-X PDF/A-3 file with the CII XML embedded. No JVM, no XML library, no dependency management required in your ERP code."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I receive and normalize incoming Factur-X invoices in my ERP?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Send the incoming PDF or XML to POST /v1/extract. The API returns structured JSON with all invoice fields (seller, buyer, line items, totals, tax breakdown) ready to insert into your ERP database. For Pro users, POST /v1/serialize returns a flattened, ERP-ready JSON with additional business normalization."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does Factur-X Engine work with XRechnung and ZUGFeRD for German ERP integrations?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Factur-X Engine supports XRechnung 3.0 and ZUGFeRD 2.4 in addition to Factur-X 1.0. All formats implement the EN 16931 CII standard, so the same API endpoints work for French, German, and EU-wide e-invoicing requirements."
+          }
+        }
+      ]
     }
     </script>
 </head>

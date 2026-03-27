@@ -55,7 +55,41 @@
         "name": "Factur-X Engine"
       },
       "keywords": "Factur-X, Python, No Java, ZUGFeRD, PDF/A-3, Alternatives to Mustangproject",
-      "articleBody": "Most Factur-X solutions rely on heavy Java libraries wrapped in Python bridges. Factur-X Engine is different. It uses a pure Python + C/C++ stack for maximum performance and security."
+      "articleBody": "Most Factur-X solutions rely on heavy Java libraries wrapped in Python bridges. Factur-X Engine is different. It uses a pure Python + C/C++ stack for maximum performance and security.",
+      "datePublished": "2025-12-01",
+      "dateModified": "2026-03-10"
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How do I generate Factur-X invoices in Python without Java?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Deploy Factur-X Engine as a Docker container and call its REST API from Python using the standard requests library. Unlike the factur-x PyPI package, Factur-X Engine runs VeraPDF and Saxon-HE as isolated Java subprocesses inside the container — your Python code never touches Java directly. A single POST /v1/convert call with a PDF and JSON metadata returns a compliant Factur-X PDF/A-3 file."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between the factur-x Python library and Factur-X Engine?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The factur-x PyPI library (akretion/factur-x) is a pure Python package that embeds XML into PDFs but performs limited schema validation. Factur-X Engine is a self-hosted REST API that adds full EN 16931 Schematron validation via Saxon-HE and PDF/A-3b compliance checks via VeraPDF. Factur-X Engine is language-agnostic and can serve multiple services simultaneously; the PyPI library must be installed per Python project."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I use Factur-X Engine in a Python FastAPI or Django application?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Since Factur-X Engine exposes a standard REST API, any Python web framework can call it with the requests or httpx library. Deploy the engine as a sidecar container alongside your FastAPI or Django app, then call http://localhost:8000/v1/convert from your Python code. No additional Python dependencies are required."
+          }
+        }
+      ]
     }
     </script>
 </head>
