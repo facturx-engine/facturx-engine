@@ -56,7 +56,49 @@
         "@type": "Organization",
         "name": "Factur-X Engine"
       },
-      "keywords": "Mustangproject alternative, Factur-X library comparison, ZUGFeRD Java vs Python, e-invoicing middleware, Mustangproject vs Factur-X Engine"
+      "keywords": "Mustangproject alternative, Factur-X library comparison, ZUGFeRD Java vs Python, e-invoicing middleware, Mustangproject vs Factur-X Engine",
+      "datePublished": "2026-01-15",
+      "dateModified": "2026-03-10"
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is the difference between Mustangproject and Factur-X Engine?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Mustangproject is an open-source Java library that must be embedded in your application. Factur-X Engine is a language-agnostic REST API deployed as a Docker container. Mustangproject requires a JVM and Java expertise; Factur-X Engine can be called from any language (Python, Node.js, PHP, Go) via HTTP. Factur-X Engine includes full Schematron + PDF/A-3b validation via VeraPDF; Mustangproject offers lighter validation."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "When should I choose Mustangproject over Factur-X Engine?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Choose Mustangproject if your stack is already Java-based, you want an embeddable library with no network overhead, or you need offline generation without Docker. Mustangproject is MIT-licensed and well-maintained for pure Java environments."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "When should I choose Factur-X Engine over Mustangproject?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Choose Factur-X Engine if you work in Python, Node.js, PHP, or any non-Java stack; if you need polyglot support across multiple services; if you want stricter EN 16931 Schematron validation with VeraPDF PDF/A-3b compliance checks; or if you need a centralized validation microservice with zero JVM dependency in each service."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does Factur-X Engine support ZUGFeRD like Mustangproject?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Factur-X Engine supports ZUGFeRD 2.4, Factur-X 1.0 (EN 16931), and XRechnung 3.0 — the same formats as Mustangproject. Both tools implement the CII (Cross Industry Invoice) XML standard required by EN 16931."
+          }
+        }
+      ]
     }
     </script>
 </head>

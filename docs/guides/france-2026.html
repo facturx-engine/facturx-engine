@@ -57,7 +57,49 @@
         "@type": "Organization",
         "name": "Factur-X Engine"
       },
-      "keywords": "facture électronique france 2026, facturation obligatoire B2B, Factur-X, Chorus Pro, PDP, e-invoicing france, EN 16931"
+      "keywords": "facture électronique france 2026, facturation obligatoire B2B, Factur-X, Chorus Pro, PDP, e-invoicing france, EN 16931",
+      "datePublished": "2025-11-01",
+      "dateModified": "2026-03-10"
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Quelle est la date d'obligation de la facture électronique en France pour les PME ?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "La facturation électronique devient obligatoire en France en deux étapes : à partir du 1er septembre 2026 pour les grandes entreprises et ETI en émission, et à partir du 1er septembre 2027 pour les PME et micro-entreprises en émission. La réception est obligatoire pour toutes les entreprises dès le 1er septembre 2026."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Quels formats sont acceptés pour la facturation électronique B2B en France ?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Les formats acceptés sont Factur-X (hybride PDF/XML basé sur CII EN 16931), UBL 2.1 (XML pur), et CII (Cross Industry Invoice XML pur). Factur-X est le format le plus répandu en France car il combine un PDF lisible et un XML structuré dans un seul fichier PDF/A-3."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Quelle est la différence entre le PPF et une PDP pour la facturation électronique française ?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Le Portail Public de Facturation (PPF, ex-Chorus Pro) est la plateforme publique gratuite opérée par l'État. Les Plateformes de Dématérialisation Partenaires (PDP) sont des opérateurs privés certifiés par la DGFiP qui offrent des services supplémentaires (intégration ERP, archivage, rapprochement). Toutes les factures B2B doivent transiter par l'une ou l'autre."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Comment intégrer la facturation électronique française dans un ERP via API ?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Avec Factur-X Engine, l'intégration se fait via une API REST self-hosted : POST /v1/convert pour générer un PDF Factur-X depuis vos données JSON, POST /v1/validate pour valider un fichier entrant contre les schématrons EN 16931, et POST /v1/extract pour normaliser une facture reçue en JSON structuré. Le moteur tourne en Docker et ne transmet aucune donnée en dehors de votre infrastructure."
+          }
+        }
+      ]
     }
     </script>
 </head>
