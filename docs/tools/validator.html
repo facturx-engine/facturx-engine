@@ -66,6 +66,64 @@
       }]
     }
     </script>
+
+    <!-- TechArticle Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "TechArticle",
+      "headline": "Free E-Invoice XML Validator — EN 16931, Factur-X, XRechnung, ZUGFeRD",
+      "description": "Validate e-invoices against EN 16931 Schematron rules via a self-hosted REST API. Covers Factur-X, ZUGFeRD, XRechnung 3.0 and Chorus Pro XML files.",
+      "author": { "@type": "Organization", "name": "Factur-X Engine", "url": "https://facturx-engine.github.io/facturx-engine/" },
+      "datePublished": "2025-12-01",
+      "dateModified": "2026-03-10",
+      "url": "https://facturx-engine.github.io/facturx-engine/tools/validator.html",
+      "keywords": ["e-invoice validator", "EN 16931", "Factur-X validation", "XRechnung validator", "ZUGFeRD validator", "Schematron", "REST API"],
+      "articleSection": "Tools"
+    }
+    </script>
+
+    <!-- FAQPage Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is the difference between XSD validation and Schematron validation for e-invoices?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "XSD (XML Schema Definition) validation checks the structural format of an XML file — element names, types, and hierarchy. Schematron validation checks business rules defined by the EN 16931 standard, such as whether the VAT breakdown is mathematically consistent (BR-CO-10), whether mandatory payment terms are present (BR-CO-25), or whether the IBAN is correctly formatted for SEPA transfers (BR-S-08). All modern e-invoicing mandates (Factur-X, XRechnung, ZUGFeRD, Chorus Pro) require both XSD and Schematron compliance."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can the validator check both PDF and pure XML e-invoices?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. The /v1/validate endpoint accepts both PDF/A-3 files (Factur-X or ZUGFeRD, where the XML is embedded as an attachment) and raw CII XML files (XRechnung). For PDFs, the engine first extracts the embedded factur-x.xml attachment, then runs Schematron validation on it. For raw XML files, validation is applied directly."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Which EN 16931 profiles are supported for validation?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The Factur-X Engine validates all CII (Cross-Industry Invoice) profiles defined by the EN 16931 standard: MINIMUM, BASIC WL, BASIC, EN 16931 (comfort), and EXTENDED. It also validates XRechnung 3.0 XML files using the official KoSIT Schematron rules. Profile detection is automatic — the engine reads the GuidelineSpecifiedDocumentContextParameter from the XML to determine which ruleset to apply."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I integrate e-invoice validation into a CI/CD pipeline?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Run the Factur-X Engine as a Docker service in your CI environment (docker run -d -p 8000:8000 facturxengine/facturx-engine), then call POST /v1/validate from your test suite or shell script. The response returns is_valid: true/false and a structured list of Schematron errors with rule codes. Exit the pipeline with a non-zero code if is_valid is false."
+          }
+        }
+      ]
+    }
+    </script>
 </head>
 
 <body class="bg-slate-950 text-slate-300 font-sans selection:bg-amber-500 selection:text-black">
@@ -148,6 +206,123 @@
     }
   ]
 }</code></pre>
+                    </div>
+                </div>
+
+                <!-- XML vs PDF -->
+                <div class="space-y-4">
+                    <h2 class="text-2xl font-bold text-white">Validating XML vs PDF: What's the Difference?</h2>
+                    <p class="text-slate-400">
+                        The <code>/v1/validate</code> endpoint accepts both input types without any configuration change.
+                        For <strong>PDF/A-3 files</strong> (Factur-X, ZUGFeRD), the engine first extracts the embedded
+                        <code>factur-x.xml</code> attachment, then runs Schematron rules on it. For <strong>raw CII
+                        XML</strong> (XRechnung), validation is applied directly. Profile detection is automatic —
+                        the engine reads the <code>GuidelineSpecifiedDocumentContextParameter</code> node to determine
+                        which ruleset (MINIMUM, BASIC WL, BASIC, EN 16931, EXTENDED) applies.
+                    </p>
+
+                    <div class="bg-black border border-white/10 rounded-lg p-6 overflow-x-auto mt-4">
+                        <div class="text-xs text-slate-500 font-mono mb-2 uppercase tracking-widest">cURL — Validating raw XRechnung XML</div>
+                        <pre class="font-mono text-sm text-slate-300"><code>curl -X POST 'http://localhost:8000/v1/validate' \
+  -H 'accept: application/json' \
+  -F 'file=@xrechnung.xml;type=application/xml'</code></pre>
+                    </div>
+                </div>
+
+                <!-- Schematron rules explained -->
+                <div class="space-y-4">
+                    <h2 class="text-2xl font-bold text-white">What Schematron Rules Actually Check</h2>
+                    <p class="text-slate-400">
+                        A plain XSD check verifies structure. Schematron validates <strong>business rules</strong> —
+                        the 300+ constraints that make an e-invoice legally compliant. A few common ones:
+                    </p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-slate-400 border border-white/10 rounded-lg">
+                            <thead>
+                                <tr class="border-b border-white/10 text-slate-300">
+                                    <th class="text-left px-4 py-3 font-mono">Rule</th>
+                                    <th class="text-left px-4 py-3">What it checks</th>
+                                    <th class="text-left px-4 py-3">Profile</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-white/5">
+                                <tr>
+                                    <td class="px-4 py-3 font-mono text-amber-400">BR-CO-10</td>
+                                    <td class="px-4 py-3">VAT category tax amount = taxable amount × VAT rate</td>
+                                    <td class="px-4 py-3">All</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-3 font-mono text-amber-400">BR-CO-16</td>
+                                    <td class="px-4 py-3">Payment means IBAN must be present when payment code is 58</td>
+                                    <td class="px-4 py-3">All</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-3 font-mono text-amber-400">BR-S-08</td>
+                                    <td class="px-4 py-3">Standard VAT lines must have a non-zero tax rate</td>
+                                    <td class="px-4 py-3">All</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-3 font-mono text-amber-400">BR-DE-17</td>
+                                    <td class="px-4 py-3">German XRechnung: buyer reference (Leitweg-ID) is mandatory</td>
+                                    <td class="px-4 py-3">XRechnung</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-3 font-mono text-amber-400">BT-1-FORMAT</td>
+                                    <td class="px-4 py-3">Invoice number must not be empty or contain only whitespace</td>
+                                    <td class="px-4 py-3">All</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- CI/CD integration -->
+                <div class="space-y-4">
+                    <h2 class="text-2xl font-bold text-white">Integrating Validation into a CI/CD Pipeline</h2>
+                    <p class="text-slate-400">
+                        Run the engine as a sidecar Docker service, then call <code>/v1/validate</code> from your test
+                        suite. The structured JSON response (with <code>is_valid</code> and <code>errors[]</code>) makes
+                        it trivial to fail a build on non-compliant invoices:
+                    </p>
+                    <div class="bg-black border border-white/10 rounded-lg p-6 overflow-x-auto">
+                        <div class="text-xs text-slate-500 font-mono mb-2 uppercase tracking-widest">GitHub Actions — validate before release</div>
+                        <pre class="font-mono text-sm text-slate-300"><code>services:
+  facturx:
+    image: facturxengine/facturx-engine:latest
+    ports: ["8000:8000"]
+
+steps:
+  - name: Validate e-invoice
+    run: |
+      RESULT=$(curl -s -X POST http://localhost:8000/v1/validate \
+        -F 'file=@invoice.xml')
+      echo $RESULT | jq -e '.is_valid == true'</code></pre>
+                    </div>
+                </div>
+
+                <!-- FAQ -->
+                <div class="space-y-6">
+                    <h2 class="text-2xl font-bold text-white">Frequently Asked Questions</h2>
+                    <div class="space-y-4">
+                        <div class="border border-white/10 rounded-lg p-6">
+                            <h3 class="text-white font-bold mb-2">Does validation require an internet connection?</h3>
+                            <p class="text-slate-400 text-sm">No. The Factur-X Engine is 100% air-gapped. All
+                            Schematron rulesets (EN 16931, XRechnung KoSIT, Chorus Pro) are bundled inside the
+                            Docker image. Validation runs entirely offline — no external schema downloads,
+                            no telemetry.</p>
+                        </div>
+                        <div class="border border-white/10 rounded-lg p-6">
+                            <h3 class="text-white font-bold mb-2">Which profiles are supported?</h3>
+                            <p class="text-slate-400 text-sm">All CII profiles: MINIMUM, BASIC WL, BASIC, EN 16931
+                            (Comfort), and EXTENDED. Also XRechnung 3.0 via KoSIT Schematron. Profile detection
+                            is automatic from the XML header — no configuration required.</p>
+                        </div>
+                        <div class="border border-white/10 rounded-lg p-6">
+                            <h3 class="text-white font-bold mb-2">What is the maximum file size for validation?</h3>
+                            <p class="text-slate-400 text-sm">The default upload limit is 10 MB, which comfortably
+                            covers any real-world e-invoice PDF or XML. For bulk validation of large batches,
+                            use concurrent requests — the engine handles multiple Gunicorn workers out of the box.</p>
+                        </div>
                     </div>
                 </div>
 
