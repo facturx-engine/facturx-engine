@@ -72,11 +72,47 @@
     {
       "@context": "https://schema.org",
       "@type": "TechArticle",
-      "headline": "Generate and Validate Factur-X from Python",
-      "author": { "@type": "Organization", "name": "Factur-X Engine" },
+      "headline": "Generate and Validate Factur-X from Python — Without Native Libraries",
+      "description": "How to generate EN 16931 e-invoices from Python using a self-hosted Docker API instead of fragile native Factur-X libraries. Covers FastAPI, Django, batch processing, and CI/CD validation.",
+      "author": { "@type": "Organization", "name": "Factur-X Engine", "url": "https://facturx-engine.github.io/facturx-engine/" },
       "url": "https://facturx-engine.github.io/facturx-engine/tutorials/python-facturx.html",
       "datePublished": "2025-12-01",
-      "dateModified": "2026-03-10"
+      "dateModified": "2026-03-10",
+      "keywords": ["Python Factur-X", "e-invoice Python", "XRechnung Python", "EN 16931 Python", "factur-x library", "FastAPI e-invoice", "Django invoice generation"],
+      "articleSection": "Tutorials"
+    }
+    </script>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is the best Python library for generating Factur-X invoices?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "For production use, a self-hosted REST API (such as Factur-X Engine) is more reliable than native Python libraries like the factur-x PyPI package. Native libraries require managing lxml versions, SaxonC binaries, and Java runtimes in your Python environment. A Docker-based API isolates all dependencies, handles all EN 16931 profiles, and can be called with the standard requests library — no additional dependencies in your application code."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I generate a Factur-X PDF from Python without Java?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Run the Factur-X Engine Docker image (docker run -d -p 8000:8000 facturxengine/facturx-engine) and call POST /v1/convert with a multipart request containing your base PDF and a JSON metadata string. The engine handles all Java-based PDF/A-3 embedding and Schematron validation internally. Your Python code only needs the requests library."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I validate Factur-X invoices from Python before sending them?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. POST /v1/validate accepts a PDF or XML file and returns a JSON object with is_valid (boolean) and errors (list of Schematron rule violations with codes and messages). This is ideal for a pre-send validation step in Django, FastAPI, or any Python workflow."
+          }
+        }
+      ]
     }
     </script>
 </head>
@@ -179,13 +215,194 @@ generate_invoice("input.pdf", metadata)</code></pre>
                             E-Rechnung</strong> validation. Native Python XML generation is tedious to maintain against
                         evolving European mandates.
                     </p>
-                    <p class="text-slate-400">
-                        By using the Engine's Docker API as a "black box" microservice, you avoid dependency hell. You
-                        don't need to manage <code>lxml</code> versions, <code>SaxonC</code> binaries, or JVM heaps in
-                        your Python environment. The isolated "Iso-Prod" container guarantees compliance out-of-the-box.
-                    </p>
+                    <div class="overflow-x-auto mt-4">
+                        <table class="w-full text-sm text-slate-400 border border-white/10 rounded-lg">
+                            <thead>
+                                <tr class="border-b border-white/10 text-slate-300">
+                                    <th class="text-left px-4 py-3">Approach</th>
+                                    <th class="text-left px-4 py-3">Schematron</th>
+                                    <th class="text-left px-4 py-3">Dependency footprint</th>
+                                    <th class="text-left px-4 py-3">Profile support</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-white/5">
+                                <tr>
+                                    <td class="px-4 py-3 text-white font-medium">factur-x (PyPI)</td>
+                                    <td class="px-4 py-3 text-red-400">None</td>
+                                    <td class="px-4 py-3">lxml, reportlab</td>
+                                    <td class="px-4 py-3">Partial</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-3 text-white font-medium">Mustang (Java CLI)</td>
+                                    <td class="px-4 py-3 text-green-400">Yes</td>
+                                    <td class="px-4 py-3">JVM, CLI wrapper</td>
+                                    <td class="px-4 py-3">Full</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-3 text-amber-400 font-medium">Factur-X Engine API</td>
+                                    <td class="px-4 py-3 text-green-400">Yes (Saxon-HE)</td>
+                                    <td class="px-4 py-3">requests only</td>
+                                    <td class="px-4 py-3">Full + XRechnung 3.0</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
+                <!-- FastAPI use case -->
+                <div class="space-y-4">
+                    <h2 class="text-2xl font-bold text-white">Use Case: FastAPI Background Invoice Generation</h2>
+                    <p class="text-slate-400">
+                        The most common production pattern is triggering invoice generation as a background task
+                        after a successful payment. The Engine returns the PDF as a binary stream — write it
+                        directly to S3, GCS, or your filesystem:
+                    </p>
+                    <div class="bg-black border border-white/10 rounded-lg p-6 overflow-x-auto">
+                        <pre class="font-mono text-sm text-slate-300"><code>from fastapi import FastAPI, BackgroundTasks
+import requests, boto3
+
+app = FastAPI()
+s3 = boto3.client("s3")
+
+def generate_and_store(order_id: str, pdf_path: str, metadata: dict):
+    resp = requests.post(
+        "http://facturx-engine:8000/v1/convert",
+        files={"pdf": open(pdf_path, "rb")},
+        data={"metadata": json.dumps(metadata)},
+        timeout=30,
+    )
+    resp.raise_for_status()
+    s3.put_object(
+        Bucket="invoices",
+        Key=f"{order_id}.pdf",
+        Body=resp.content,
+        ContentType="application/pdf",
+    )
+
+@app.post("/orders/{order_id}/invoice")
+async def create_invoice(order_id: str, bg: BackgroundTasks):
+    bg.add_task(generate_and_store, order_id, "base.pdf", build_metadata(order_id))
+    return {"status": "queued"}</code></pre>
+                    </div>
+                </div>
+
+                <!-- Django use case -->
+                <div class="space-y-4">
+                    <h2 class="text-2xl font-bold text-white">Use Case: Django Management Command for Batch Processing</h2>
+                    <p class="text-slate-400">
+                        For month-end batch generation of hundreds of invoices, wrap the API call in a Django
+                        management command. Use <code>ThreadPoolExecutor</code> to run up to 4 parallel requests
+                        against the engine's Gunicorn workers:
+                    </p>
+                    <div class="bg-black border border-white/10 rounded-lg p-6 overflow-x-auto">
+                        <pre class="font-mono text-sm text-slate-300"><code>from django.core.management.base import BaseCommand
+from concurrent.futures import ThreadPoolExecutor
+import requests
+
+ENGINE_URL = "http://localhost:8000/v1/convert"
+
+def convert_one(invoice):
+    r = requests.post(ENGINE_URL,
+        files={"pdf": open(invoice.template_path, "rb")},
+        data={"metadata": invoice.to_json()})
+    if r.ok:
+        invoice.save_pdf(r.content)
+        return True
+    return False
+
+class Command(BaseCommand):
+    help = "Generate Factur-X PDFs for all pending invoices"
+
+    def handle(self, *args, **kwargs):
+        pending = Invoice.objects.filter(status="pending")
+        with ThreadPoolExecutor(max_workers=4) as ex:
+            results = list(ex.map(convert_one, pending))
+        self.stdout.write(f"{sum(results)}/{len(results)} generated")</code></pre>
+                    </div>
+                </div>
+
+                <!-- Validation use case -->
+                <div class="space-y-4">
+                    <h2 class="text-2xl font-bold text-white">Use Case: Validate Received Invoices Before Archiving</h2>
+                    <p class="text-slate-400">
+                        When receiving e-invoices from suppliers, validate compliance before injecting them into
+                        your accounting system. Non-compliant invoices (e.g. missing IBAN for SEPA payment,
+                        broken VAT math) are rejected early with a clear error report:
+                    </p>
+                    <div class="bg-black border border-white/10 rounded-lg p-6 overflow-x-auto">
+                        <pre class="font-mono text-sm text-slate-300"><code>import requests
+
+def validate_received_invoice(file_path: str) -> dict:
+    """Returns {'is_valid': bool, 'errors': list}"""
+    with open(file_path, "rb") as f:
+        r = requests.post(
+            "http://localhost:8000/v1/validate",
+            files={"file": f},
+            timeout=15,
+        )
+    r.raise_for_status()
+    result = r.json()
+
+    if not result["is_valid"]:
+        for err in result.get("errors", []):
+            print(f"[{err['code']}] {err['message']}")
+        raise ValueError(f"Invoice {file_path} failed EN 16931 validation")
+
+    return result</code></pre>
+                    </div>
+                </div>
+
+                <!-- FAQ -->
+                <div class="space-y-6">
+                    <h2 class="text-2xl font-bold text-white">Frequently Asked Questions</h2>
+                    <div class="space-y-4">
+                        <div class="border border-white/10 rounded-lg p-6">
+                            <h3 class="text-white font-bold mb-2">Do I need to install any Python packages beyond <code>requests</code>?</h3>
+                            <p class="text-slate-400 text-sm">No. The entire EN 16931 toolchain (Saxon-HE, VeraPDF,
+                            lxml, Schematron rulesets) runs inside the Docker container. Your Python application
+                            only needs the standard <code>requests</code> library to make HTTP calls to the engine.</p>
+                        </div>
+                        <div class="border border-white/10 rounded-lg p-6">
+                            <h3 class="text-white font-bold mb-2">How do I extract structured data from a received Factur-X PDF?</h3>
+                            <p class="text-slate-400 text-sm">Use <code>POST /v1/extract</code> with the PDF as the
+                            <code>file</code> parameter. The engine returns a structured JSON object containing
+                            all invoice fields (seller, buyer, line items, totals, payment terms) parsed from the
+                            embedded XML — ready to insert into your ERP or database without manual XML parsing.</p>
+                        </div>
+                        <div class="border border-white/10 rounded-lg p-6">
+                            <h3 class="text-white font-bold mb-2">Is the Docker API compatible with async Python (asyncio / httpx)?</h3>
+                            <p class="text-slate-400 text-sm">Yes. Replace <code>requests.post</code> with
+                            <code>await httpx.AsyncClient().post(...)</code> for fully async usage. The engine
+                            itself is built on FastAPI + Uvicorn and handles concurrent requests efficiently
+                            via multiple Gunicorn workers.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- See also -->
+    <section class="py-16 border-t border-white/5 bg-slate-950">
+        <div class="max-w-6xl mx-auto px-6">
+            <h2 class="text-sm font-bold text-white mb-4 uppercase tracking-widest">See Also</h2>
+            <div class="grid md:grid-cols-3 gap-4">
+                <a href="../tutorials/nodejs-facturx.html"
+                    class="bg-slate-900 border border-white/10 rounded-lg p-4 hover:border-amber-500/30 transition-colors">
+                    <div class="text-amber-500 font-mono text-xs uppercase tracking-widest mb-1">Tutorial</div>
+                    <div class="text-white font-bold text-sm">Node.js Integration</div>
+                </a>
+                <a href="../tutorials/php-facturx.html"
+                    class="bg-slate-900 border border-white/10 rounded-lg p-4 hover:border-amber-500/30 transition-colors">
+                    <div class="text-amber-500 font-mono text-xs uppercase tracking-widest mb-1">Tutorial</div>
+                    <div class="text-white font-bold text-sm">PHP Integration</div>
+                </a>
+                <a href="../ref/api-reference.html"
+                    class="bg-slate-900 border border-white/10 rounded-lg p-4 hover:border-amber-500/30 transition-colors">
+                    <div class="text-amber-500 font-mono text-xs uppercase tracking-widest mb-1">Reference</div>
+                    <div class="text-white font-bold text-sm">Full API Reference</div>
+                </a>
             </div>
         </div>
     </section>
