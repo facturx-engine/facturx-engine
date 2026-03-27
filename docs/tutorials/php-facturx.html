@@ -71,11 +71,47 @@
     {
       "@context": "https://schema.org",
       "@type": "TechArticle",
-      "headline": "PHP Factur-X Library Alternative",
-      "author": { "@type": "Organization", "name": "Factur-X Engine" },
+      "headline": "PHP Factur-X Library Alternative — Symfony, Laravel & WordPress",
+      "description": "How to generate and validate EN 16931 Factur-X e-invoices from PHP (Symfony, Laravel, WordPress) using a self-hosted Docker API instead of fragile PHP libraries.",
+      "author": { "@type": "Organization", "name": "Factur-X Engine", "url": "https://facturx-engine.github.io/facturx-engine/" },
       "url": "https://facturx-engine.github.io/facturx-engine/tutorials/php-facturx.html",
       "datePublished": "2025-12-01",
-      "dateModified": "2026-03-10"
+      "dateModified": "2026-03-10",
+      "keywords": ["PHP Factur-X", "Factur-X PHP library", "XRechnung PHP", "EN 16931 PHP", "Symfony e-invoice", "Laravel invoice generation", "facture électronique PHP"],
+      "articleSection": "Tutorials"
+    }
+    </script>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is the best PHP library for generating Factur-X or XRechnung invoices?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No PHP library provides full EN 16931 Schematron validation out of the box. Libraries like horstoeko/zugferd generate CII XML but do not run Saxon-HE Schematron checks, which are required for legal compliance in France, Germany, and Belgium. The recommended approach for PHP is to call a self-hosted REST API (such as Factur-X Engine) via Guzzle or curl. The engine handles Saxon-HE, VeraPDF, and all profile-specific business rules internally."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I generate a Factur-X PDF from Symfony or Laravel?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Make a multipart POST request to /v1/convert with your base PDF and a JSON metadata string. In Symfony, use HttpClient::create()->request('POST', ...) with the body option set to a multipart array. In Laravel, use Http::attach('pdf', ...) followed by ->post(). The response body is a binary PDF/A-3 file ready to store or stream to the browser."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I validate Factur-X invoices from PHP before archiving them?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. POST /v1/validate accepts a PDF or XML file and returns JSON with is_valid (boolean) and errors (array of Schematron rule violations). Use this as a pre-archiving gate in your PHP application to reject non-compliant supplier invoices before they enter your accounting system."
+          }
+        }
+      ]
     }
     </script>
 </head>
@@ -165,17 +201,218 @@ try {
                 <div class="space-y-4">
                     <h2 class="text-2xl font-bold text-white">PHP Libraries vs Docker API</h2>
                     <p class="text-slate-400">
-                        PHP libraries for PDF/A-3 and complex XML generation (like <code>tcpdf</code> or wrappers around
-                        <code>Ghostscript</code>) are notoriously fragile, consume huge amounts of RAM, and struggle
-                        with strict <strong>EN16931</strong> validation rules.
+                        Libraries like <code>horstoeko/zugferd</code> generate CII XML but skip the Schematron
+                        validation required for legal compliance. Libraries wrapping <code>tcpdf</code> or
+                        <code>Ghostscript</code> for PDF/A-3 embedding consume large amounts of RAM and break
+                        on edge cases. The Docker API approach isolates all complexity:
                     </p>
-                    <p class="text-slate-400">
-                        By offloading invoice generation and strict XML validation to the isolated Factur-X Engine via
-                        Docker, your PHP application remains lightweight, fast, and crash-proof against evolving
-                        European e-invoicing mandates.
-                    </p>
+                    <div class="overflow-x-auto mt-4">
+                        <table class="w-full text-sm text-slate-400 border border-white/10 rounded-lg">
+                            <thead>
+                                <tr class="border-b border-white/10 text-slate-300">
+                                    <th class="text-left px-4 py-3">Approach</th>
+                                    <th class="text-left px-4 py-3">Schematron</th>
+                                    <th class="text-left px-4 py-3">Composer deps</th>
+                                    <th class="text-left px-4 py-3">PDF/A-3</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-white/5">
+                                <tr>
+                                    <td class="px-4 py-3 text-white font-medium">horstoeko/zugferd</td>
+                                    <td class="px-4 py-3 text-red-400">None</td>
+                                    <td class="px-4 py-3">fpdf, dompdf, setasign</td>
+                                    <td class="px-4 py-3 text-yellow-400">Partial</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-3 text-white font-medium">atgp/factur-x</td>
+                                    <td class="px-4 py-3 text-red-400">None</td>
+                                    <td class="px-4 py-3">smalot/pdfparser</td>
+                                    <td class="px-4 py-3 text-yellow-400">Partial</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-3 text-amber-400 font-medium">Factur-X Engine API</td>
+                                    <td class="px-4 py-3 text-green-400">Yes (Saxon-HE)</td>
+                                    <td class="px-4 py-3">guzzlehttp/guzzle only</td>
+                                    <td class="px-4 py-3 text-green-400">Yes (VeraPDF)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
+                <!-- Symfony use case -->
+                <div class="space-y-4">
+                    <h2 class="text-2xl font-bold text-white">Use Case: Symfony Service with HttpClient</h2>
+                    <p class="text-slate-400">
+                        Use Symfony's native <code>HttpClientInterface</code> — no Guzzle required. Inject the
+                        service and call the engine from a Symfony command or event listener:
+                    </p>
+                    <div class="bg-black border border-white/10 rounded-lg p-6 overflow-x-auto">
+                        <pre class="font-mono text-sm text-slate-300"><code>&lt;?php
+namespace App\Service;
+
+use Symfony\Contracts\HttpClient\HttpClientInterface;
+
+class InvoiceService
+{
+    public function __construct(
+        private HttpClientInterface $http,
+        private string $engineUrl = 'http://facturx-engine:8000'
+    ) {}
+
+    public function generateFacturX(string $pdfPath, array $metadata): string
+    {
+        $response = $this->http->request('POST', $this->engineUrl . '/v1/convert', [
+            'body' => [
+                'pdf'      => fopen($pdfPath, 'r'),
+                'metadata' => json_encode($metadata),
+            ],
+        ]);
+
+        if ($response->getStatusCode() !== 200) {
+            throw new \RuntimeException('Engine error: ' . $response->getContent(false));
+        }
+
+        return $response->getContent(); // binary PDF string
+    }
+}</code></pre>
+                    </div>
+                </div>
+
+                <!-- Laravel use case -->
+                <div class="space-y-4">
+                    <h2 class="text-2xl font-bold text-white">Use Case: Laravel Queued Job for Batch Generation</h2>
+                    <p class="text-slate-400">
+                        Dispatch invoice generation as a Laravel queued job after payment confirmation.
+                        Store the resulting PDF in S3 via Laravel's filesystem abstraction:
+                    </p>
+                    <div class="bg-black border border-white/10 rounded-lg p-6 overflow-x-auto">
+                        <pre class="font-mono text-sm text-slate-300"><code>&lt;?php
+namespace App\Jobs;
+
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
+
+class GenerateFacturXInvoice implements ShouldQueue
+{
+    use Queueable;
+
+    public function __construct(
+        private int $orderId,
+        private string $pdfPath,
+        private array $metadata
+    ) {}
+
+    public function handle(): void
+    {
+        $response = Http::attach('pdf', file_get_contents($this->pdfPath), 'invoice.pdf')
+            ->post(config('services.facturx.url') . '/v1/convert', [
+                'metadata' => json_encode($this->metadata),
+            ]);
+
+        $response->throw(); // throws on 4xx/5xx
+
+        Storage::disk('s3')->put(
+            "invoices/{$this->orderId}.pdf",
+            $response->body()
+        );
+    }
+}</code></pre>
+                    </div>
+                </div>
+
+                <!-- Validation use case -->
+                <div class="space-y-4">
+                    <h2 class="text-2xl font-bold text-white">Use Case: Validate Supplier Invoices Before Archiving</h2>
+                    <p class="text-slate-400">
+                        When receiving e-invoices from suppliers via EDI or email attachment, validate compliance
+                        before injecting into your accounting system. Non-compliant invoices (broken VAT math,
+                        missing IBAN, wrong profile) are rejected with a structured error report:
+                    </p>
+                    <div class="bg-black border border-white/10 rounded-lg p-6 overflow-x-auto">
+                        <pre class="font-mono text-sm text-slate-300"><code>&lt;?php
+use GuzzleHttp\Client;
+
+function validateInvoice(string $filePath): array
+{
+    $client = new Client();
+    $response = $client->post('http://localhost:8000/v1/validate', [
+        'multipart' => [[
+            'name'     => 'file',
+            'contents' => fopen($filePath, 'r'),
+            'filename' => basename($filePath),
+        ]],
+    ]);
+
+    $result = json_decode($response->getBody(), true);
+
+    if (!$result['is_valid']) {
+        foreach ($result['errors'] as $error) {
+            error_log("[{$error['code']}] {$error['message']}");
+        }
+        throw new \RuntimeException('Invoice failed EN 16931 validation');
+    }
+
+    return $result;
+}</code></pre>
+                    </div>
+                </div>
+
+                <!-- FAQ -->
+                <div class="space-y-6">
+                    <h2 class="text-2xl font-bold text-white">Frequently Asked Questions</h2>
+                    <div class="space-y-4">
+                        <div class="border border-white/10 rounded-lg p-6">
+                            <h3 class="text-white font-bold mb-2">Can I use plain <code>curl</code> instead of Guzzle?</h3>
+                            <p class="text-slate-400 text-sm">Yes. PHP's native <code>curl_setopt</code> with
+                            <code>CURLOPT_POSTFIELDS</code> set to a multipart array works perfectly.
+                            The Guzzle example is shown for readability but any HTTP client that supports
+                            multipart/form-data works — including Symfony HttpClient and Laravel's Http facade.</p>
+                        </div>
+                        <div class="border border-white/10 rounded-lg p-6">
+                            <h3 class="text-white font-bold mb-2">How do I stream the PDF response to the browser in PHP?</h3>
+                            <p class="text-slate-400 text-sm">Set the appropriate headers and echo the binary content:
+                            <code>header('Content-Type: application/pdf')</code>,
+                            <code>header('Content-Disposition: attachment; filename="invoice.pdf"')</code>,
+                            then <code>echo $response->getBody()</code>. In Laravel use
+                            <code>return response($response->body(), 200, ['Content-Type' => 'application/pdf'])</code>.</p>
+                        </div>
+                        <div class="border border-white/10 rounded-lg p-6">
+                            <h3 class="text-white font-bold mb-2">Does the engine work with PHP running on shared hosting?</h3>
+                            <p class="text-slate-400 text-sm">The Factur-X Engine Docker container runs separately
+                            from your PHP environment — it can be hosted on any VPS, cloud VM, or local server.
+                            Your PHP app on shared hosting simply makes HTTP requests to it. The engine requires
+                            at minimum 0.5 vCPU and 512 MB RAM on the host where it runs.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- See Also -->
+    <section class="py-16 border-t border-white/5 bg-slate-950">
+        <div class="max-w-6xl mx-auto px-6">
+            <h2 class="text-sm font-bold text-white mb-4 uppercase tracking-widest">See Also</h2>
+            <div class="grid md:grid-cols-3 gap-4">
+                <a href="../tutorials/python-facturx.html"
+                    class="bg-slate-900 border border-white/10 rounded-lg p-4 hover:border-amber-500/30 transition-colors">
+                    <div class="text-amber-500 font-mono text-xs uppercase tracking-widest mb-1">Tutorial</div>
+                    <div class="text-white font-bold text-sm">Python Integration</div>
+                </a>
+                <a href="../tutorials/nodejs-facturx.html"
+                    class="bg-slate-900 border border-white/10 rounded-lg p-4 hover:border-amber-500/30 transition-colors">
+                    <div class="text-amber-500 font-mono text-xs uppercase tracking-widest mb-1">Tutorial</div>
+                    <div class="text-white font-bold text-sm">Node.js Integration</div>
+                </a>
+                <a href="../ref/api-reference.html"
+                    class="bg-slate-900 border border-white/10 rounded-lg p-4 hover:border-amber-500/30 transition-colors">
+                    <div class="text-amber-500 font-mono text-xs uppercase tracking-widest mb-1">Reference</div>
+                    <div class="text-white font-bold text-sm">Full API Reference</div>
+                </a>
             </div>
         </div>
     </section>
