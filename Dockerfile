@@ -139,8 +139,10 @@ ENV PATH="/opt/jre/bin:${PATH}"
 ENV VERAPDF_JAR=/app/bin/verapdf.jar
 ENV SAXON_JAR=/app/bin/saxon.jar
 
-# Install system dependencies for lxml
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Upgrade base-image packages with pending security fixes (e.g. openssl),
+# then install system dependencies for lxml
+RUN apt-get update && apt-get upgrade -y && \
+    apt-get install -y --no-install-recommends \
     libxml2 libxslt1.1 && \
     rm -rf /var/lib/apt/lists/*
 
