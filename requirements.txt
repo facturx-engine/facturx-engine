@@ -1,7 +1,7 @@
 fastapi==0.135.1
-uvicorn==0.41.0
+uvicorn==0.42.0
 python-multipart==0.0.22
-factur-x==3.15
+factur-x==4.2
 pypdf==6.7.5
 jinja2==3.1.6
 xmlschema==4.3.1

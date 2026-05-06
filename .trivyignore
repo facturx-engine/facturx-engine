@@ -1,11 +1,8 @@
 # Trivy ignore file
 # Format: <CVE-or-GHSA-ID> exp:<YYYY-MM-DD> # reason
 #
-# Review date: 2026-04-20
-# Bump VERAPDF_VERSION when veraPDF 1.28.3+ ships jackson-core >= 2.18.6
-
-# jackson-core Number Length Constraint Bypass — bundled inside verapdf.jar 1.28.2
-# No veraPDF release available with a patched jackson-core as of 2026-03-20.
-# Attack vector: crafted document submitted to /v1/validate; mitigated by file-size
-# limits (MAX_UPLOAD_SIZE) and non-root container. Risk accepted until upstream fix.
-GHSA-72hv-8253-57qq exp:2026-04-20
+# Review date: 2026-05-06
+#
+# GHSA-72hv-8253-57qq (jackson-core bundled in verapdf 1.28.2):
+# Removed — no longer detected in Trivy scans as of 2026-05-06.
+# VeraPDF 1.30.1 is now available; Dockerfile bump tracked separately.
