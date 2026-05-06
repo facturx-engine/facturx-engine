@@ -15,7 +15,7 @@
 # ----------------------------------------
 # Stage 1: Install VeraPDF + build minimal JRE with jlink
 # ----------------------------------------
-FROM eclipse-temurin:25-jdk-jammy AS jlink-builder
+FROM eclipse-temurin:17-jdk-jammy AS jlink-builder
 
 ARG VERAPDF_VERSION=1.28.2
 ARG VERAPDF_MAJOR_MINOR=1.28
