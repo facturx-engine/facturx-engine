@@ -39,7 +39,7 @@ def is_pdfa3b(pdf_bytes: bytes) -> bool:
         return False
 
 
-def get_xml_from_pdf(pdf_input, **kwargs) -> Tuple[Optional[str], Optional[bytes]]:
+def get_xml_from_pdf(pdf_input, check_xsd=False, check_schematron=False, **kwargs) -> Tuple[Optional[str], Optional[bytes]]:
     """
     Extract XML from a Factur-X/ZUGFeRD/XRechnung PDF.
 
@@ -63,7 +63,9 @@ def get_xml_from_pdf(pdf_input, **kwargs) -> Tuple[Optional[str], Optional[bytes
 
     # 1. Try upstream first (handles factur-x.xml, zugferd-invoice.xml)
     try:
-        xml_filename, xml_content = _upstream_get_xml_from_pdf(pdf_input, **kwargs)
+        xml_filename, xml_content = _upstream_get_xml_from_pdf(
+            pdf_input, check_xsd=check_xsd, check_schematron=check_schematron, **kwargs
+        )
         if xml_content:
             return xml_filename, xml_content
     except Exception as e:
