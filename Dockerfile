@@ -17,8 +17,8 @@
 # ----------------------------------------
 FROM eclipse-temurin:17-jdk-jammy AS jlink-builder
 
-ARG VERAPDF_VERSION=1.28.2
-ARG VERAPDF_MAJOR_MINOR=1.28
+ARG VERAPDF_VERSION=1.30.1
+ARG VERAPDF_MAJOR_MINOR=1.30
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     wget ca-certificates unzip && \
@@ -80,9 +80,11 @@ RUN wget -q "https://repo1.maven.org/maven2/net/sf/saxon/Saxon-HE/10.8/Saxon-HE-
     fi
 
 # Locate the installed CLI fat JAR and stage it at /verapdf.jar.
-# The IzPack installer places the executable JAR in /opt/verapdf/bin/ as
-# greenfield-apps-<version>.jar (not verapdf-*.jar).
-RUN JAR=$(find /opt/verapdf/bin -maxdepth 1 -name "greenfield-apps-*.jar" \
+# JAR naming changed across releases:
+#   ≤1.28.x: greenfield-apps-<version>.jar
+#   ≥1.30.x: cli-<version>.jar  (gui-<version>.jar also present — not wanted)
+RUN JAR=$(find /opt/verapdf/bin -maxdepth 1 \
+    \( -name "cli-*.jar" -o -name "greenfield-apps-*.jar" \) \
     | sort -V | tail -1) && \
     test -n "$JAR" || { echo "ERROR: VeraPDF JAR not found after installation" >&2; exit 1; } && \
     echo "Packaging VeraPDF JAR: $JAR" && \
