@@ -1,11 +1,11 @@
-fastapi==0.135.1
-uvicorn==0.42.0
-python-multipart==0.0.22
+fastapi==0.136.1
+uvicorn==0.46.0
+python-multipart==0.0.27
 factur-x==4.2
-pypdf==6.7.5
+pypdf==6.10.2
 jinja2==3.1.6
 xmlschema==4.3.1
-reportlab==4.4.10
+reportlab==4.5.0
 lxml==6.1.0
 psutil==7.2.2
 pynacl==1.6.2
