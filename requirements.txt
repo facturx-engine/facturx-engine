@@ -5,7 +5,7 @@ factur-x==4.2
 pypdf==6.10.2
 jinja2==3.1.6
 xmlschema==4.3.1
-reportlab==4.5.0
+reportlab==4.5.1
 lxml==6.1.0
 psutil==7.2.2
 pynacl==1.6.2
