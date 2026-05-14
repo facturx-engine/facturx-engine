@@ -9,7 +9,7 @@ reportlab==4.5.0
 lxml==6.1.0
 psutil==7.2.2
 pynacl==1.6.2
-gunicorn==25.1.0
+gunicorn==26.0.0
 # Security: pin transitive deps with known CVEs (CVE-2026-23949, CVE-2026-24049)
 wheel>=0.46.2
 jaraco.context>=6.1.0
