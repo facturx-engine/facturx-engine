@@ -24,7 +24,7 @@ jobs:
       # id-token: write   # Uncomment for OIDC/Cosign signing
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       # ------------------------------------------------------------------
       # PHASE 1: PRE-BUILD SECURITY (Supply Chain Defense)
