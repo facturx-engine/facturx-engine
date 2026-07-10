@@ -1,6 +1,7 @@
 """
 Factur-X PDF generation service using Jinja2 templating and factur-x library.
 """
+import inspect
 import logging
 from pathlib import Path
 from typing import Optional, Tuple
@@ -12,6 +13,7 @@ from jinja2.sandbox import SandboxedEnvironment  # SECURITY: Prevents SSTI/RCE
 from app.schemas.validation import InvoiceMetadata
 
 logger = logging.getLogger(__name__)
+_GENERATE_FROM_BINARY_PARAMS = set(inspect.signature(generate_from_binary).parameters)
 
 # Load Jinja2 environment (Sandboxed)
 TEMPLATE_DIR = Path(__file__).parent.parent / "templates"
@@ -25,6 +27,35 @@ jinja_env = SandboxedEnvironment(
 
 class GeneratorService:
     """Service for generating Factur-X PDFs."""
+
+    @staticmethod
+    def _generate_pdf_with_xml(
+        pdf_content: bytes,
+        xml_bytes: bytes,
+        *,
+        flavor: str,
+        level: str,
+        pdf_metadata: Optional[dict] = None,
+    ) -> bytes:
+        """
+        Delegate PDF embedding to factur-x while keeping validation in-engine.
+
+        factur-x 4.2 introduced an internal schematron pass that rejects some
+        valid XRechnung payloads when treated as generic Factur-X EN16931.
+        We already validate the XML with the engine's own hybrid pipeline, so
+        this wrapper disables duplicate upstream checks when the installed
+        library supports it.
+        """
+        kwargs = {
+            "flavor": flavor,
+            "level": level,
+            "check_xsd": False,
+        }
+        if "check_schematron" in _GENERATE_FROM_BINARY_PARAMS:
+            kwargs["check_schematron"] = False
+        if pdf_metadata is not None:
+            kwargs["pdf_metadata"] = pdf_metadata
+        return generate_from_binary(pdf_content, xml_bytes, **kwargs)
 
     @staticmethod
     def generate_xml(metadata: InvoiceMetadata) -> str:
@@ -81,12 +112,11 @@ class GeneratorService:
             if lib_level == "xrechnung_3.0":
                 lib_level = "en16931" # Use en16931 base for library embedding, template handles the ID
                 
-            result_bytes = generate_from_binary(
-                pdf_content,  # First positional arg: input PDF bytes
-                xml_bytes,    # Second positional arg: XML bytes
+            result_bytes = GeneratorService._generate_pdf_with_xml(
+                pdf_content,
+                xml_bytes,
                 flavor='factur-x',
                 level=lib_level,
-                check_xsd=False,         # Engine validates XSD via Saxon
                 pdf_metadata={
                     'author': 'Factur-X API',
                     'keywords': 'Factur-X, ZUGFeRD, e-invoice',
@@ -174,12 +204,11 @@ class GeneratorService:
 
         # 4. Embed XML — library sets AFRelationship=/Data internally
         logger.info(f"Merging XML into PDF: flavor={lib_flavor}, level={lib_level}")
-        result_bytes = generate_from_binary(
+        result_bytes = GeneratorService._generate_pdf_with_xml(
             pdf_content,
             xml_content,
             flavor=lib_flavor,
             level=lib_level,
-            check_xsd=False,         # Engine validates XSD via Saxon
         )
 
         return result_bytes, fmt or "factur-x", profile or "en16931"
