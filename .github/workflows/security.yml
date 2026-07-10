@@ -24,7 +24,7 @@ jobs:
       # id-token: write   # Uncomment for OIDC/Cosign signing
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # ------------------------------------------------------------------
       # PHASE 1: PRE-BUILD SECURITY (Supply Chain Defense)
@@ -32,7 +32,7 @@ jobs:
       
       # [P2] Scan Base Image to avoid inheriting upstream vulnerabilities
       - name: Scan Base Image (Python 3.11)
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: 'python:3.11-slim'
           format: 'table'
@@ -54,7 +54,7 @@ jobs:
       # [P0] Generate SBOM (Software Bill of Materials) - LEGALLY REQUIRED 2026
       # This proves what is inside your black box.
       - name: Generate SBOM (CycloneDX)
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: 'facturx-engine:${{ env.VERSION }}'
           format: 'cyclonedx'
@@ -63,10 +63,11 @@ jobs:
           
       # [P0] Scan Final Image for Vulnerabilities
       - name: Scan Final Image (Trivy)
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: 'facturx-engine:${{ env.VERSION }}'
           format: 'table'
+          output: 'trivy-results.txt'
           exit-code: '1' # Block release on CRITICAL/HIGH vulnerabilities
           ignore-unfixed: true
           severity: 'CRITICAL,HIGH'
@@ -104,7 +105,7 @@ jobs:
       # We do NOT create a public Release here because this contains PRO code.
       - name: Upload Pro Artifact
         if: success()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: facturx-engine-pro-build
           path: |

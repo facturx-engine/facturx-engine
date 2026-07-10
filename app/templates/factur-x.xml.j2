@@ -1,6 +1,11 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <rsm:CrossIndustryInvoice xmlns:rsm="urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100" xmlns:qdt="urn:un:unece:uncefact:data:standard:QualifiedDataType:100" xmlns:ram="urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:udt="urn:un:unece:uncefact:data:standard:UnqualifiedDataType:100">
   <rsm:ExchangedDocumentContext>
+    {% if business_process_type %}
+    <ram:BusinessProcessSpecifiedDocumentContextParameter>
+      <ram:ID>{{ business_process_type }}</ram:ID>
+    </ram:BusinessProcessSpecifiedDocumentContextParameter>
+    {% endif %}
     <ram:GuidelineSpecifiedDocumentContextParameter>
       <ram:ID>{% if profile == 'minimum' %}urn:factur-x.eu:1p0:minimum{% elif profile == 'basicwl' %}urn:factur-x.eu:1p0:basicwl{% elif profile == 'basic' %}urn:cen.eu:en16931:2017#compliant#urn:factur-x.eu:1p0:basic{% elif profile == 'extended' %}urn:cen.eu:en16931:2017#conformant#urn:factur-x.eu:1p0:extended{% elif profile == 'xrechnung_3.0' %}urn:xeinkauf.de:kosit:xrechnung_3.0{% else %}urn:cen.eu:en16931:2017{% endif %}</ram:ID>
     </ram:GuidelineSpecifiedDocumentContextParameter>
@@ -14,8 +19,8 @@
     {% for note in notes | default([]) %}
     <ram:IncludedNote>
       {% if note is mapping %}
-      {% if note.subject_code %}<ram:SubjectCode>{{ note.subject_code }}</ram:SubjectCode>{% endif %}
       <ram:Content>{{ note.content }}</ram:Content>
+      {% if note.subject_code %}<ram:SubjectCode>{{ note.subject_code }}</ram:SubjectCode>{% endif %}
       {% else %}
       <ram:Content>{{ note }}</ram:Content>
       {% endif %}
@@ -81,12 +86,14 @@
     <ram:ApplicableHeaderTradeAgreement>
       {% if buyer_reference %}<ram:BuyerReference>{{ buyer_reference }}</ram:BuyerReference>{% endif %}
       <ram:SellerTradeParty>
+        {% set seller_legal_id = seller.siren or (seller.siret[:9] if seller.siret else none) %}
+        {% set seller_endpoint = seller.electronic_address or seller_legal_id %}
         {% if seller.id %}<ram:ID>{{ seller.id }}</ram:ID>{% endif %}
         {% if seller.global_id %}<ram:GlobalID schemeID="{{ seller.global_id_scheme | default('0088') }}">{{ seller.global_id }}</ram:GlobalID>{% endif %}
         <ram:Name>{{ seller.name }}</ram:Name>
-        {% if seller.siret %}
+        {% if seller_legal_id %}
         <ram:SpecifiedLegalOrganization>
-             <ram:ID schemeID="0002">{{ seller.siret }}</ram:ID>
+             <ram:ID schemeID="0002">{{ seller_legal_id }}</ram:ID>
         </ram:SpecifiedLegalOrganization>
         {% endif %}
         {% if seller.email or seller.phone %}
@@ -107,6 +114,11 @@
             <ram:CountryID>{{ seller.country_code or 'FR' }}</ram:CountryID>
             {% endif %}
         </ram:PostalTradeAddress>
+        {% if seller_endpoint %}
+        <ram:URIUniversalCommunication>
+          <ram:URIID schemeID="{{ seller.electronic_address_scheme | default('0225') }}">{{ seller_endpoint }}</ram:URIID>
+        </ram:URIUniversalCommunication>
+        {% endif %}
         {% if seller.vat_number %}
         <ram:SpecifiedTaxRegistration>
           <ram:ID schemeID="VA">{{ seller.vat_number }}</ram:ID>
@@ -119,12 +131,14 @@
         {% endif %}
       </ram:SellerTradeParty>
       <ram:BuyerTradeParty>
+        {% set buyer_legal_id = buyer.siren or (buyer.siret[:9] if buyer.siret else none) %}
+        {% set buyer_endpoint = buyer.electronic_address or buyer_legal_id %}
         {% if buyer.id %}<ram:ID>{{ buyer.id }}</ram:ID>{% endif %}
         {% if buyer.global_id %}<ram:GlobalID schemeID="{{ buyer.global_id_scheme | default('0088') }}">{{ buyer.global_id }}</ram:GlobalID>{% endif %}
         <ram:Name>{{ buyer.name }}</ram:Name>
-        {% if buyer.siret %}
+        {% if buyer_legal_id %}
         <ram:SpecifiedLegalOrganization>
-             <ram:ID schemeID="0002">{{ buyer.siret }}</ram:ID>
+             <ram:ID schemeID="0002">{{ buyer_legal_id }}</ram:ID>
         </ram:SpecifiedLegalOrganization>
         {% endif %}
         {% if buyer.email or buyer.phone %}
@@ -141,6 +155,11 @@
             <ram:CityName>{{ buyer.address.city or 'City' }}</ram:CityName>
             <ram:CountryID>{{ buyer.address.country_code or 'FR' }}</ram:CountryID>
         </ram:PostalTradeAddress>
+        {% endif %}
+        {% if buyer_endpoint %}
+        <ram:URIUniversalCommunication>
+          <ram:URIID schemeID="{{ buyer.electronic_address_scheme | default('0225') }}">{{ buyer_endpoint }}</ram:URIID>
+        </ram:URIUniversalCommunication>
         {% endif %}
         {% if buyer.vat_number %}
         <ram:SpecifiedTaxRegistration>

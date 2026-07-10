@@ -164,14 +164,14 @@ def test_end_to_end_convert_validate_extract(client):
     # Verify seller data (Open Core - Full Data)
     assert invoice_json["seller"]["name"] == "Test Seller Corp"
     assert invoice_json["seller"]["vat_number"] == "FR98765432101"
-    assert invoice_json["seller"]["registration_id"] == "12345678901234"
+    assert invoice_json["seller"]["registration_id"] == "123456789"
     assert invoice_json["seller"]["email"] == "contact@seller.com"
     assert "1 Seller Street" in invoice_json["seller"]["line1"]
     assert invoice_json["seller"]["city"] == "Paris"
     
     # Verify buyer data
     assert "Test" in invoice_json["buyer"]["name"]
-    assert invoice_json["buyer"]["registration_id"] == "98765432109876"
+    assert invoice_json["buyer"]["registration_id"] == "987654321"
     assert invoice_json["buyer"]["email"] == "procurement@buyer.com"
     assert "2 Buyer Avenue" in invoice_json["buyer"]["line1"]
     

@@ -1,6 +1,6 @@
 fastapi==0.136.1
 uvicorn==0.46.0
-python-multipart==0.0.27
+python-multipart==0.0.30
 factur-x==4.2
 pypdf==6.10.2
 jinja2==3.1.6

@@ -87,7 +87,6 @@ class GeneratorService:
                 flavor='factur-x',
                 level=lib_level,
                 check_xsd=False,         # Engine validates XSD via Saxon
-                check_schematron=False,  # Engine validates Schematron via Saxon
                 pdf_metadata={
                     'author': 'Factur-X API',
                     'keywords': 'Factur-X, ZUGFeRD, e-invoice',
@@ -181,7 +180,6 @@ class GeneratorService:
             flavor=lib_flavor,
             level=lib_level,
             check_xsd=False,         # Engine validates XSD via Saxon
-            check_schematron=False,  # Engine validates Schematron via Saxon
         )
 
         return result_bytes, fmt or "factur-x", profile or "en16931"
