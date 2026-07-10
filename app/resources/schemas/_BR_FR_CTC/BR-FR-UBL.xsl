@@ -72,7 +72,7 @@
       <xsl:param name="code" as="xs:string?"/>
       <xsl:variable name="custom:billing-modes"
                     as="xs:string"
-                    select="'B1 S1 M1 B2 S2 M2 S3 B4 S4 M4 S5 S6 B7 S7 B8 S8 M8'"/>
+                    select="'B1 S1 M1 B2 S2 M2 S3 B4 S4 M4 S5 S6 B7 S7 B8 S8 M8 B9 S9 M9'"/>
       <xsl:sequence select="$code = tokenize($custom:billing-modes, '\s+')"/>
    </xsl:function>
    <xsl:function xmlns="http://purl.oclc.org/dsdl/schematron"
@@ -86,7 +86,7 @@
                  name="custom:is-valid-bar-treatment"
                  as="xs:boolean">
       <xsl:param name="value" as="xs:string?"/>
-      <xsl:sequence select="$value = ('B2B', 'B2BINT', 'B2C', 'OUTOFSCOPE', 'ARCHIVEONLY')"/>
+      <xsl:sequence select="$value = ('B2B', 'B2BINT', 'B2C', 'B2CINT', 'OUTOFSCOPE', 'ARCHIVEONLY')"/>
    </xsl:function>
    <xsl:function xmlns="http://purl.oclc.org/dsdl/schematron"
                  name="custom:is-valid-eas-code"
@@ -147,6 +147,12 @@
       <xsl:sequence select="matches($amount, '^\d{1,19}(\.\d{1,6})?$') and string-length(replace($amount, '\.', '')) le 19"/>
    </xsl:function>
    <xsl:function xmlns="http://purl.oclc.org/dsdl/schematron"
+                 name="custom:is-valid-decimal-19-6"
+                 as="xs:boolean">
+      <xsl:param name="amount" as="xs:string?"/>
+      <xsl:sequence select="matches($amount, '^[-]?\d{1,19}(\.\d{1,6})?$') and string-length(replace($amount, '\.', '')) le 19"/>
+   </xsl:function>
+   <xsl:function xmlns="http://purl.oclc.org/dsdl/schematron"
                  name="custom:is-valid-percent-4-2-positive"
                  as="xs:boolean">
       <xsl:param name="percent" as="xs:string?"/>
@@ -156,7 +162,19 @@
                  name="custom:isSpecialContract"
                  as="xs:boolean">
       <xsl:param name="context" as="element()?"/>
-      <xsl:sequence select="       exists($context/cbc:ProfileID)       and (       $context/cbc:ProfileID = 'S8'       or $context/cbc:ProfileID = 'B8'       or $context/cbc:ProfileID = 'M8'       )       "/>
+      <xsl:sequence select="       exists($context/cbc:ProfileID)       and normalize-space($context/cbc:ProfileID) = ('S8', 'B8', 'M8', 'S9', 'B9', 'M9')"/>
+   </xsl:function>
+   <xsl:function xmlns="http://purl.oclc.org/dsdl/schematron"
+                 name="custom:isSpecialContractMV"
+                 as="xs:boolean">
+      <xsl:param name="context" as="element()?"/>
+      <xsl:sequence select="       exists($context/cbc:ProfileID)       and normalize-space($context/cbc:ProfileID) = ('S8', 'B8', 'M8')"/>
+   </xsl:function>
+   <xsl:function xmlns="http://purl.oclc.org/dsdl/schematron"
+                 name="custom:isSpecialContractBD"
+                 as="xs:boolean">
+      <xsl:param name="context" as="element()?"/>
+      <xsl:sequence select="       exists($context/cbc:ProfileID)       and normalize-space($context/cbc:ProfileID) = ('S9', 'B9', 'M9')"/>
    </xsl:function>
    <!--DEFAULT RULES-->
 
@@ -307,7 +325,7 @@
             <xsl:attribute name="name">BR-FR-01 — Validation de la longueur et du format des identifiants de facture</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M21"/>
+         <xsl:apply-templates select="/" mode="M24"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -316,7 +334,7 @@
             <xsl:attribute name="name">BR-FR-02 — Validation du format des identifiants de facture</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M22"/>
+         <xsl:apply-templates select="/" mode="M25"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -325,7 +343,7 @@
             <xsl:attribute name="name">BR-FR-03 — Validation de l'année dans les dates (2000–2099)</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M23"/>
+         <xsl:apply-templates select="/" mode="M26"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -334,7 +352,7 @@
             <xsl:attribute name="name">BR-FR-04 — Validation du code type de document</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M24"/>
+         <xsl:apply-templates select="/" mode="M27"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -343,7 +361,7 @@
             <xsl:attribute name="name">BR-FR-05 — Présence obligatoire des mentions légales dans les notes (BG-3)</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M25"/>
+         <xsl:apply-templates select="/" mode="M28"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -352,7 +370,7 @@
             <xsl:attribute name="name">BR-FR-06 — Unicité des codes sujets dans les notes (BG-3)</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M26"/>
+         <xsl:apply-templates select="/" mode="M29"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -361,7 +379,7 @@
             <xsl:attribute name="name">BR-FR-08 — Validation du mode de facturation (BT-23)</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M27"/>
+         <xsl:apply-templates select="/" mode="M30"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -370,7 +388,7 @@
             <xsl:attribute name="name">BR-FR-09 — Cohérence entre SIRET (ID avec schemeId = 0009) et SIREN (Legal ID)</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M28"/>
+         <xsl:apply-templates select="/" mode="M31"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -379,7 +397,7 @@
             <xsl:attribute name="name">BR-FR-10 — SIREN du vendeur obligatoire et valide (BT-30)</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M29"/>
+         <xsl:apply-templates select="/" mode="M32"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -388,7 +406,7 @@
             <xsl:attribute name="name">BR-FR-11 — SIREN obligatoire et valide si traitement BAR/B2B (BT-47)</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M30"/>
+         <xsl:apply-templates select="/" mode="M33"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -397,7 +415,7 @@
             <xsl:attribute name="name">BR-FR-12 — Vérification de la présence du BT-49</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M31"/>
+         <xsl:apply-templates select="/" mode="M34"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -406,7 +424,7 @@
             <xsl:attribute name="name">BR-FR-13 — Vérification de la présence du BT-34</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M32"/>
+         <xsl:apply-templates select="/" mode="M35"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -415,7 +433,7 @@
             <xsl:attribute name="name">BR-FR-15 — Vérification des codes de catégorie de TVA (BT-95, BT-102, BT-118, BT-151)</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M33"/>
+         <xsl:apply-templates select="/" mode="M36"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -424,7 +442,7 @@
             <xsl:attribute name="name">BR-FR-16 — Vérification des taux de TVA autorisés (BT-96, BT-103, BT-119, BT-152)</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M34"/>
+         <xsl:apply-templates select="/" mode="M37"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -433,7 +451,7 @@
             <xsl:attribute name="name">BR-FR-17 — Codes autorisés pour qualifier les pièces jointes (BT-123)</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M35"/>
+         <xsl:apply-templates select="/" mode="M38"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -442,7 +460,7 @@
             <xsl:attribute name="name">BR-FR-18 — Un seul document additionnel avec la description "LISIBLE" (BT-123)</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M36"/>
+         <xsl:apply-templates select="/" mode="M39"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -451,7 +469,7 @@
             <xsl:attribute name="name">BR-FR-20 — Vérification du traitement associé à une note avec code sujet "BAR" (BT-21)</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M37"/>
+         <xsl:apply-templates select="/" mode="M40"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -460,7 +478,7 @@
             <xsl:attribute name="name">BR-FR-21 — Vérification du BT-49 en cas de traitement BAR/B2B et hors cas autofacture</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M38"/>
+         <xsl:apply-templates select="/" mode="M41"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -469,7 +487,7 @@
             <xsl:attribute name="name">BR-FR-22 — Vérification du BT-34 en cas de traitement BAR/B2B et en autofacture</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M39"/>
+         <xsl:apply-templates select="/" mode="M42"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -478,7 +496,7 @@
             <xsl:attribute name="name">BR-FR-23 — Validation du format des adresses électroniques avec schemeID = 0225</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M40"/>
+         <xsl:apply-templates select="/" mode="M43"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -487,7 +505,7 @@
             <xsl:attribute name="name">BR-FR-24 — Validation du format des identifiants privés avec schemeID = 0224</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M41"/>
+         <xsl:apply-templates select="/" mode="M44"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -496,7 +514,7 @@
             <xsl:attribute name="name">BR-FR-25 — Longueur maximale des adresses électroniques</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M42"/>
+         <xsl:apply-templates select="/" mode="M45"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -505,7 +523,7 @@
             <xsl:attribute name="name">BR-FR-26 — Longueur maximale des identifiants privés avec schemeID = 0224</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M43"/>
+         <xsl:apply-templates select="/" mode="M46"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -514,7 +532,7 @@
             <xsl:attribute name="name">BR-FR-27 — Validation du groupe Attribut d’article (BG-32)</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M44"/>
+         <xsl:apply-templates select="/" mode="M47"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -523,7 +541,7 @@
             <xsl:attribute name="name">BR-FR-28 — Validation de la valeur d’attribut d’article (BG-32)</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M45"/>
+         <xsl:apply-templates select="/" mode="M48"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -532,7 +550,7 @@
             <xsl:attribute name="name">BR-FR-29 — Vérification des identifiants d’objets facturés (BT-18)</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M46"/>
+         <xsl:apply-templates select="/" mode="M49"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -541,7 +559,7 @@
             <xsl:attribute name="name">BR-FR-30 — Vérification des identifiants d’objets facturés à la ligne (BT-128)</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M47"/>
+         <xsl:apply-templates select="/" mode="M50"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -550,7 +568,16 @@
             <xsl:attribute name="name">BR-FR-31 — Note avec code sujet BAR : une seule valeur possible dans la liste</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M48"/>
+         <xsl:apply-templates select="/" mode="M51"/>
+         <svrl:active-pattern>
+            <xsl:attribute name="document">
+               <xsl:value-of select="document-uri(/)"/>
+            </xsl:attribute>
+            <xsl:attribute name="id">BR-FR-32</xsl:attribute>
+            <xsl:attribute name="name">BR-FR-32 — Le SIREN contient exactement 9 chiffres </xsl:attribute>
+            <xsl:apply-templates/>
+         </svrl:active-pattern>
+         <xsl:apply-templates select="/" mode="M52"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -559,7 +586,7 @@
             <xsl:attribute name="name">BR-FR-CO-03 — Présence obligatoire du contrat et de la période de facturation si type de facture = 262 (Avoir Remise Globale)</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M49"/>
+         <xsl:apply-templates select="/" mode="M53"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -568,7 +595,7 @@
             <xsl:attribute name="name">BR-FR-CO-04 — Une seule référence à une facture antérieure obligatoire pour les factures rectificatives (BT-3)</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M50"/>
+         <xsl:apply-templates select="/" mode="M54"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -577,7 +604,7 @@
             <xsl:attribute name="name">BR-FR-CO-05] — Référence obligatoire à une facture antérieure pour les avoirs (BT-3)</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M51"/>
+         <xsl:apply-templates select="/" mode="M55"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -586,7 +613,7 @@
             <xsl:attribute name="name">BR-FR-CO-07] — La date d’échéance (BT-9) doit être postérieure ou égale à la date de facture (BT-2), sauf cas particuliers</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M52"/>
+         <xsl:apply-templates select="/" mode="M56"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -595,7 +622,7 @@
             <xsl:attribute name="name">BR-FR-CO-08 — Incompatibilité entre cadre de facturation (BT-23) et type de facture (BT-3)</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M53"/>
+         <xsl:apply-templates select="/" mode="M57"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -604,7 +631,7 @@
             <xsl:attribute name="name">BR-FR-CO-09 — Contrôle des montants et de la date d’échéance pour les factures déjà payées (BT-23)</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M54"/>
+         <xsl:apply-templates select="/" mode="M58"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -613,7 +640,7 @@
             <xsl:attribute name="name">BR-FR-CO-10 — Vérification de la présence du schéma d’identifiant global (BT-29 et équivalents)</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M55"/>
+         <xsl:apply-templates select="/" mode="M59"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -622,7 +649,7 @@
             <xsl:attribute name="name">BR-FR-CO-12 — Contrôle des devises et du montant de TVA en comptabilité si la facture n’est pas en EUR</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M56"/>
+         <xsl:apply-templates select="/" mode="M60"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -631,7 +658,7 @@
             <xsl:attribute name="name">BR-FR-CO-14 — Vérification de la note TXD pour les vendeurs membres d’un assujetti unique</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M57"/>
+         <xsl:apply-templates select="/" mode="M61"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -640,7 +667,7 @@
             <xsl:attribute name="name">BR-FR-CO-15 — Présence du représentant fiscal si le vendeur est membre d’un assujetti unique (BT-29-1 = 0231)</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M58"/>
+         <xsl:apply-templates select="/" mode="M62"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -649,7 +676,7 @@
             <xsl:attribute name="name">BR-FR-DEC-01 — Format des montants numériques (max 19 caractères, 2 décimales, séparateur « . »)</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M59"/>
+         <xsl:apply-templates select="/" mode="M63"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -658,7 +685,7 @@
             <xsl:attribute name="name">BR-FR-DEC-02 — Format des quantités numériques (max 19 caractères, 4 décimales, séparateur « . »)</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M60"/>
+         <xsl:apply-templates select="/" mode="M64"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -667,7 +694,7 @@
             <xsl:attribute name="name">BR-FR-DEC-03 — Format des montants positifs (max 19 caractères, 6 décimales, séparateur « . »)</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M61"/>
+         <xsl:apply-templates select="/" mode="M65"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -676,16 +703,16 @@
             <xsl:attribute name="name">BR-FR-DEC-04 — Format des taux de TVA (max 4 caractères, 2 décimales, séparateur « . »)</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M62"/>
+         <xsl:apply-templates select="/" mode="M66"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
             </xsl:attribute>
             <xsl:attribute name="id">BR-FR-MV-01</xsl:attribute>
-            <xsl:attribute name="name">BR-FR-MV-01 — lorsque le cadre de facturation est S8, B8 ou M8, Vérification du sous-type de ligne  - BR-FR-MV-02 — Vérification de la présence d'une ligne GROUP sans parent </xsl:attribute>
+            <xsl:attribute name="name">BR-FR-MV-01 — lorsque le cadre de facturation est S8, B8, M8 ou S9, B9, M9, Vérification du sous-type de ligne  - BR-FR-MV-02 — Vérification de la présence d'une ligne GROUP sans parent </xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M63"/>
+         <xsl:apply-templates select="/" mode="M67"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -694,16 +721,25 @@
             <xsl:attribute name="name">BR-FR-MV-02 — lorsque le cadre de facturation est S8, B8 ou M8, Vérification de la présence d'une ligne GROUP sans parent </xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M64"/>
+         <xsl:apply-templates select="/" mode="M68"/>
+         <svrl:active-pattern>
+            <xsl:attribute name="document">
+               <xsl:value-of select="document-uri(/)"/>
+            </xsl:attribute>
+            <xsl:attribute name="id">BR-FR-BD-02</xsl:attribute>
+            <xsl:attribute name="name">BR-FR-BD-02</xsl:attribute>
+            <xsl:apply-templates/>
+         </svrl:active-pattern>
+         <xsl:apply-templates select="/" mode="M69"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
             </xsl:attribute>
             <xsl:attribute name="id">BR-FR-MV-03</xsl:attribute>
-            <xsl:attribute name="name">BR-FR-MV-03 — Vérification des données obligatoires pour les lignes GROUP sans parent lorsque le cadre de facturation est S8, B8 ou M8</xsl:attribute>
+            <xsl:attribute name="name">BR-FR-MV-03 — Vérification des données obligatoires pour les lignes GROUP sans parent lorsque le cadre de facturation est S8, B8, M8 ou S9, B9, M9</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M65"/>
+         <xsl:apply-templates select="/" mode="M70"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -712,7 +748,7 @@
             <xsl:attribute name="name">BR-FR-MV-05 — Vérification de la cohérence des totaux HT entre la ligne GROUP et ses lignes enfants</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M66"/>
+         <xsl:apply-templates select="/" mode="M71"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -721,7 +757,7 @@
             <xsl:attribute name="name">BR-FR-MV-06 — Vérification de la cohérence de l'identifiant légal du vendeur entre une ligne et sa ligne parent</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M67"/>
+         <xsl:apply-templates select="/" mode="M72"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -730,7 +766,7 @@
             <xsl:attribute name="name">BR-FR-MV-07 — Vérification de la cohérence du numéro de facture codifié AFL entre une ligne et sa ligne parent</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M68"/>
+         <xsl:apply-templates select="/" mode="M73"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -739,7 +775,7 @@
             <xsl:attribute name="name">BR-FR-MV-08 — Vérification de la raison d'exemption TVA contenant le numéro de sous-facture en ligne entre #</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M69"/>
+         <xsl:apply-templates select="/" mode="M74"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -748,7 +784,7 @@
             <xsl:attribute name="name">BR-FR-MV-09 — Vérification de la cohérence du montant total TVA pour une ligne GROUP avec la somme des ventilations TVA liées</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M70"/>
+         <xsl:apply-templates select="/" mode="M75"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -757,7 +793,7 @@
             <xsl:attribute name="name">BR-FR-MV-10 — Vérification de la cohérence du montant total avec TVA pour une ligne GROUP</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M71"/>
+         <xsl:apply-templates select="/" mode="M76"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -766,7 +802,7 @@
             <xsl:attribute name="name">BR-FR-MV-11 — Vérification de la cohérence entre l'identifiant de facture à la ligne (AFL) et le numéro de facture (BT-1) pour le Vendeur principal</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M72"/>
+         <xsl:apply-templates select="/" mode="M77"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -775,7 +811,7 @@
             <xsl:attribute name="name">BR-FR-MV-12 — Vérification de l'unicité des numéros de facture AFL pour les lignes GROUP sans parent</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M73"/>
+         <xsl:apply-templates select="/" mode="M78"/>
          <svrl:active-pattern>
             <xsl:attribute name="document">
                <xsl:value-of select="document-uri(/)"/>
@@ -784,7 +820,34 @@
             <xsl:attribute name="name">BR-FR-MV-13 — Vérification que le code type de facture (BT-3) n'est pas un type auto-facturé interdit</xsl:attribute>
             <xsl:apply-templates/>
          </svrl:active-pattern>
-         <xsl:apply-templates select="/" mode="M74"/>
+         <xsl:apply-templates select="/" mode="M79"/>
+         <svrl:active-pattern>
+            <xsl:attribute name="document">
+               <xsl:value-of select="document-uri(/)"/>
+            </xsl:attribute>
+            <xsl:attribute name="id">BR-FR-BD-13</xsl:attribute>
+            <xsl:attribute name="name">BR-FR-BD-13 — Vérification que le code type de facture (BT-3) n'est pas un type auto-facturé interdit</xsl:attribute>
+            <xsl:apply-templates/>
+         </svrl:active-pattern>
+         <xsl:apply-templates select="/" mode="M80"/>
+         <svrl:active-pattern>
+            <xsl:attribute name="document">
+               <xsl:value-of select="document-uri(/)"/>
+            </xsl:attribute>
+            <xsl:attribute name="id">BR-FR-MV-14</xsl:attribute>
+            <xsl:attribute name="name">BR-FR-MV-14 — Facture antérieure pour une facture rectificative ou un Avoir Multi-Vendeur </xsl:attribute>
+            <xsl:apply-templates/>
+         </svrl:active-pattern>
+         <xsl:apply-templates select="/" mode="M81"/>
+         <svrl:active-pattern>
+            <xsl:attribute name="document">
+               <xsl:value-of select="document-uri(/)"/>
+            </xsl:attribute>
+            <xsl:attribute name="id">BR-FR-BD-14</xsl:attribute>
+            <xsl:attribute name="name">BR-FR-BD-14 — Facture antérieure pour une facture rectificative ou un Avoir Multi-Vendeur </xsl:attribute>
+            <xsl:apply-templates/>
+         </svrl:active-pattern>
+         <xsl:apply-templates select="/" mode="M82"/>
       </svrl:schematron-output>
    </xsl:template>
    <!--SCHEMATRON PATTERNS-->
@@ -794,7 +857,7 @@
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cbc:ID | cn:CreditNote/cbc:ID"
                  priority="1002"
-                 mode="M21">
+                 mode="M24">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cbc:ID | cn:CreditNote/cbc:ID"/>
       <!--ASSERT -->
@@ -803,7 +866,7 @@
          <xsl:otherwise>
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl" test="string-length(.) le 35">
                <xsl:attribute name="id">BR-FR-01_BT-1-1</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -823,7 +886,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-id-format(.)">
                <xsl:attribute name="id">BR-FR-01_BT-1-2</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -836,12 +899,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M21"/>
+      <xsl:apply-templates select="*" mode="M24"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:BillingReference/cac:InvoiceDocumentReference/cbc:ID | cn:CreditNote/cac:BillingReference/cac:InvoiceDocumentReference/cbc:ID"
                  priority="1001"
-                 mode="M21">
+                 mode="M24">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:BillingReference/cac:InvoiceDocumentReference/cbc:ID | cn:CreditNote/cac:BillingReference/cac:InvoiceDocumentReference/cbc:ID"/>
       <!--ASSERT -->
@@ -850,7 +913,7 @@
          <xsl:otherwise>
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl" test="string-length(.) le 35">
                <xsl:attribute name="id">BR-FR-01_BT-25-1</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -870,7 +933,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-id-format(.)">
                <xsl:attribute name="id">BR-FR-01_BT-25-2</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -883,12 +946,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M21"/>
+      <xsl:apply-templates select="*" mode="M24"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:InvoiceLine/cac:BillingReference/cac:DocumentReference/cbc:ID | cn:CreditNote/cac:CreditNoteLine/cac:BillingReference/cac:DocumentReference/cbc:ID"
                  priority="1000"
-                 mode="M21">
+                 mode="M24">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:InvoiceLine/cac:BillingReference/cac:DocumentReference/cbc:ID | cn:CreditNote/cac:CreditNoteLine/cac:BillingReference/cac:DocumentReference/cbc:ID"/>
       <!--ASSERT -->
@@ -897,7 +960,7 @@
          <xsl:otherwise>
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl" test="string-length(.) le 35">
                <xsl:attribute name="id">BR-FR-01_EXT-FR-FE-136-1</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -917,7 +980,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-id-format(.)">
                <xsl:attribute name="id">BR-FR-01_BT-EXT-FR-FE-136-2</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -930,18 +993,18 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M21"/>
+      <xsl:apply-templates select="*" mode="M24"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M21"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M21">
-      <xsl:apply-templates select="*" mode="M21"/>
+   <xsl:template match="text()" priority="-1" mode="M24"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M24">
+      <xsl:apply-templates select="*" mode="M24"/>
    </xsl:template>
    <!--PATTERN BR-FR-02BR-FR-02 — Validation du format des identifiants de facture-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-02 — Validation du format des identifiants de facture</svrl:text>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cbc:ID | cn:CreditNote/cbc:ID"
                  priority="1002"
-                 mode="M22">
+                 mode="M25">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cbc:ID | cn:CreditNote/cbc:ID"/>
       <!--ASSERT -->
@@ -951,7 +1014,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-id-format(.)">
                <xsl:attribute name="id">BR-FR-02_BT-1</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -964,12 +1027,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M22"/>
+      <xsl:apply-templates select="*" mode="M25"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:BillingReference/cac:InvoiceDocumentReference/cbc:ID | cn:CreditNote/cac:BillingReference/cac:InvoiceDocumentReference/cbc:ID"
                  priority="1001"
-                 mode="M22">
+                 mode="M25">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:BillingReference/cac:InvoiceDocumentReference/cbc:ID | cn:CreditNote/cac:BillingReference/cac:InvoiceDocumentReference/cbc:ID"/>
       <!--ASSERT -->
@@ -979,7 +1042,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-id-format(.)">
                <xsl:attribute name="id">BR-FR-02_BT-25</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -992,14 +1055,14 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M22"/>
+      <xsl:apply-templates select="*" mode="M25"/>
    </xsl:template>
    <!--RULE -->
-   <xsl:template match="ubl:Invoice/cac:InvoiceLine/cac:BillingReference/cac:InvoiceDocumentReference/cbc:ID | cn:CreditNote/cac:CreditNoteLine/cac:BillingReference/cac:InvoiceDocumentReference/cbc:ID"
+   <xsl:template match="ubl:Invoice/cac:InvoiceLine/cac:DocumentReference/cbc:ID | cn:CreditNote/cac:CreditNoteLine/cac:DocumentReference/cbc:ID"
                  priority="1000"
-                 mode="M22">
+                 mode="M25">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
-                       context="ubl:Invoice/cac:InvoiceLine/cac:BillingReference/cac:InvoiceDocumentReference/cbc:ID | cn:CreditNote/cac:CreditNoteLine/cac:BillingReference/cac:InvoiceDocumentReference/cbc:ID"/>
+                       context="ubl:Invoice/cac:InvoiceLine/cac:DocumentReference/cbc:ID | cn:CreditNote/cac:CreditNoteLine/cac:DocumentReference/cbc:ID"/>
       <!--ASSERT -->
       <xsl:choose>
          <xsl:when test="custom:is-valid-id-format(.)"/>
@@ -1007,7 +1070,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-id-format(.)">
                <xsl:attribute name="id">BR-FR-02_EXT-FR-FE-136</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -1020,18 +1083,18 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M22"/>
+      <xsl:apply-templates select="*" mode="M25"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M22"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M22">
-      <xsl:apply-templates select="*" mode="M22"/>
+   <xsl:template match="text()" priority="-1" mode="M25"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M25">
+      <xsl:apply-templates select="*" mode="M25"/>
    </xsl:template>
    <!--PATTERN BR-FR-03BR-FR-03 — Validation de l'année dans les dates (2000–2099)-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-03 — Validation de l'année dans les dates (2000–2099)</svrl:text>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cbc:IssueDate | cn:CreditNote/cbc:IssueDate"
                  priority="1010"
-                 mode="M23">
+                 mode="M26">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cbc:IssueDate | cn:CreditNote/cbc:IssueDate"/>
       <!--ASSERT -->
@@ -1041,7 +1104,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-date-format(.)">
                <xsl:attribute name="id">BR-FR-03_BT-2</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -1054,12 +1117,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M23"/>
+      <xsl:apply-templates select="*" mode="M26"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cbc:TaxPointDate | cn:CreditNote/cbc:TaxPointDate"
                  priority="1009"
-                 mode="M23">
+                 mode="M26">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cbc:TaxPointDate | cn:CreditNote/cbc:TaxPointDate"/>
       <!--ASSERT -->
@@ -1069,7 +1132,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-date-format(.)">
                <xsl:attribute name="id">BR-FR-03_BT-7</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -1082,12 +1145,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M23"/>
+      <xsl:apply-templates select="*" mode="M26"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cbc:DueDate | cn:CreditNote/cbc:DueDate"
                  priority="1008"
-                 mode="M23">
+                 mode="M26">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cbc:DueDate | cn:CreditNote/cbc:DueDate"/>
       <!--ASSERT -->
@@ -1097,7 +1160,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-date-format(.)">
                <xsl:attribute name="id">BR-FR-03_BT-9</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -1110,12 +1173,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M23"/>
+      <xsl:apply-templates select="*" mode="M26"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:BillingReference/cac:InvoiceDocumentReference/cbc:IssueDate | cn:CreditNote/cac:BillingReference/cac:InvoiceDocumentReference/cbc:IssueDate"
                  priority="1007"
-                 mode="M23">
+                 mode="M26">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:BillingReference/cac:InvoiceDocumentReference/cbc:IssueDate | cn:CreditNote/cac:BillingReference/cac:InvoiceDocumentReference/cbc:IssueDate"/>
       <!--ASSERT -->
@@ -1125,7 +1188,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-date-format(.)">
                <xsl:attribute name="id">BR-FR-03_BT-26</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -1138,12 +1201,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M23"/>
+      <xsl:apply-templates select="*" mode="M26"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:Delivery/cbc:ActualDeliveryDate | cn:CreditNote/cac:Delivery/cbc:ActualDeliveryDate"
                  priority="1006"
-                 mode="M23">
+                 mode="M26">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:Delivery/cbc:ActualDeliveryDate | cn:CreditNote/cac:Delivery/cbc:ActualDeliveryDate"/>
       <!--ASSERT -->
@@ -1153,7 +1216,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-date-format(.)">
                <xsl:attribute name="id">BR-FR-03_BT-72</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -1166,12 +1229,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M23"/>
+      <xsl:apply-templates select="*" mode="M26"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:InvoicePeriod/cbc:StartDate | cn:CreditNote/cac:InvoicePeriod/cbc:StartDate"
                  priority="1005"
-                 mode="M23">
+                 mode="M26">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:InvoicePeriod/cbc:StartDate | cn:CreditNote/cac:InvoicePeriod/cbc:StartDate"/>
       <!--ASSERT -->
@@ -1181,7 +1244,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-date-format(.)">
                <xsl:attribute name="id">BR-FR-03_BT-73</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -1194,12 +1257,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M23"/>
+      <xsl:apply-templates select="*" mode="M26"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:InvoicePeriod/cbc:EndDate | cn:CreditNote/cac:InvoicePeriod/cbc:EndDate"
                  priority="1004"
-                 mode="M23">
+                 mode="M26">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:InvoicePeriod/cbc:EndDate | cn:CreditNote/cac:InvoicePeriod/cbc:EndDate"/>
       <!--ASSERT -->
@@ -1209,7 +1272,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-date-format(.)">
                <xsl:attribute name="id">BR-FR-03_BT-74</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -1222,12 +1285,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M23"/>
+      <xsl:apply-templates select="*" mode="M26"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:InvoiceLine/cac:DocumentReference/cbc:IssueDate | cn:CreditNote/cac:CreditNoteLine/cac:DocumentReference/cbc:IssueDate"
                  priority="1003"
-                 mode="M23">
+                 mode="M26">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:InvoiceLine/cac:DocumentReference/cbc:IssueDate | cn:CreditNote/cac:CreditNoteLine/cac:DocumentReference/cbc:IssueDate"/>
       <!--ASSERT -->
@@ -1237,7 +1300,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-date-format(.)">
                <xsl:attribute name="id">BR-FR-03_EXT-FR-FE-138</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -1250,12 +1313,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M23"/>
+      <xsl:apply-templates select="*" mode="M26"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:InvoiceLine/cac:Delivery/cbc:ActualDeliveryDate | cn:CreditNote/cac:CreditNoteLine/cac:Delivery/cbc:ActualDeliveryDate"
                  priority="1002"
-                 mode="M23">
+                 mode="M26">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:InvoiceLine/cac:Delivery/cbc:ActualDeliveryDate | cn:CreditNote/cac:CreditNoteLine/cac:Delivery/cbc:ActualDeliveryDate"/>
       <!--ASSERT -->
@@ -1265,7 +1328,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-date-format(.)">
                <xsl:attribute name="id">BR-FR-03_EXT-FR-FE-158</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -1278,12 +1341,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M23"/>
+      <xsl:apply-templates select="*" mode="M26"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:InvoiceLine/cac:InvoicePeriod/cbc:StartDate | cn:CreditNote/cac:CreditNoteLine/cac:InvoicePeriod/cbc:StartDate"
                  priority="1001"
-                 mode="M23">
+                 mode="M26">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:InvoiceLine/cac:InvoicePeriod/cbc:StartDate | cn:CreditNote/cac:CreditNoteLine/cac:InvoicePeriod/cbc:StartDate"/>
       <!--ASSERT -->
@@ -1293,7 +1356,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-date-format(.)">
                <xsl:attribute name="id">BR-FR-03_BT-134</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -1306,12 +1369,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M23"/>
+      <xsl:apply-templates select="*" mode="M26"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:InvoiceLine/cac:InvoicePeriod/cbc:EndDate | cn:CreditNote/cac:CreditNoteLine/cac:InvoicePeriod/cbc:EndDate"
                  priority="1000"
-                 mode="M23">
+                 mode="M26">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:InvoiceLine/cac:InvoicePeriod/cbc:EndDate | cn:CreditNote/cac:CreditNoteLine/cac:InvoicePeriod/cbc:EndDate"/>
       <!--ASSERT -->
@@ -1321,7 +1384,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-date-format(.)">
                <xsl:attribute name="id">BR-FR-03_BT-135</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -1334,18 +1397,18 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M23"/>
+      <xsl:apply-templates select="*" mode="M26"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M23"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M23">
-      <xsl:apply-templates select="*" mode="M23"/>
+   <xsl:template match="text()" priority="-1" mode="M26"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M26">
+      <xsl:apply-templates select="*" mode="M26"/>
    </xsl:template>
    <!--PATTERN BR-FR-04BR-FR-04 — Validation du code type de document-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-04 — Validation du code type de document</svrl:text>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cbc:InvoiceTypeCode | cn:CreditNote/cbc:CreditNoteTypeCode"
                  priority="1002"
-                 mode="M24">
+                 mode="M27">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cbc:InvoiceTypeCode | cn:CreditNote/cbc:CreditNoteTypeCode"/>
       <!--ASSERT -->
@@ -1355,7 +1418,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test=". = ('380','389','393','501','386','500','384','471','472','473','261','262','381','396','502','503')">
                <xsl:attribute name="id">BR-FR-04_BT-3</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -1370,12 +1433,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M24"/>
+      <xsl:apply-templates select="*" mode="M27"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:BillingReference/cac:InvoiceDocumentReference/cbc:DocumentTypeCode | cn:CreditNote/cac:BillingReference/cac:InvoiceDocumentReference/cbc:DocumentTypeCode"
                  priority="1001"
-                 mode="M24">
+                 mode="M27">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:BillingReference/cac:InvoiceDocumentReference/cbc:DocumentTypeCode | cn:CreditNote/cac:BillingReference/cac:InvoiceDocumentReference/cbc:DocumentTypeCode"/>
       <!--ASSERT -->
@@ -1385,7 +1448,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test=". = ('380','389','393','501','386','500','384','471','472','473','261','262','381','396','502','503')">
                <xsl:attribute name="id">BR-FR-04_EXT-FR-FE-02</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -1400,12 +1463,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M24"/>
+      <xsl:apply-templates select="*" mode="M27"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:InvoiceLine/cac:BillingReference/cac:InvoiceDocumentReference/cbc:DocumentTypeCode | cn:CreditNote/cac:CreditNoteLine/cac:BillingReference/cac:InvoiceDocumentReference/cbc:DocumentTypeCode"
                  priority="1000"
-                 mode="M24">
+                 mode="M27">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:InvoiceLine/cac:BillingReference/cac:InvoiceDocumentReference/cbc:DocumentTypeCode | cn:CreditNote/cac:CreditNoteLine/cac:BillingReference/cac:InvoiceDocumentReference/cbc:DocumentTypeCode"/>
       <!--ASSERT -->
@@ -1415,7 +1478,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test=". = ('380','389','393','501','386','500','384','471','472','473','261','262','381','396','502','503')">
                <xsl:attribute name="id">BR-FR-04_EXT-FR-FE-137</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -1430,16 +1493,16 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M24"/>
+      <xsl:apply-templates select="*" mode="M27"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M24"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M24">
-      <xsl:apply-templates select="*" mode="M24"/>
+   <xsl:template match="text()" priority="-1" mode="M27"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M27">
+      <xsl:apply-templates select="*" mode="M27"/>
    </xsl:template>
    <!--PATTERN BR-FR-05BR-FR-05 — Présence obligatoire des mentions légales dans les notes (BG-3)-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-05 — Présence obligatoire des mentions légales dans les notes (BG-3)</svrl:text>
    <!--RULE -->
-   <xsl:template match="ubl:Invoice | cn:CreditNote" priority="1000" mode="M25">
+   <xsl:template match="ubl:Invoice | cn:CreditNote" priority="1000" mode="M28">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice | cn:CreditNote"/>
       <xsl:variable name="allNotes" select="string-join(./cbc:Note, '')"/>
@@ -1450,7 +1513,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="contains($allNotes, '#PMT#')">
                <xsl:attribute name="id">BR-FR-05_BT-22-1</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -1467,7 +1530,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="contains($allNotes, '#PMD#')">
                <xsl:attribute name="id">BR-FR-05_BT-22-2</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -1484,7 +1547,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="contains($allNotes, '#AAB#')">
                <xsl:attribute name="id">BR-FR-05_BT-22-3</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -1494,16 +1557,16 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M25"/>
+      <xsl:apply-templates select="*" mode="M28"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M25"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M25">
-      <xsl:apply-templates select="*" mode="M25"/>
+   <xsl:template match="text()" priority="-1" mode="M28"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M28">
+      <xsl:apply-templates select="*" mode="M28"/>
    </xsl:template>
    <!--PATTERN BR-FR-06BR-FR-06 — Unicité des codes sujets dans les notes (BG-3)-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-06 — Unicité des codes sujets dans les notes (BG-3)</svrl:text>
    <!--RULE -->
-   <xsl:template match="ubl:Invoice | cn:CreditNote" priority="1000" mode="M26">
+   <xsl:template match="ubl:Invoice | cn:CreditNote" priority="1000" mode="M29">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice | cn:CreditNote"/>
       <xsl:variable name="allNotes" select="string-join(./cbc:Note, '')"/>
@@ -1514,7 +1577,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="count(tokenize($allNotes, '#PMT#')) - 1 le 1">
                <xsl:attribute name="id">BR-FR-06_BT-21-1</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -1531,7 +1594,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="count(tokenize($allNotes, '#PMD#')) - 1 le 1">
                <xsl:attribute name="id">BR-FR-06_BT-21-2</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -1548,7 +1611,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="count(tokenize($allNotes, '#AAB#')) - 1 le 1">
                <xsl:attribute name="id">BR-FR-06_BT-21-3</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -1565,7 +1628,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="count(tokenize($allNotes, '#TXD#')) - 1 le 1">
                <xsl:attribute name="id">BR-FR-06_BT-21-4</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -1575,33 +1638,31 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M26"/>
+      <xsl:apply-templates select="*" mode="M29"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M26"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M26">
-      <xsl:apply-templates select="*" mode="M26"/>
+   <xsl:template match="text()" priority="-1" mode="M29"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M29">
+      <xsl:apply-templates select="*" mode="M29"/>
    </xsl:template>
    <!--PATTERN BR-FR-08BR-FR-08 — Validation du mode de facturation (BT-23)-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-08 — Validation du mode de facturation (BT-23)</svrl:text>
    <!--RULE -->
-   <xsl:template match="ubl:Invoice/cbc:ProfileID | cn:CreditNote/cbc:ProfileID"
-                 priority="1000"
-                 mode="M27">
+   <xsl:template match="ubl:Invoice | cn:CreditNote" priority="1000" mode="M30">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
-                       context="ubl:Invoice/cbc:ProfileID | cn:CreditNote/cbc:ProfileID"/>
+                       context="ubl:Invoice | cn:CreditNote"/>
       <!--ASSERT -->
       <xsl:choose>
-         <xsl:when test="custom:is-valid-billing-mode(.)"/>
+         <xsl:when test="custom:is-valid-billing-mode(cbc:ProfileID) and exists(cbc:ProfileID)"/>
          <xsl:otherwise>
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
-                                test="custom:is-valid-billing-mode(.)">
+                                test="custom:is-valid-billing-mode(cbc:ProfileID) and exists(cbc:ProfileID)">
                <xsl:attribute name="id">BR-FR-08_BT-23</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
                <svrl:text>
-        [BR-FR-08/BT-23] : La valeur du mode de facturation (ram:ID) n’est pas autorisée. Valeurs acceptées : B1, S1, M1, B2, S2, M2, B4, S4, M4, S5, S6, B7, S7.
+        [BR-FR-08/BT-23] : La valeur du cadre de facturation (ram:ID) est absente ou n’est pas autorisée. Valeurs acceptées : B1, S1, M1, B2, S2, M2, S3, B4, S4, M4, S5, S6, B7, S7, B8, S8, M8, B9, S9, M9.
         Valeur actuelle : "<xsl:text/>
                   <xsl:value-of select="."/>
                   <xsl:text/>".
@@ -1610,18 +1671,18 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M27"/>
+      <xsl:apply-templates select="*" mode="M30"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M27"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M27">
-      <xsl:apply-templates select="*" mode="M27"/>
+   <xsl:template match="text()" priority="-1" mode="M30"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M30">
+      <xsl:apply-templates select="*" mode="M30"/>
    </xsl:template>
    <!--PATTERN BR-FR-09BR-FR-09 — Cohérence entre SIRET (ID avec schemeId = 0009) et SIREN (Legal ID)-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-09 — Cohérence entre SIRET (ID avec schemeId = 0009) et SIREN (Legal ID)</svrl:text>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:AccountingSupplierParty/cac:Party | cn:CreditNote/cac:AccountingSupplierParty/cac:Party"
                  priority="1009"
-                 mode="M28">
+                 mode="M31">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:AccountingSupplierParty/cac:Party | cn:CreditNote/cac:AccountingSupplierParty/cac:Party"/>
       <xsl:variable name="siret" select="cac:PartyIdentification/cbc:ID[@schemeID='0009']"/>
@@ -1634,7 +1695,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="not($siret) or custom:check-siret-siren-coherence($siret[1], $siren)">
                <xsl:attribute name="id">BR-FR-09_BT-29</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -1648,12 +1709,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M28"/>
+      <xsl:apply-templates select="*" mode="M31"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:AccountingCustomerParty/cac:Party | cn:CreditNote/cac:AccountingCustomerParty/cac:Party"
                  priority="1008"
-                 mode="M28">
+                 mode="M31">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:AccountingCustomerParty/cac:Party | cn:CreditNote/cac:AccountingCustomerParty/cac:Party"/>
       <xsl:variable name="siret" select="cac:PartyIdentification/cbc:ID[@schemeID='0009']"/>
@@ -1666,7 +1727,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="not($siret) or custom:check-siret-siren-coherence($siret[1], $siren)">
                <xsl:attribute name="id">BR-FR-09_BT-46</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -1680,12 +1741,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M28"/>
+      <xsl:apply-templates select="*" mode="M31"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:PayeeParty | cn:CreditNote/cac:PayeeParty"
                  priority="1007"
-                 mode="M28">
+                 mode="M31">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:PayeeParty | cn:CreditNote/cac:PayeeParty"/>
       <xsl:variable name="siret" select="cac:PartyIdentification/cbc:ID[@schemeID='0009']"/>
@@ -1698,7 +1759,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="not($siret) or custom:check-siret-siren-coherence($siret[1], $siren)">
                <xsl:attribute name="id">BR-FR-09_BT-60</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -1712,12 +1773,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M28"/>
+      <xsl:apply-templates select="*" mode="M31"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:AccountingCustomerParty/cac:Party/cac:AgentParty | cn:CreditNote/cac:AccountingCustomerParty/cac:Party/cac:AgentParty"
                  priority="1006"
-                 mode="M28">
+                 mode="M31">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:AccountingCustomerParty/cac:Party/cac:AgentParty | cn:CreditNote/cac:AccountingCustomerParty/cac:Party/cac:AgentParty"/>
       <xsl:variable name="siret" select="cac:PartyIdentification/cbc:ID[@schemeID='0009']"/>
@@ -1730,7 +1791,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="not($siret) or custom:check-siret-siren-coherence($siret[1], $siren)">
                <xsl:attribute name="id">BR-FR-09_EXT-FR-FE-06</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -1744,12 +1805,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M28"/>
+      <xsl:apply-templates select="*" mode="M31"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:PaymentMeans/cac:PaymentMandate/cac:PayerParty | cn:CreditNote/cac:PaymentMeans/cac:PaymentMandate/cac:PayerParty"
                  priority="1005"
-                 mode="M28">
+                 mode="M31">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:PaymentMeans/cac:PaymentMandate/cac:PayerParty | cn:CreditNote/cac:PaymentMeans/cac:PaymentMandate/cac:PayerParty"/>
       <xsl:variable name="siret" select="cac:PartyIdentification/cbc:ID[@schemeID='0009']"/>
@@ -1762,7 +1823,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="not($siret) or custom:check-siret-siren-coherence($siret[1], $siren)">
                <xsl:attribute name="id">BR-FR-09_EXT-FR-FE-46</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -1776,12 +1837,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M28"/>
+      <xsl:apply-templates select="*" mode="M31"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:AccountingSupplierParty/cac:Party/cac:AgentParty | cn:CreditNote/cac:AccountingSupplierParty/cac:Party/cac:AgentParty"
                  priority="1004"
-                 mode="M28">
+                 mode="M31">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:AccountingSupplierParty/cac:Party/cac:AgentParty | cn:CreditNote/cac:AccountingSupplierParty/cac:Party/cac:AgentParty"/>
       <xsl:variable name="siret" select="cac:PartyIdentification/cbc:ID[@schemeID='0009']"/>
@@ -1794,7 +1855,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="not($siret) or custom:check-siret-siren-coherence($siret[1], $siren)">
                <xsl:attribute name="id">BR-FR-09_EXT-FR-FE-69</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -1808,12 +1869,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M28"/>
+      <xsl:apply-templates select="*" mode="M31"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:AccountingCustomerParty/cac:Party/cac:ServiceProviderParty/cac:Party | cn:CreditNote/cac:AccountingCustomerParty/cac:Party/cac:ServiceProviderParty/cac:Party"
                  priority="1003"
-                 mode="M28">
+                 mode="M31">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:AccountingCustomerParty/cac:Party/cac:ServiceProviderParty/cac:Party | cn:CreditNote/cac:AccountingCustomerParty/cac:Party/cac:ServiceProviderParty/cac:Party"/>
       <xsl:variable name="siret" select="cac:PartyIdentification/cbc:ID[@schemeID='0009']"/>
@@ -1826,7 +1887,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="not($siret) or custom:check-siret-siren-coherence($siret[1], $siren)">
                <xsl:attribute name="id">BR-FR-09_EXT-FR-FE-92</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -1840,12 +1901,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M28"/>
+      <xsl:apply-templates select="*" mode="M31"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:AccountingSupplierParty/cac:Party/cac:ServiceProviderParty/cac:Party | cn:CreditNote/cac:AccountingSupplierParty/cac:Party/cac:ServiceProviderParty/cac:Party"
                  priority="1002"
-                 mode="M28">
+                 mode="M31">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:AccountingSupplierParty/cac:Party/cac:ServiceProviderParty/cac:Party | cn:CreditNote/cac:AccountingSupplierParty/cac:Party/cac:ServiceProviderParty/cac:Party"/>
       <xsl:variable name="siret" select="cac:PartyIdentification/cbc:ID[@schemeID='0009']"/>
@@ -1858,7 +1919,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="not($siret) or custom:check-siret-siren-coherence($siret[1], $siren)">
                <xsl:attribute name="id">BR-FR-09_EXT-FR-FE-115</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -1872,12 +1933,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M28"/>
+      <xsl:apply-templates select="*" mode="M31"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:Delivery | cn:CreditNote/cac:Delivery"
                  priority="1001"
-                 mode="M28">
+                 mode="M31">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:Delivery | cn:CreditNote/cac:Delivery"/>
       <xsl:variable name="siret" select="cac:DeliveryLocation/cbc:ID[@schemeID='0009']"/>
@@ -1890,7 +1951,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="not($siret) or custom:check-siret-siren-coherence($siret[1], $siren)">
                <xsl:attribute name="id">BR-FR-09_BT-71</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -1904,12 +1965,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M28"/>
+      <xsl:apply-templates select="*" mode="M31"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:InvoiceLine/cac:Delivery/cac:DeliveryLocation | cn:CreditNote/cac:CreditNoteLine/cac:Delivery/cac:DeliveryLocation"
                  priority="1000"
-                 mode="M28">
+                 mode="M31">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:InvoiceLine/cac:Delivery/cac:DeliveryLocation | cn:CreditNote/cac:CreditNoteLine/cac:Delivery/cac:DeliveryLocation"/>
       <xsl:variable name="siret" select="cac:DeliveryLocation/cbc:ID[@schemeID='0009']"/>
@@ -1922,7 +1983,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="not($siret) or custom:check-siret-siren-coherence($siret[1], $siren)">
                <xsl:attribute name="id">BR-FR-09_EXT-FR-FE-146</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -1936,18 +1997,18 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M28"/>
+      <xsl:apply-templates select="*" mode="M31"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M28"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M28">
-      <xsl:apply-templates select="*" mode="M28"/>
+   <xsl:template match="text()" priority="-1" mode="M31"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M31">
+      <xsl:apply-templates select="*" mode="M31"/>
    </xsl:template>
    <!--PATTERN BR-FR-10BR-FR-10 — SIREN du vendeur obligatoire et valide (BT-30)-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-10 — SIREN du vendeur obligatoire et valide (BT-30)</svrl:text>
    <!--RULE -->
    <xsl:template match="cac:AccountingSupplierParty/cac:Party/cac:PartyLegalEntity"
                  priority="1000"
-                 mode="M29">
+                 mode="M32">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="cac:AccountingSupplierParty/cac:Party/cac:PartyLegalEntity"/>
       <xsl:variable name="siren" select="cbc:CompanyID[@schemeID='0002']"/>
@@ -1958,7 +2019,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="$siren and matches(normalize-space($siren), '^\d{9}$')">
                <xsl:attribute name="id">BR-FR-10_BT-30</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -1971,16 +2032,16 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M29"/>
+      <xsl:apply-templates select="*" mode="M32"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M29"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M29">
-      <xsl:apply-templates select="*" mode="M29"/>
+   <xsl:template match="text()" priority="-1" mode="M32"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M32">
+      <xsl:apply-templates select="*" mode="M32"/>
    </xsl:template>
    <!--PATTERN BR-FR-11BR-FR-11 — SIREN obligatoire et valide si traitement BAR/B2B (BT-47)-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-11 — SIREN obligatoire et valide si traitement BAR/B2B (BT-47)</svrl:text>
    <!--RULE -->
-   <xsl:template match="ubl:Invoice | cn:CreditNote" priority="1000" mode="M30">
+   <xsl:template match="ubl:Invoice | cn:CreditNote" priority="1000" mode="M33">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice | cn:CreditNote"/>
       <xsl:variable name="allNotes"
@@ -1997,7 +2058,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="not($barTreatment='B2B') or ($siren and matches(normalize-space($siren), '^\d{9}$'))">
                <xsl:attribute name="id">BR-FR-11_BT-47</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -2010,16 +2071,16 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M30"/>
+      <xsl:apply-templates select="*" mode="M33"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M30"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M30">
-      <xsl:apply-templates select="*" mode="M30"/>
+   <xsl:template match="text()" priority="-1" mode="M33"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M33">
+      <xsl:apply-templates select="*" mode="M33"/>
    </xsl:template>
    <!--PATTERN BR-FR-12BR-FR-12 — Vérification de la présence du BT-49-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-12 — Vérification de la présence du BT-49</svrl:text>
    <!--RULE -->
-   <xsl:template match="ubl:Invoice | cn:CreditNote" priority="1000" mode="M31">
+   <xsl:template match="ubl:Invoice | cn:CreditNote" priority="1000" mode="M34">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice | cn:CreditNote"/>
       <xsl:variable name="endpointID"
@@ -2031,7 +2092,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="normalize-space($endpointID) != ''">
                <xsl:attribute name="id">BR-FR-12_BT-49</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -2043,16 +2104,16 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M31"/>
+      <xsl:apply-templates select="*" mode="M34"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M31"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M31">
-      <xsl:apply-templates select="*" mode="M31"/>
+   <xsl:template match="text()" priority="-1" mode="M34"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M34">
+      <xsl:apply-templates select="*" mode="M34"/>
    </xsl:template>
    <!--PATTERN BR-FR-13BR-FR-13 — Vérification de la présence du BT-34-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-13 — Vérification de la présence du BT-34</svrl:text>
    <!--RULE -->
-   <xsl:template match="ubl:Invoice | cn:CreditNote" priority="1000" mode="M32">
+   <xsl:template match="ubl:Invoice | cn:CreditNote" priority="1000" mode="M35">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice | cn:CreditNote"/>
       <xsl:variable name="endpointID"
@@ -2064,7 +2125,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="normalize-space($endpointID) != ''">
                <xsl:attribute name="id">BR-FR-13_BT-34</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -2076,18 +2137,18 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M32"/>
+      <xsl:apply-templates select="*" mode="M35"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M32"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M32">
-      <xsl:apply-templates select="*" mode="M32"/>
+   <xsl:template match="text()" priority="-1" mode="M35"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M35">
+      <xsl:apply-templates select="*" mode="M35"/>
    </xsl:template>
    <!--PATTERN BR-FR-15BR-FR-15 — Vérification des codes de catégorie de TVA (BT-95, BT-102, BT-118, BT-151)-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-15 — Vérification des codes de catégorie de TVA (BT-95, BT-102, BT-118, BT-151)</svrl:text>
    <!--RULE -->
    <xsl:template match="cac:AllowanceCharge/cac:TaxCategory"
                  priority="1002"
-                 mode="M33">
+                 mode="M36">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="cac:AllowanceCharge/cac:TaxCategory"/>
       <xsl:variable name="categoryCode" select="cbc:ID"/>
@@ -2098,7 +2159,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="not($categoryCode) or custom:is-valid-vat-category-code($categoryCode)">
                <xsl:attribute name="id">BR-FR-15_BT-95_BT-102-1</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -2117,7 +2178,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="not($categoryCode = ('L', 'M'))">
                <xsl:attribute name="id">BR-FR-15_BT-95_BT-102-2</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -2129,12 +2190,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M33"/>
+      <xsl:apply-templates select="*" mode="M36"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="cac:TaxTotal/cac:TaxSubtotal/cac:TaxCategory"
                  priority="1001"
-                 mode="M33">
+                 mode="M36">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="cac:TaxTotal/cac:TaxSubtotal/cac:TaxCategory"/>
       <xsl:variable name="categoryCode" select="cbc:ID"/>
@@ -2145,7 +2206,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="not($categoryCode) or custom:is-valid-vat-category-code($categoryCode)">
                <xsl:attribute name="id">BR-FR-15_BT-118-1</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -2164,7 +2225,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="not($categoryCode = ('L', 'M'))">
                <xsl:attribute name="id">BR-FR-15_BT-118-2</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -2176,12 +2237,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M33"/>
+      <xsl:apply-templates select="*" mode="M36"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="cac:Item/cac:ClassifiedTaxCategory"
                  priority="1000"
-                 mode="M33">
+                 mode="M36">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="cac:Item/cac:ClassifiedTaxCategory"/>
       <xsl:variable name="categoryCode" select="cbc:ID"/>
@@ -2192,7 +2253,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="not($categoryCode) or custom:is-valid-vat-category-code($categoryCode)">
                <xsl:attribute name="id">BR-FR-15_BT-151-1</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -2211,7 +2272,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="not($categoryCode = ('L', 'M'))">
                <xsl:attribute name="id">BR-FR-08_BT-151-2</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -2223,18 +2284,18 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M33"/>
+      <xsl:apply-templates select="*" mode="M36"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M33"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M33">
-      <xsl:apply-templates select="*" mode="M33"/>
+   <xsl:template match="text()" priority="-1" mode="M36"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M36">
+      <xsl:apply-templates select="*" mode="M36"/>
    </xsl:template>
    <!--PATTERN BR-FR-16BR-FR-16 — Vérification des taux de TVA autorisés (BT-96, BT-103, BT-119, BT-152)-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-16 — Vérification des taux de TVA autorisés (BT-96, BT-103, BT-119, BT-152)</svrl:text>
    <!--RULE -->
    <xsl:template match="cac:AllowanceCharge/cac:TaxCategory"
                  priority="1003"
-                 mode="M34">
+                 mode="M37">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="cac:AllowanceCharge/cac:TaxCategory"/>
       <xsl:variable name="vatRate" select="cbc:Percent"/>
@@ -2245,7 +2306,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="not($vatRate) or custom:is-valid-vat-rate($vatRate)">
                <xsl:attribute name="id">BR-FR-16_BT-96</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -2257,12 +2318,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M34"/>
+      <xsl:apply-templates select="*" mode="M37"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="cac:AllowanceCharge/cac:TaxCategory"
                  priority="1002"
-                 mode="M34">
+                 mode="M37">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="cac:AllowanceCharge/cac:TaxCategory"/>
       <xsl:variable name="vatRate" select="cbc:Percent"/>
@@ -2273,7 +2334,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="not($vatRate) or custom:is-valid-vat-rate($vatRate)">
                <xsl:attribute name="id">BR-FR-16_BT-103</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -2285,12 +2346,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M34"/>
+      <xsl:apply-templates select="*" mode="M37"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="cac:TaxTotal/cac:TaxSubtotal/cac:TaxCategory"
                  priority="1001"
-                 mode="M34">
+                 mode="M37">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="cac:TaxTotal/cac:TaxSubtotal/cac:TaxCategory"/>
       <xsl:variable name="vatRate" select="cbc:Percent"/>
@@ -2301,7 +2362,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="not($vatRate) or custom:is-valid-vat-rate($vatRate)">
                <xsl:attribute name="id">BR-FR-16_BT-119</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -2313,12 +2374,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M34"/>
+      <xsl:apply-templates select="*" mode="M37"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="cac:InvoiceLine/cac:Item/cac:ClassifiedTaxCategory"
                  priority="1000"
-                 mode="M34">
+                 mode="M37">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="cac:InvoiceLine/cac:Item/cac:ClassifiedTaxCategory"/>
       <xsl:variable name="vatRate" select="cbc:Percent"/>
@@ -2329,7 +2390,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="not($vatRate) or custom:is-valid-vat-rate($vatRate)">
                <xsl:attribute name="id">BR-FR-16_BT-152</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -2341,16 +2402,16 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M34"/>
+      <xsl:apply-templates select="*" mode="M37"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M34"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M34">
-      <xsl:apply-templates select="*" mode="M34"/>
+   <xsl:template match="text()" priority="-1" mode="M37"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M37">
+      <xsl:apply-templates select="*" mode="M37"/>
    </xsl:template>
    <!--PATTERN BR-FR-17BR-FR-17 — Codes autorisés pour qualifier les pièces jointes (BT-123)-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-17 — Codes autorisés pour qualifier les pièces jointes (BT-123)</svrl:text>
    <!--RULE -->
-   <xsl:template match="cac:AdditionalDocumentReference" priority="1000" mode="M35">
+   <xsl:template match="cac:AdditionalDocumentReference" priority="1000" mode="M38">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="cac:AdditionalDocumentReference"/>
       <xsl:variable name="docTypeDESC" select="cbc:DocumentDescription"/>
@@ -2361,7 +2422,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="not($docTypeDESC) or custom:is-valid-attachment-code($docTypeDESC)">
                <xsl:attribute name="id">BR-FR-17_BT-123</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -2373,16 +2434,16 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M35"/>
+      <xsl:apply-templates select="*" mode="M38"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M35"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M35">
-      <xsl:apply-templates select="*" mode="M35"/>
+   <xsl:template match="text()" priority="-1" mode="M38"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M38">
+      <xsl:apply-templates select="*" mode="M38"/>
    </xsl:template>
    <!--PATTERN BR-FR-18BR-FR-18 — Un seul document additionnel avec la description "LISIBLE" (BT-123)-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-18 — Un seul document additionnel avec la description "LISIBLE" (BT-123)</svrl:text>
    <!--RULE -->
-   <xsl:template match="ubl:Invoice | cn:CreditNote" priority="1000" mode="M36">
+   <xsl:template match="ubl:Invoice | cn:CreditNote" priority="1000" mode="M39">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice | cn:CreditNote"/>
       <xsl:variable name="lisibleCount"
@@ -2393,7 +2454,7 @@
          <xsl:otherwise>
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl" test="$lisibleCount le 1">
                <xsl:attribute name="id">BR-FR-18_BT-123</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -2409,16 +2470,16 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M36"/>
+      <xsl:apply-templates select="*" mode="M39"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M36"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M36">
-      <xsl:apply-templates select="*" mode="M36"/>
+   <xsl:template match="text()" priority="-1" mode="M39"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M39">
+      <xsl:apply-templates select="*" mode="M39"/>
    </xsl:template>
    <!--PATTERN BR-FR-20BR-FR-20 — Vérification du traitement associé à une note avec code sujet "BAR" (BT-21)-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-20 — Vérification du traitement associé à une note avec code sujet "BAR" (BT-21)</svrl:text>
    <!--RULE -->
-   <xsl:template match="ubl:Invoice | cn:CreditNote" priority="1000" mode="M37">
+   <xsl:template match="ubl:Invoice | cn:CreditNote" priority="1000" mode="M40">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice | cn:CreditNote"/>
       <xsl:variable name="allNotes"
@@ -2434,7 +2495,7 @@
          <xsl:otherwise>
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl" test="not($invalidNotes)">
                <xsl:attribute name="id">BR-FR-20_BT-21</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -2447,16 +2508,16 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M37"/>
+      <xsl:apply-templates select="*" mode="M40"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M37"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M37">
-      <xsl:apply-templates select="*" mode="M37"/>
+   <xsl:template match="text()" priority="-1" mode="M40"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M40">
+      <xsl:apply-templates select="*" mode="M40"/>
    </xsl:template>
    <!--PATTERN BR-FR-21BR-FR-21 — Vérification du BT-49 en cas de traitement BAR/B2B et hors cas autofacture-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-21 — Vérification du BT-49 en cas de traitement BAR/B2B et hors cas autofacture</svrl:text>
    <!--RULE -->
-   <xsl:template match="ubl:Invoice | cn:CreditNote" priority="1000" mode="M38">
+   <xsl:template match="ubl:Invoice | cn:CreditNote" priority="1000" mode="M41">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice | cn:CreditNote"/>
       <xsl:variable name="allNotes"
@@ -2478,7 +2539,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="not($treatment='B2B') or $typeCode = ('389', '501', '500', '471', '473', '261', '502') or (starts-with($endpointID, $siren) and $schemeID = '0225')">
                <xsl:attribute name="id">BR-FR-21_BT-49</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -2497,16 +2558,16 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M38"/>
+      <xsl:apply-templates select="*" mode="M41"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M38"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M38">
-      <xsl:apply-templates select="*" mode="M38"/>
+   <xsl:template match="text()" priority="-1" mode="M41"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M41">
+      <xsl:apply-templates select="*" mode="M41"/>
    </xsl:template>
    <!--PATTERN BR-FR-22BR-FR-22 — Vérification du BT-34 en cas de traitement BAR/B2B et en autofacture-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-22 — Vérification du BT-34 en cas de traitement BAR/B2B et en autofacture</svrl:text>
    <!--RULE -->
-   <xsl:template match="ubl:Invoice | cn:CreditNote" priority="1000" mode="M39">
+   <xsl:template match="ubl:Invoice | cn:CreditNote" priority="1000" mode="M42">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice | cn:CreditNote"/>
       <xsl:variable name="allNotes"
@@ -2528,7 +2589,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="not($treatment) or not($typeCode = ('389', '501', '500', '471', '473', '261', '502')) or (starts-with($endpointID, $siren) and $schemeID = '0225')">
                <xsl:attribute name="id">BR-FR-22_BT-34</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -2545,18 +2606,18 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M39"/>
+      <xsl:apply-templates select="*" mode="M42"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M39"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M39">
-      <xsl:apply-templates select="*" mode="M39"/>
+   <xsl:template match="text()" priority="-1" mode="M42"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M42">
+      <xsl:apply-templates select="*" mode="M42"/>
    </xsl:template>
    <!--PATTERN BR-FR-23BR-FR-23 — Validation du format des adresses électroniques avec schemeID = 0225-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-23 — Validation du format des adresses électroniques avec schemeID = 0225</svrl:text>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:AccountingSupplierParty/cac:Party/cbc:EndpointID[@schemeID='0225'] | cn:CreditNote/cac:AccountingSupplierParty/cac:Party/cbc:EndpointID[@schemeID='0225']"
                  priority="1007"
-                 mode="M40">
+                 mode="M43">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:AccountingSupplierParty/cac:Party/cbc:EndpointID[@schemeID='0225'] | cn:CreditNote/cac:AccountingSupplierParty/cac:Party/cbc:EndpointID[@schemeID='0225']"/>
       <!--ASSERT -->
@@ -2566,7 +2627,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-schemeid-format(.)">
                <xsl:attribute name="id">BR-FR-23_BT-34</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -2579,12 +2640,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M40"/>
+      <xsl:apply-templates select="*" mode="M43"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:AccountingCustomerParty/cac:Party/cbc:EndpointID[@schemeID='0225'] | cn:CreditNote/cac:AccountingCustomerParty/cac:Party/cbc:EndpointID[@schemeID='0225']"
                  priority="1006"
-                 mode="M40">
+                 mode="M43">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:AccountingCustomerParty/cac:Party/cbc:EndpointID[@schemeID='0225'] | cn:CreditNote/cac:AccountingCustomerParty/cac:Party/cbc:EndpointID[@schemeID='0225']"/>
       <!--ASSERT -->
@@ -2594,7 +2655,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-schemeid-format(.)">
                <xsl:attribute name="id">BR-FR-23_BT-49</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -2607,12 +2668,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M40"/>
+      <xsl:apply-templates select="*" mode="M43"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:AccountingCustomerParty/cac:Party/cac:AgentParty/cbc:EndpointID[@schemeID='0225'] | cn:CreditNote/cac:AccountingCustomerParty/cac:Party/cac:AgentParty/cbc:EndpointID[@schemeID='0225']"
                  priority="1005"
-                 mode="M40">
+                 mode="M43">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:AccountingCustomerParty/cac:Party/cac:AgentParty/cbc:EndpointID[@schemeID='0225'] | cn:CreditNote/cac:AccountingCustomerParty/cac:Party/cac:AgentParty/cbc:EndpointID[@schemeID='0225']"/>
       <!--ASSERT -->
@@ -2622,7 +2683,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-schemeid-format(.)">
                <xsl:attribute name="id">BR-FR-23_EXT-FR-FE-12</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -2635,12 +2696,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M40"/>
+      <xsl:apply-templates select="*" mode="M43"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:PayeeParty/cbc:EndpointID[@schemeID='0225'] | cn:CreditNote/cac:PayeeParty/cbc:EndpointID[@schemeID='0225']"
                  priority="1004"
-                 mode="M40">
+                 mode="M43">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:PayeeParty/cbc:EndpointID[@schemeID='0225'] | cn:CreditNote/cac:PayeeParty/cbc:EndpointID[@schemeID='0225']"/>
       <!--ASSERT -->
@@ -2650,7 +2711,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-schemeid-format(.)">
                <xsl:attribute name="id">BR-FR-23_EXT-FR-FE-29</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -2663,12 +2724,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M40"/>
+      <xsl:apply-templates select="*" mode="M43"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:PaymentMeans/cac:PaymentMandate/cac:PayerParty/cbc:EndpointID[@schemeID='0225'] | cn:CreditNote/cac:PaymentMeans/cac:PaymentMandate/cac:PayerParty/cbc:EndpointID[@schemeID='0225']"
                  priority="1003"
-                 mode="M40">
+                 mode="M43">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:PaymentMeans/cac:PaymentMandate/cac:PayerParty/cbc:EndpointID[@schemeID='0225'] | cn:CreditNote/cac:PaymentMeans/cac:PaymentMandate/cac:PayerParty/cbc:EndpointID[@schemeID='0225']"/>
       <!--ASSERT -->
@@ -2678,7 +2739,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-schemeid-format(.)">
                <xsl:attribute name="id">BR-FR-23_EXT-FR-FE-52</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -2691,12 +2752,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M40"/>
+      <xsl:apply-templates select="*" mode="M43"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:AccountingSupplierParty/cac:Party/cac:AgentParty/cbc:EndpointID[@schemeID='0225'] | cn:CreditNote/cac:AccountingSupplierParty/cac:Party/cac:AgentParty/cbc:EndpointID[@schemeID='0225']"
                  priority="1002"
-                 mode="M40">
+                 mode="M43">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:AccountingSupplierParty/cac:Party/cac:AgentParty/cbc:EndpointID[@schemeID='0225'] | cn:CreditNote/cac:AccountingSupplierParty/cac:Party/cac:AgentParty/cbc:EndpointID[@schemeID='0225']"/>
       <!--ASSERT -->
@@ -2706,7 +2767,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-schemeid-format(.)">
                <xsl:attribute name="id">BR-FR-23_EXT-FR-FE-75</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -2719,12 +2780,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M40"/>
+      <xsl:apply-templates select="*" mode="M43"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:AccountingCustomerParty/cac:Party/cac:ServiceProviderParty/cac:Party/cbc:EndpointID[@schemeID='0225'] | cn:CreditNote/cac:AccountingCustomerParty/cac:Party/cac:ServiceProviderParty/cac:Party/cbc:EndpointID[@schemeID='0225']"
                  priority="1001"
-                 mode="M40">
+                 mode="M43">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:AccountingCustomerParty/cac:Party/cac:ServiceProviderParty/cac:Party/cbc:EndpointID[@schemeID='0225'] | cn:CreditNote/cac:AccountingCustomerParty/cac:Party/cac:ServiceProviderParty/cac:Party/cbc:EndpointID[@schemeID='0225']"/>
       <!--ASSERT -->
@@ -2734,7 +2795,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-schemeid-format(.)">
                <xsl:attribute name="id">BR-FR-23_EXT-FR-FE-98</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -2747,12 +2808,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M40"/>
+      <xsl:apply-templates select="*" mode="M43"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:AccountingSupplierParty/cac:Party/cac:ServiceProviderParty/cac:Party/cbc:EndpointID[@schemeID='0225'] | cn:CreditNote/cac:AccountingSupplierParty/cac:Party/cac:ServiceProviderParty/cac:Party/cbc:EndpointID[@schemeID='0225']"
                  priority="1000"
-                 mode="M40">
+                 mode="M43">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:AccountingSupplierParty/cac:Party/cac:ServiceProviderParty/cac:Party/cbc:EndpointID[@schemeID='0225'] | cn:CreditNote/cac:AccountingSupplierParty/cac:Party/cac:ServiceProviderParty/cac:Party/cbc:EndpointID[@schemeID='0225']"/>
       <!--ASSERT -->
@@ -2762,7 +2823,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-schemeid-format(.)">
                <xsl:attribute name="id">BR-FR-23_EXT-FR-FE-121</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -2775,18 +2836,18 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M40"/>
+      <xsl:apply-templates select="*" mode="M43"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M40"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M40">
-      <xsl:apply-templates select="*" mode="M40"/>
+   <xsl:template match="text()" priority="-1" mode="M43"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M43">
+      <xsl:apply-templates select="*" mode="M43"/>
    </xsl:template>
    <!--PATTERN BR-FR-24BR-FR-24 — Validation du format des identifiants privés avec schemeID = 0224-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-24 — Validation du format des identifiants privés avec schemeID = 0224</svrl:text>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:AccountingSupplierParty/cac:Party/cac:PartyIdentification/cbc:ID[@schemeID='0224'] | cn:CreditNote/cac:AccountingSupplierParty/cac:Party/cac:PartyIdentification/cbc:ID[@schemeID='0224']"
                  priority="1001"
-                 mode="M41">
+                 mode="M44">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:AccountingSupplierParty/cac:Party/cac:PartyIdentification/cbc:ID[@schemeID='0224'] | cn:CreditNote/cac:AccountingSupplierParty/cac:Party/cac:PartyIdentification/cbc:ID[@schemeID='0224']"/>
       <!--ASSERT -->
@@ -2796,7 +2857,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-schemeid-format(.)">
                <xsl:attribute name="id">BR-FR-24_BT-29</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -2809,12 +2870,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M41"/>
+      <xsl:apply-templates select="*" mode="M44"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:AccountingCustomerParty/cac:Party/cac:PartyIdentification/cbc:ID[@schemeID='0224'] | cn:CreditNote/cac:AccountingCustomerParty/cac:Party/cac:PartyIdentification/cbc:ID[@schemeID='0224']"
                  priority="1000"
-                 mode="M41">
+                 mode="M44">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:AccountingCustomerParty/cac:Party/cac:PartyIdentification/cbc:ID[@schemeID='0224'] | cn:CreditNote/cac:AccountingCustomerParty/cac:Party/cac:PartyIdentification/cbc:ID[@schemeID='0224']"/>
       <!--ASSERT -->
@@ -2824,7 +2885,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-schemeid-format(.)">
                <xsl:attribute name="id">BR-FR-24_BT-46</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -2837,18 +2898,18 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M41"/>
+      <xsl:apply-templates select="*" mode="M44"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M41"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M41">
-      <xsl:apply-templates select="*" mode="M41"/>
+   <xsl:template match="text()" priority="-1" mode="M44"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M44">
+      <xsl:apply-templates select="*" mode="M44"/>
    </xsl:template>
    <!--PATTERN BR-FR-25BR-FR-25 — Longueur maximale des adresses électroniques-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-25 — Longueur maximale des adresses électroniques</svrl:text>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:AccountingSupplierParty/cac:Party/cbc:EndpointID | cn:CreditNote/cac:AccountingSupplierParty/cac:Party/cbc:EndpointID"
                  priority="1007"
-                 mode="M42">
+                 mode="M45">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:AccountingSupplierParty/cac:Party/cbc:EndpointID | cn:CreditNote/cac:AccountingSupplierParty/cac:Party/cbc:EndpointID"/>
       <!--ASSERT -->
@@ -2857,7 +2918,7 @@
          <xsl:otherwise>
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl" test="string-length(.) le 125">
                <xsl:attribute name="id">BR-FR-25_BT-34</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -2870,12 +2931,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M42"/>
+      <xsl:apply-templates select="*" mode="M45"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:AccountingCustomerParty/cac:Party/cbc:EndpointID | cn:CreditNote/cac:AccountingCustomerParty/cac:Party/cbc:EndpointID"
                  priority="1006"
-                 mode="M42">
+                 mode="M45">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:AccountingCustomerParty/cac:Party/cbc:EndpointID | cn:CreditNote/cac:AccountingCustomerParty/cac:Party/cbc:EndpointID"/>
       <!--ASSERT -->
@@ -2884,7 +2945,7 @@
          <xsl:otherwise>
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl" test="string-length(.) le 125">
                <xsl:attribute name="id">BR-FR-25_BT-49</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -2897,12 +2958,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M42"/>
+      <xsl:apply-templates select="*" mode="M45"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:AccountingCustomerParty/cac:Party/cac:AgentParty/cbc:EndpointID | cn:CreditNote/cac:AccountingCustomerParty/cac:Party/cac:AgentParty/cbc:EndpointID"
                  priority="1005"
-                 mode="M42">
+                 mode="M45">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:AccountingCustomerParty/cac:Party/cac:AgentParty/cbc:EndpointID | cn:CreditNote/cac:AccountingCustomerParty/cac:Party/cac:AgentParty/cbc:EndpointID"/>
       <!--ASSERT -->
@@ -2911,7 +2972,7 @@
          <xsl:otherwise>
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl" test="string-length(.) le 125">
                <xsl:attribute name="id">BR-FR-25_EXT-FR-FE-12</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -2924,12 +2985,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M42"/>
+      <xsl:apply-templates select="*" mode="M45"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:PayeeParty/cbc:EndpointID | cn:CreditNote/cac:PayeeParty/cbc:EndpointID"
                  priority="1004"
-                 mode="M42">
+                 mode="M45">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:PayeeParty/cbc:EndpointID | cn:CreditNote/cac:PayeeParty/cbc:EndpointID"/>
       <!--ASSERT -->
@@ -2938,7 +2999,7 @@
          <xsl:otherwise>
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl" test="string-length(.) le 125">
                <xsl:attribute name="id">BR-FR-25_EXT-FR-FE-29</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -2951,12 +3012,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M42"/>
+      <xsl:apply-templates select="*" mode="M45"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:PaymentMeans/cac:PaymentMandate/cac:PayerParty/cbc:EndpointID | cn:CreditNote/cac:PaymentMeans/cac:PaymentMandate/cac:PayerParty/cbc:EndpointID"
                  priority="1003"
-                 mode="M42">
+                 mode="M45">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:PaymentMeans/cac:PaymentMandate/cac:PayerParty/cbc:EndpointID | cn:CreditNote/cac:PaymentMeans/cac:PaymentMandate/cac:PayerParty/cbc:EndpointID"/>
       <!--ASSERT -->
@@ -2965,7 +3026,7 @@
          <xsl:otherwise>
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl" test="string-length(.) le 125">
                <xsl:attribute name="id">BR-FR-25_EXT-FR-FE-52</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -2978,12 +3039,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M42"/>
+      <xsl:apply-templates select="*" mode="M45"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:AccountingSupplierParty/cac:Party/cac:AgentParty/cbc:EndpointID | cn:CreditNote/cac:AccountingSupplierParty/cac:Party/cac:AgentParty/cbc:EndpointID"
                  priority="1002"
-                 mode="M42">
+                 mode="M45">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:AccountingSupplierParty/cac:Party/cac:AgentParty/cbc:EndpointID | cn:CreditNote/cac:AccountingSupplierParty/cac:Party/cac:AgentParty/cbc:EndpointID"/>
       <!--ASSERT -->
@@ -2992,7 +3053,7 @@
          <xsl:otherwise>
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl" test="string-length(.) le 125">
                <xsl:attribute name="id">BR-FR-25_EXT-FR-FE-75</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -3005,12 +3066,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M42"/>
+      <xsl:apply-templates select="*" mode="M45"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:AccountingCustomerParty/cac:Party/cac:ServiceProviderParty/cac:Party/cbc:EndpointID | cn:CreditNote/cac:AccountingCustomerParty/cac:Party/cac:ServiceProviderParty/cac:Party/cbc:EndpointID"
                  priority="1001"
-                 mode="M42">
+                 mode="M45">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:AccountingCustomerParty/cac:Party/cac:ServiceProviderParty/cac:Party/cbc:EndpointID | cn:CreditNote/cac:AccountingCustomerParty/cac:Party/cac:ServiceProviderParty/cac:Party/cbc:EndpointID"/>
       <!--ASSERT -->
@@ -3019,7 +3080,7 @@
          <xsl:otherwise>
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl" test="string-length(.) le 125">
                <xsl:attribute name="id">BR-FR-25_EXT-FR-FE-98</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -3032,12 +3093,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M42"/>
+      <xsl:apply-templates select="*" mode="M45"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:AccountingSupplierParty/cac:Party/cac:ServiceProviderParty/cac:Party/cbc:EndpointID | cn:CreditNote/cac:AccountingSupplierParty/cac:Party/cac:ServiceProviderParty/cac:Party/cbc:EndpointID"
                  priority="1000"
-                 mode="M42">
+                 mode="M45">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:AccountingSupplierParty/cac:Party/cac:ServiceProviderParty/cac:Party/cbc:EndpointID | cn:CreditNote/cac:AccountingSupplierParty/cac:Party/cac:ServiceProviderParty/cac:Party/cbc:EndpointID"/>
       <!--ASSERT -->
@@ -3046,7 +3107,7 @@
          <xsl:otherwise>
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl" test="string-length(.) le 125">
                <xsl:attribute name="id">BR-FR-25_EXT-FR-FE-121</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -3059,18 +3120,18 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M42"/>
+      <xsl:apply-templates select="*" mode="M45"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M42"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M42">
-      <xsl:apply-templates select="*" mode="M42"/>
+   <xsl:template match="text()" priority="-1" mode="M45"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M45">
+      <xsl:apply-templates select="*" mode="M45"/>
    </xsl:template>
    <!--PATTERN BR-FR-26BR-FR-26 — Longueur maximale des identifiants privés avec schemeID = 0224-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-26 — Longueur maximale des identifiants privés avec schemeID = 0224</svrl:text>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:AccountingSupplierParty/cac:Party/cac:PartyIdentification/cbc:ID[@schemeID='0224'] | cn:CreditNote/cac:AccountingSupplierParty/cac:Party/cac:PartyIdentification/cbc:ID[@schemeID='0224']"
                  priority="1001"
-                 mode="M43">
+                 mode="M46">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:AccountingSupplierParty/cac:Party/cac:PartyIdentification/cbc:ID[@schemeID='0224'] | cn:CreditNote/cac:AccountingSupplierParty/cac:Party/cac:PartyIdentification/cbc:ID[@schemeID='0224']"/>
       <!--ASSERT -->
@@ -3079,7 +3140,7 @@
          <xsl:otherwise>
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl" test="string-length(.) le 100">
                <xsl:attribute name="id">BR-FR-26_BT-29</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -3092,12 +3153,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M43"/>
+      <xsl:apply-templates select="*" mode="M46"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:AccountingCustomerParty/cac:Party/cac:PartyIdentification/cbc:ID[@schemeID='0224'] | cn:CreditNote/cac:AccountingCustomerParty/cac:Party/cac:PartyIdentification/cbc:ID[@schemeID='0224']"
                  priority="1000"
-                 mode="M43">
+                 mode="M46">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:AccountingCustomerParty/cac:Party/cac:PartyIdentification/cbc:ID[@schemeID='0224'] | cn:CreditNote/cac:AccountingCustomerParty/cac:Party/cac:PartyIdentification/cbc:ID[@schemeID='0224']"/>
       <!--ASSERT -->
@@ -3106,7 +3167,7 @@
          <xsl:otherwise>
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl" test="string-length(.) le 100">
                <xsl:attribute name="id">BR-FR-26_BT-46</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -3119,18 +3180,18 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M43"/>
+      <xsl:apply-templates select="*" mode="M46"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M43"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M43">
-      <xsl:apply-templates select="*" mode="M43"/>
+   <xsl:template match="text()" priority="-1" mode="M46"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M46">
+      <xsl:apply-templates select="*" mode="M46"/>
    </xsl:template>
    <!--PATTERN BR-FR-27BR-FR-27 — Validation du groupe Attribut d’article (BG-32)-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-27 — Validation du groupe Attribut d’article (BG-32)</svrl:text>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:Item/cac:AdditionalItemProperty | cn:CreditNote/cac:Item/cac:AdditionalItemProperty"
                  priority="1002"
-                 mode="M44">
+                 mode="M47">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:Item/cac:AdditionalItemProperty | cn:CreditNote/cac:Item/cac:AdditionalItemProperty"/>
       <!--ASSERT -->
@@ -3139,7 +3200,7 @@
          <xsl:otherwise>
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl" test="cbc:Name or cbc:NameCode">
                <xsl:attribute name="id">BR-FR-27_BG-32</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -3151,12 +3212,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M44"/>
+      <xsl:apply-templates select="*" mode="M47"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:Item/cac:AdditionalItemProperty/cbc:Name | cn:CreditNote/cac:Item/cac:AdditionalItemProperty/cbc:Name"
                  priority="1001"
-                 mode="M44">
+                 mode="M47">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:Item/cac:AdditionalItemProperty/cbc:Name | cn:CreditNote/cac:Item/cac:AdditionalItemProperty/cbc:Name"/>
       <!--ASSERT -->
@@ -3165,7 +3226,7 @@
          <xsl:otherwise>
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl" test="normalize-space(.) != ''">
                <xsl:attribute name="id">BR-FR-27_BT-160</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -3179,12 +3240,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M44"/>
+      <xsl:apply-templates select="*" mode="M47"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:Item/cac:AdditionalItemProperty/cbc:NameCode | cn:CreditNote/cac:Item/cac:AdditionalItemProperty/cbc:NameCode"
                  priority="1000"
-                 mode="M44">
+                 mode="M47">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:Item/cac:AdditionalItemProperty/cbc:NameCode | cn:CreditNote/cac:Item/cac:AdditionalItemProperty/cbc:NameCode"/>
       <!--ASSERT -->
@@ -3193,7 +3254,7 @@
          <xsl:otherwise>
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl" test="normalize-space(.) != ''">
                <xsl:attribute name="id">BR-FR-27_EXT-FR-FE-159</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -3207,133 +3268,57 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M44"/>
+      <xsl:apply-templates select="*" mode="M47"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M44"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M44">
-      <xsl:apply-templates select="*" mode="M44"/>
+   <xsl:template match="text()" priority="-1" mode="M47"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M47">
+      <xsl:apply-templates select="*" mode="M47"/>
    </xsl:template>
    <!--PATTERN BR-FR-28BR-FR-28 — Validation de la valeur d’attribut d’article (BG-32)-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-28 — Validation de la valeur d’attribut d’article (BG-32)</svrl:text>
    <!--RULE -->
-   <xsl:template match="ubl:Invoice/cac:Item/cac:AdditionalItemProperty | cn:CreditNote/cac:Item/cac:AdditionalItemProperty"
-                 priority="1003"
-                 mode="M45">
+   <xsl:template match="ubl:Invoice/cac:InvoiceLine/cac:Item/cac:AdditionalItemProperty | cn:CreditNote/cac:CreditNoteLine/cac:Item/cac:AdditionalItemProperty"
+                 priority="1000"
+                 mode="M48">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
-                       context="ubl:Invoice/cac:Item/cac:AdditionalItemProperty | cn:CreditNote/cac:Item/cac:AdditionalItemProperty"/>
+                       context="ubl:Invoice/cac:InvoiceLine/cac:Item/cac:AdditionalItemProperty | cn:CreditNote/cac:CreditNoteLine/cac:Item/cac:AdditionalItemProperty"/>
       <!--ASSERT -->
       <xsl:choose>
-         <xsl:when test="(cbc:Value or (cbc:ValueQuantity and cbc:ValueQuantity/@unitCode)) and not(cbc:Value or (cbc:ValueQuantity and cbc:ValueQuantity/@unitCode))"/>
+         <xsl:when test="(exists(cbc:Value) and not(exists(cbc:ValueQuantity))) or (not(exists(cbc:Value)) and (exists(cbc:ValueQuantity[@unitCode!=''])))"/>
          <xsl:otherwise>
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
-                                test="(cbc:Value or (cbc:ValueQuantity and cbc:ValueQuantity/@unitCode)) and not(cbc:Value or (cbc:ValueQuantity and cbc:ValueQuantity/@unitCode))">
-               <xsl:attribute name="id">BR-FR-28_BT-161</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+                                test="(exists(cbc:Value) and not(exists(cbc:ValueQuantity))) or (not(exists(cbc:Value)) and (exists(cbc:ValueQuantity[@unitCode!=''])))">
+               <xsl:attribute name="id">BR-FR-28-Value</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
                <svrl:text>
-        [BR-FR-28/BT-161] : Le groupe Attribut d’article (BG-32) doit contenir soit une valeur d’attribut (BT-161 : cbc:Value), soit une valeur d’attribut avec unité de mesure (EXT-FR-FE-160 : cbc:ValueQuantity) accompagnée de son unité (EXT-FR-FE-161 : @unitCode), et pas les deux.
-        Veuillez fournir une valeur d’attribut ou une valeur mesurée avec son unité et pas les deux.
+        [BR-FR-28] : La valeur d’attribut (cbc:Value) ou la valeur (cbc:ValueQuantity avec unité de mesure) doivent être présents, mais pas les deux
+        Valeur actuelle Value : "<xsl:text/>
+                  <xsl:value-of select="cbc:Value"/>
+                  <xsl:text/>", Valeur actuelle Value Quantity : "<xsl:text/>
+                  <xsl:value-of select="cbc:ValueQuantity"/>
+                  <xsl:text/>". unité de mesure : "<xsl:text/>
+                  <xsl:value-of select="cbc:ValueQuantity/@unitCode"/>
+                  <xsl:text/>"
+        Veuillez fournir une valeur d’attribut valide ou utiliser une Valeur avec unité de mesure.
       </svrl:text>
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M45"/>
+      <xsl:apply-templates select="*" mode="M48"/>
    </xsl:template>
-   <!--RULE -->
-   <xsl:template match="ubl:Invoice/cac:Item/cac:AdditionalItemProperty/cbc:Value | cn:CreditNote/cac:Item/cac:AdditionalItemProperty/cbc:Value"
-                 priority="1002"
-                 mode="M45">
-      <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
-                       context="ubl:Invoice/cac:Item/cac:AdditionalItemProperty/cbc:Value | cn:CreditNote/cac:Item/cac:AdditionalItemProperty/cbc:Value"/>
-      <!--ASSERT -->
-      <xsl:choose>
-         <xsl:when test="normalize-space(.) != ''"/>
-         <xsl:otherwise>
-            <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl" test="normalize-space(.) != ''">
-               <xsl:attribute name="id">BR-FR-28_Value</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
-               <xsl:attribute name="location">
-                  <xsl:apply-templates select="." mode="schematron-select-full-path"/>
-               </xsl:attribute>
-               <svrl:text>
-        [BR-FR-28/BT-161] : La valeur d’attribut (cbc:Value) ne doit pas être vide.
-        Valeur actuelle : "<xsl:text/>
-                  <xsl:value-of select="."/>
-                  <xsl:text/>".
-        Veuillez fournir une valeur d’attribut valide ou utiliser une mesure avec unité.
-      </svrl:text>
-            </svrl:failed-assert>
-         </xsl:otherwise>
-      </xsl:choose>
-      <xsl:apply-templates select="*" mode="M45"/>
-   </xsl:template>
-   <!--RULE -->
-   <xsl:template match="ubl:Invoice/cac:Item/cac:AdditionalItemProperty/cbc:ValueQuantity | cn:CreditNote/cac:Item/cac:AdditionalItemProperty/cbc:ValueQuantity"
-                 priority="1001"
-                 mode="M45">
-      <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
-                       context="ubl:Invoice/cac:Item/cac:AdditionalItemProperty/cbc:ValueQuantity | cn:CreditNote/cac:Item/cac:AdditionalItemProperty/cbc:ValueQuantity"/>
-      <!--ASSERT -->
-      <xsl:choose>
-         <xsl:when test="normalize-space(.) != ''"/>
-         <xsl:otherwise>
-            <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl" test="normalize-space(.) != ''">
-               <xsl:attribute name="id">BR-FR-28_ValueQuantity</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
-               <xsl:attribute name="location">
-                  <xsl:apply-templates select="." mode="schematron-select-full-path"/>
-               </xsl:attribute>
-               <svrl:text>
-        [BR-FR-28/EXT-FR-FE-160] : La valeur mesurée (cbc:ValueQuantity) ne doit pas être vide.
-        Valeur actuelle : "<xsl:text/>
-                  <xsl:value-of select="."/>
-                  <xsl:text/>".
-        Veuillez fournir une valeur mesurée valide accompagnée de son unité.
-      </svrl:text>
-            </svrl:failed-assert>
-         </xsl:otherwise>
-      </xsl:choose>
-      <xsl:apply-templates select="*" mode="M45"/>
-   </xsl:template>
-   <!--RULE -->
-   <xsl:template match="ubl:Invoice/cac:Item/cac:AdditionalItemProperty/cbc:ValueQuantity/@unitCode | cn:CreditNote/cac:Item/cac:AdditionalItemProperty/cbc:ValueQuantity/@unitCode"
-                 priority="1000"
-                 mode="M45">
-      <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
-                       context="ubl:Invoice/cac:Item/cac:AdditionalItemProperty/cbc:ValueQuantity/@unitCode | cn:CreditNote/cac:Item/cac:AdditionalItemProperty/cbc:ValueQuantity/@unitCode"/>
-      <!--ASSERT -->
-      <xsl:choose>
-         <xsl:when test="normalize-space(.) != ''"/>
-         <xsl:otherwise>
-            <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl" test="normalize-space(.) != ''">
-               <xsl:attribute name="id">BR-FR-28_UnitCode</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
-               <xsl:attribute name="location">
-                  <xsl:apply-templates select="." mode="schematron-select-full-path"/>
-               </xsl:attribute>
-               <svrl:text>
-        [BR-FR-28/EXT-FR-FE-161] : L’unité de mesure (@unitCode) ne doit pas être vide lorsqu’une valeur mesurée est fournie.
-        Valeur actuelle : "<xsl:text/>
-                  <xsl:value-of select="."/>
-                  <xsl:text/>".
-        Veuillez spécifier une unité de mesure conforme.
-      </svrl:text>
-            </svrl:failed-assert>
-         </xsl:otherwise>
-      </xsl:choose>
-   </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M45"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M45">
-      <xsl:apply-templates select="*" mode="M45"/>
+   <xsl:template match="text()" priority="-1" mode="M48"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M48">
+      <xsl:apply-templates select="*" mode="M48"/>
    </xsl:template>
    <!--PATTERN BR-FR-29BR-FR-29 — Vérification des identifiants d’objets facturés (BT-18)-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-29 — Vérification des identifiants d’objets facturés (BT-18)</svrl:text>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:AdditionalDocumentReference | cn:CreditNote/cac:AdditionalDocumentReference"
                  priority="1002"
-                 mode="M46">
+                 mode="M49">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:AdditionalDocumentReference | cn:CreditNote/cac:AdditionalDocumentReference"/>
       <!--ASSERT -->
@@ -3343,7 +3328,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="count(cbc:ID[@schemeID='AFL']) &lt;= 1 and count(cbc:ID[@schemeID='AVV']) &lt;= 1">
                <xsl:attribute name="id">BR-FR-29_BT-18</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -3359,12 +3344,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M46"/>
+      <xsl:apply-templates select="*" mode="M49"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:AdditionalDocumentReference/cbc:ID[@schemeID='AFL'] | cn:CreditNote/cac:AdditionalDocumentReference/cbc:ID[@schemeID='AFL']"
                  priority="1001"
-                 mode="M46">
+                 mode="M49">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:AdditionalDocumentReference/cbc:ID[@schemeID='AFL'] | cn:CreditNote/cac:AdditionalDocumentReference/cbc:ID[@schemeID='AFL']"/>
       <!--ASSERT -->
@@ -3373,7 +3358,7 @@
          <xsl:otherwise>
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl" test="normalize-space(.) != ''">
                <xsl:attribute name="id">BR-FR-29_AFL</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -3386,12 +3371,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M46"/>
+      <xsl:apply-templates select="*" mode="M49"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:AdditionalDocumentReference/cbc:ID[@schemeID='AVV'] | cn:CreditNote/cac:AdditionalDocumentReference/cbc:ID[@schemeID='AVV']"
                  priority="1000"
-                 mode="M46">
+                 mode="M49">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:AdditionalDocumentReference/cbc:ID[@schemeID='AVV'] | cn:CreditNote/cac:AdditionalDocumentReference/cbc:ID[@schemeID='AVV']"/>
       <!--ASSERT -->
@@ -3400,7 +3385,7 @@
          <xsl:otherwise>
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl" test="normalize-space(.) != ''">
                <xsl:attribute name="id">BR-FR-29_AVV</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -3413,18 +3398,18 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M46"/>
+      <xsl:apply-templates select="*" mode="M49"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M46"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M46">
-      <xsl:apply-templates select="*" mode="M46"/>
+   <xsl:template match="text()" priority="-1" mode="M49"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M49">
+      <xsl:apply-templates select="*" mode="M49"/>
    </xsl:template>
    <!--PATTERN BR-FR-30BR-FR-30 — Vérification des identifiants d’objets facturés à la ligne (BT-128)-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-30 — Vérification des identifiants d’objets facturés à la ligne (BT-128)</svrl:text>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:InvoiceLine/cac:DocumentReference | cn:CreditNote/cac:CreditNoteLine/cac:DocumentReference"
                  priority="1002"
-                 mode="M47">
+                 mode="M50">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:InvoiceLine/cac:DocumentReference | cn:CreditNote/cac:CreditNoteLine/cac:DocumentReference"/>
       <!--ASSERT -->
@@ -3434,7 +3419,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="count(cbc:ID[@schemeID='AFL']) &lt;= 1 and count(cbc:ID[@schemeID='AVV']) &lt;= 1">
                <xsl:attribute name="id">BR-FR-30_BT-128</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -3450,12 +3435,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M47"/>
+      <xsl:apply-templates select="*" mode="M50"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:InvoiceLine/cac:DocumentReference/cbc:ID[@schemeID='AFL'] | cn:CreditNote/cac:CreditNoteLine/cac:DocumentReference/cbc:ID[@schemeID='AFL']"
                  priority="1001"
-                 mode="M47">
+                 mode="M50">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:InvoiceLine/cac:DocumentReference/cbc:ID[@schemeID='AFL'] | cn:CreditNote/cac:CreditNoteLine/cac:DocumentReference/cbc:ID[@schemeID='AFL']"/>
       <!--ASSERT -->
@@ -3464,7 +3449,7 @@
          <xsl:otherwise>
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl" test="normalize-space(.) != ''">
                <xsl:attribute name="id">BR-FR-30_AFL</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -3477,12 +3462,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M47"/>
+      <xsl:apply-templates select="*" mode="M50"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:InvoiceLine/cac:DocumentReference/cbc:ID[@schemeID='AVV'] | cn:CreditNote/cac:CreditNoteLine/cac:DocumentReference/cbc:ID[@schemeID='AVV']"
                  priority="1000"
-                 mode="M47">
+                 mode="M50">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:InvoiceLine/cac:DocumentReference/cbc:ID[@schemeID='AVV'] | cn:CreditNote/cac:CreditNoteLine/cac:DocumentReference/cbc:ID[@schemeID='AVV']"/>
       <!--ASSERT -->
@@ -3491,7 +3476,7 @@
          <xsl:otherwise>
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl" test="normalize-space(.) != ''">
                <xsl:attribute name="id">BR-FR-30_AVV</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -3504,16 +3489,16 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M47"/>
+      <xsl:apply-templates select="*" mode="M50"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M47"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M47">
-      <xsl:apply-templates select="*" mode="M47"/>
+   <xsl:template match="text()" priority="-1" mode="M50"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M50">
+      <xsl:apply-templates select="*" mode="M50"/>
    </xsl:template>
    <!--PATTERN BR-FR-31BR-FR-31 — Note avec code sujet BAR : une seule valeur possible dans la liste-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-31 — Note avec code sujet BAR : une seule valeur possible dans la liste</svrl:text>
    <!--RULE -->
-   <xsl:template match="ubl:Invoice | cn:CreditNote" priority="1000" mode="M48">
+   <xsl:template match="ubl:Invoice | cn:CreditNote" priority="1000" mode="M51">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice | cn:CreditNote"/>
       <xsl:variable name="allBarNotes"
@@ -3524,23 +3509,25 @@
                     select="(string-length($allBarNotes) - string-length(replace($allBarNotes, 'BAR#B2BINT#', ''))) div 11"/>
       <xsl:variable name="countBarB2C"
                     select="(string-length($allBarNotes) - string-length(replace($allBarNotes, 'BAR#B2C#', ''))) div 8"/>
+      <xsl:variable name="countBarB2CINT"
+                    select="(string-length($allBarNotes) - string-length(replace($allBarNotes, 'BAR#B2CINT#', ''))) div 11"/>
       <xsl:variable name="countBarOUTOFSCOPE"
                     select="(string-length($allBarNotes) - string-length(replace($allBarNotes, 'BAR#OUTOFSCOPE#', ''))) div 15"/>
       <xsl:variable name="countBarARCHIVEONLY"
                     select="(string-length($allBarNotes) - string-length(replace($allBarNotes, 'BAR#ARCHIVEONLY#', ''))) div 16"/>
       <!--ASSERT -->
       <xsl:choose>
-         <xsl:when test="($countBarB2B + $countBarB2BINT + $countBarB2C + $countBarOUTOFSCOPE + $countBarARCHIVEONLY) &lt;= 1"/>
+         <xsl:when test="($countBarB2B + $countBarB2BINT + $countBarB2C + $countBarB2CINT + $countBarOUTOFSCOPE + $countBarARCHIVEONLY) &lt;= 1"/>
          <xsl:otherwise>
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
-                                test="($countBarB2B + $countBarB2BINT + $countBarB2C + $countBarOUTOFSCOPE + $countBarARCHIVEONLY) &lt;= 1">
+                                test="($countBarB2B + $countBarB2BINT + $countBarB2C + $countBarB2CINT + $countBarOUTOFSCOPE + $countBarARCHIVEONLY) &lt;= 1">
                <xsl:attribute name="id">BR-FR-30_BT-21</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
                <svrl:text>
-        [BR-FR-30/BT-21] : Lorsque plusieurs notes ont le code sujet « BAR » (BT-21), Il ne peut y avoir qu'une seule valeur associée (BT-22, contenu de la note) parmi l’une des suivantes : B2B, B2BINT, B2C, OUTOFSCOPE, ARCHIVEONLY.
+        [BR-FR-31/BT-21] : Lorsque plusieurs notes ont le code sujet « BAR » (BT-21), Il ne peut y avoir qu'une seule valeur associée (BT-22, contenu de la note) parmi l’une des suivantes : B2B, B2BINT, B2C, B2CINT, OUTOFSCOPE, ARCHIVEONLY.
         Valeur fournie : B2B : <xsl:text/>
                   <xsl:value-of select="$countBarB2B"/>
                   <xsl:text/> , B2BINT : <xsl:text/>
@@ -3556,16 +3543,72 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M48"/>
+      <xsl:apply-templates select="*" mode="M51"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M48"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M48">
-      <xsl:apply-templates select="*" mode="M48"/>
+   <xsl:template match="text()" priority="-1" mode="M51"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M51">
+      <xsl:apply-templates select="*" mode="M51"/>
+   </xsl:template>
+   <!--PATTERN BR-FR-32BR-FR-32 — Le SIREN contient exactement 9 chiffres -->
+   <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-32 — Le SIREN contient exactement 9 chiffres </svrl:text>
+   <!--RULE -->
+   <xsl:template match="//cac:PartyLegalEntity/cbc:CompanyID[@schemeID = '0002']"
+                 priority="1001"
+                 mode="M52">
+      <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
+                       context="//cac:PartyLegalEntity/cbc:CompanyID[@schemeID = '0002']"/>
+      <!--ASSERT -->
+      <xsl:choose>
+         <xsl:when test="matches(normalize-space(.), '^\d{9}$')"/>
+         <xsl:otherwise>
+            <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
+                                test="matches(normalize-space(.), '^\d{9}$')">
+               <xsl:attribute name="id">BR-FR-32-LEGALID</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
+               <xsl:attribute name="location">
+                  <xsl:apply-templates select="." mode="schematron-select-full-path"/>
+               </xsl:attribute>
+               <svrl:text>
+        [BR-FR-32/LEGALID] : Tout identifiant légal d'une Partie avec schemeID = '0002' DOIT être composé de 9 chiffres.
+      </svrl:text>
+            </svrl:failed-assert>
+         </xsl:otherwise>
+      </xsl:choose>
+      <xsl:apply-templates select="*" mode="M52"/>
+   </xsl:template>
+   <!--RULE -->
+   <xsl:template match="//cac:PartyIdentification/cbc:ID[@schemeID = '0002' or @schemeID = '0231']"
+                 priority="1000"
+                 mode="M52">
+      <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
+                       context="//cac:PartyIdentification/cbc:ID[@schemeID = '0002' or @schemeID = '0231']"/>
+      <!--ASSERT -->
+      <xsl:choose>
+         <xsl:when test="matches(normalize-space(.), '^\d{9}$')"/>
+         <xsl:otherwise>
+            <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
+                                test="matches(normalize-space(.), '^\d{9}$')">
+               <xsl:attribute name="id">BR-FR-32-ID</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
+               <xsl:attribute name="location">
+                  <xsl:apply-templates select="." mode="schematron-select-full-path"/>
+               </xsl:attribute>
+               <svrl:text>
+        [BR-FR-32/ID] : Tout identifiant d'une Partie avec schemeID = '0002' DOIT être composé de 9 chiffres.
+      </svrl:text>
+            </svrl:failed-assert>
+         </xsl:otherwise>
+      </xsl:choose>
+      <xsl:apply-templates select="*" mode="M52"/>
+   </xsl:template>
+   <xsl:template match="text()" priority="-1" mode="M52"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M52">
+      <xsl:apply-templates select="*" mode="M52"/>
    </xsl:template>
    <!--PATTERN BR-FR-CO-03BR-FR-CO-03 — Présence obligatoire du contrat et de la période de facturation si type de facture = 262 (Avoir Remise Globale)-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-CO-03 — Présence obligatoire du contrat et de la période de facturation si type de facture = 262 (Avoir Remise Globale)</svrl:text>
    <!--RULE -->
-   <xsl:template match="cn:CreditNote" priority="1000" mode="M49">
+   <xsl:template match="cn:CreditNote" priority="1000" mode="M53">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl" context="cn:CreditNote"/>
       <xsl:variable name="typeCode" select="cbc:CreditNoteTypeCode"/>
       <xsl:variable name="contractReference" select="cac:ContractDocumentReference/cbc:ID"/>
@@ -3578,7 +3621,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="not($typeCode = '262') or (string($contractReference) and string($billingPeriodStart) and string($billingPeriodEnd))">
                <xsl:attribute name="id">BR-FR-CO-03_BT-3</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -3597,16 +3640,16 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M49"/>
+      <xsl:apply-templates select="*" mode="M53"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M49"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M49">
-      <xsl:apply-templates select="*" mode="M49"/>
+   <xsl:template match="text()" priority="-1" mode="M53"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M53">
+      <xsl:apply-templates select="*" mode="M53"/>
    </xsl:template>
    <!--PATTERN BR-FR-CO-04BR-FR-CO-04 — Une seule référence à une facture antérieure obligatoire pour les factures rectificatives (BT-3)-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-CO-04 — Une seule référence à une facture antérieure obligatoire pour les factures rectificatives (BT-3)</svrl:text>
    <!--RULE -->
-   <xsl:template match="ubl:Invoice | cn:CreditNote" priority="1000" mode="M50">
+   <xsl:template match="ubl:Invoice | cn:CreditNote" priority="1000" mode="M54">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice | cn:CreditNote"/>
       <xsl:variable name="typeCode" select="cbc:InvoiceTypeCode"/>
@@ -3618,7 +3661,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="not($typeCode = '384' or $typeCode = '471' or $typeCode = '472' or $typeCode = '473') or count($references) = 1">
                <xsl:attribute name="id">BR-FR-CO-04_BT-3</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -3631,33 +3674,35 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M50"/>
+      <xsl:apply-templates select="*" mode="M54"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M50"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M50">
-      <xsl:apply-templates select="*" mode="M50"/>
+   <xsl:template match="text()" priority="-1" mode="M54"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M54">
+      <xsl:apply-templates select="*" mode="M54"/>
    </xsl:template>
    <!--PATTERN BR-FR-CO-05BR-FR-CO-05] — Référence obligatoire à une facture antérieure pour les avoirs (BT-3)-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-CO-05] — Référence obligatoire à une facture antérieure pour les avoirs (BT-3)</svrl:text>
    <!--RULE -->
-   <xsl:template match="cn:CreditNote" priority="1000" mode="M51">
+   <xsl:template match="cn:CreditNote" priority="1000" mode="M55">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl" context="cn:CreditNote"/>
+      <xsl:variable name="invoiceID" select="cbc:ID"/>
       <xsl:variable name="typeCode" select="cbc:CreditNoteTypeCode"/>
       <xsl:variable name="headerReferences"
                     select="cac:BillingReference/cac:InvoiceDocumentReference"/>
       <xsl:variable name="headerRefCount"
                     select="count($headerReferences[cbc:ID and cbc:IssueDate])"/>
-      <xsl:variable name="lineReferences"
-                    select="cac:CreditNoteLine/cac:BillingReference/cac:InvoiceDocumentReference[cbc:ID and cbc:IssueDate]"/>
-      <xsl:variable name="lineCount" select="count(cac:CreditNoteLine)"/>
+      <xsl:variable name="lineCount"
+                    select="count(cac:CreditNoteLine[not(cac:BillingReference/cac:InvoiceDocumentReference/cbc:ID = $invoiceID) or (cac:BillingReference[cac:InvoiceDocumentReference/cbc:ID = $invoiceID]/cac:InvoiceDocumentReference/cbc:DocumentStatusCode = 'DETAIL')])"/>
+      <xsl:variable name="lineRefCount"
+                    select="count(cac:CreditNoteLine[not(cac:BillingReference/cac:InvoiceDocumentReference/cbc:ID = $invoiceID) or (cac:BillingReference[cac:InvoiceDocumentReference/cbc:ID = $invoiceID]/cac:InvoiceDocumentReference/cbc:DocumentStatusCode = 'DETAIL')][cac:BillingReference[cac:InvoiceDocumentReference/cbc:ID != $invoiceID]/cac:InvoiceDocumentReference[cbc:ID and cbc:IssueDate]])"/>
       <!--ASSERT -->
       <xsl:choose>
-         <xsl:when test="not($typeCode = '261' or $typeCode = '381' or $typeCode = '396' or $typeCode = '502' or $typeCode = '503') or ($headerRefCount &gt; 0 or count($lineReferences) = $lineCount)"/>
+         <xsl:when test="not($typeCode = ('261', '381', '396', '502', '503')) or ($headerRefCount ge 1 or $lineRefCount = $lineCount)"/>
          <xsl:otherwise>
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
-                                test="not($typeCode = '261' or $typeCode = '381' or $typeCode = '396' or $typeCode = '502' or $typeCode = '503') or ($headerRefCount &gt; 0 or count($lineReferences) = $lineCount)">
+                                test="not($typeCode = ('261', '381', '396', '502', '503')) or ($headerRefCount ge 1 or $lineRefCount = $lineCount)">
                <xsl:attribute name="id">BR-FR-CO-05_BT-3</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -3668,20 +3713,29 @@
         Références entête trouvées : <xsl:text/>
                   <xsl:value-of select="$headerRefCount"/>
                   <xsl:text/>.
-      </svrl:text>
+        Nbline : <xsl:text/>
+                  <xsl:value-of select="$lineCount"/>
+                  <xsl:text/>
+        LineREF : <xsl:text/>
+                  <xsl:value-of select="$lineRefCount"/>
+                  <xsl:text/>
+        N° Facture : <xsl:text/>
+                  <xsl:value-of select="$invoiceID"/>
+                  <xsl:text/>
+               </svrl:text>
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M51"/>
+      <xsl:apply-templates select="*" mode="M55"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M51"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M51">
-      <xsl:apply-templates select="*" mode="M51"/>
+   <xsl:template match="text()" priority="-1" mode="M55"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M55">
+      <xsl:apply-templates select="*" mode="M55"/>
    </xsl:template>
    <!--PATTERN BR-FR-CO-07BR-FR-CO-07] — La date d’échéance (BT-9) doit être postérieure ou égale à la date de facture (BT-2), sauf cas particuliers-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-CO-07] — La date d’échéance (BT-9) doit être postérieure ou égale à la date de facture (BT-2), sauf cas particuliers</svrl:text>
    <!--RULE -->
-   <xsl:template match="ubl:Invoice | cn:CreditNote" priority="1000" mode="M52">
+   <xsl:template match="ubl:Invoice | cn:CreditNote" priority="1000" mode="M56">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice | cn:CreditNote"/>
       <xsl:variable name="typeCode" select="cbc:InvoiceTypeCode | cbc:CreditNoteTypeCode"/>
@@ -3695,7 +3749,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="not($dueDate and not($typeCode = '386' or $typeCode = '500' or $typeCode = '503' or $billingContext = 'B2' or $billingContext = 'S2' or $billingContext = 'M2') and $dueDate &lt; $issueDate)">
                <xsl:attribute name="id">BR-FR-CO-07_BT-9</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -3715,16 +3769,16 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M52"/>
+      <xsl:apply-templates select="*" mode="M56"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M52"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M52">
-      <xsl:apply-templates select="*" mode="M52"/>
+   <xsl:template match="text()" priority="-1" mode="M56"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M56">
+      <xsl:apply-templates select="*" mode="M56"/>
    </xsl:template>
    <!--PATTERN BR-FR-CO-08BR-FR-CO-08 — Incompatibilité entre cadre de facturation (BT-23) et type de facture (BT-3)-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-CO-08 — Incompatibilité entre cadre de facturation (BT-23) et type de facture (BT-3)</svrl:text>
    <!--RULE -->
-   <xsl:template match="ubl:Invoice | cn:CreditNote" priority="1000" mode="M53">
+   <xsl:template match="ubl:Invoice | cn:CreditNote" priority="1000" mode="M57">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice | cn:CreditNote"/>
       <xsl:variable name="typeCode" select="cbc:InvoiceTypeCode | cbc:CreditNoteTypeCode"/>
@@ -3736,7 +3790,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="not($billingContext = 'B4' or $billingContext = 'S4' or $billingContext = 'M4') or not($typeCode = '386' or $typeCode = '500' or $typeCode = '503')">
                <xsl:attribute name="id">BR-FR-CO-08_BT-23</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -3751,16 +3805,16 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M53"/>
+      <xsl:apply-templates select="*" mode="M57"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M53"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M53">
-      <xsl:apply-templates select="*" mode="M53"/>
+   <xsl:template match="text()" priority="-1" mode="M57"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M57">
+      <xsl:apply-templates select="*" mode="M57"/>
    </xsl:template>
    <!--PATTERN BR-FR-CO-09BR-FR-CO-09 — Contrôle des montants et de la date d’échéance pour les factures déjà payées (BT-23)-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-CO-09 — Contrôle des montants et de la date d’échéance pour les factures déjà payées (BT-23)</svrl:text>
    <!--RULE -->
-   <xsl:template match="ubl:Invoice | cn:CreditNote" priority="1000" mode="M54">
+   <xsl:template match="ubl:Invoice | cn:CreditNote" priority="1000" mode="M58">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice | cn:CreditNote"/>
       <xsl:variable name="billingContext" select="cbc:ProfileID"/>
@@ -3769,7 +3823,7 @@
                     select="cac:LegalMonetaryTotal/cbc:TaxInclusiveAmount"/>
       <xsl:variable name="payableAmount" select="cac:LegalMonetaryTotal/cbc:PayableAmount"/>
       <xsl:variable name="dueDate"
-                    select=" if (self::ubl:Invoice)          then cbc:DueDate         else if (self::cn:CreditNote)         then cac:PaymentMeans/cbc:PaymentDueDate         else ()"/>
+                    select="cbc:DueDate | cac:PaymentMeans/cbc:PaymentDueDate"/>
       <!--ASSERT -->
       <xsl:choose>
          <xsl:when test="not($billingContext = 'B2' or $billingContext = 'S2' or $billingContext = 'M2') or (number($paidAmount) = number($grandTotal))"/>
@@ -3777,7 +3831,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="not($billingContext = 'B2' or $billingContext = 'S2' or $billingContext = 'M2') or (number($paidAmount) = number($grandTotal))">
                <xsl:attribute name="id">BR-FR-CO-09_BT-23-1</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -3799,7 +3853,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="not($billingContext = 'B2' or $billingContext = 'S2' or $billingContext = 'M2') or (number($payableAmount) = 0)">
                <xsl:attribute name="id">BR-FR-CO-09_BT-23-2</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -3819,7 +3873,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="not($billingContext = 'B2' or $billingContext = 'S2' or $billingContext = 'M2') or string($dueDate)">
                <xsl:attribute name="id">BR-FR-CO-09_BT-23-3</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -3832,18 +3886,18 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M54"/>
+      <xsl:apply-templates select="*" mode="M58"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M54"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M54">
-      <xsl:apply-templates select="*" mode="M54"/>
+   <xsl:template match="text()" priority="-1" mode="M58"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M58">
+      <xsl:apply-templates select="*" mode="M58"/>
    </xsl:template>
    <!--PATTERN BR-FR-CO-10BR-FR-CO-10 — Vérification de la présence du schéma d’identifiant global (BT-29 et équivalents)-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-CO-10 — Vérification de la présence du schéma d’identifiant global (BT-29 et équivalents)</svrl:text>
    <!--RULE -->
    <xsl:template match="cac:AccountingSupplierParty/cac:Party"
                  priority="1009"
-                 mode="M55">
+                 mode="M59">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="cac:AccountingSupplierParty/cac:Party"/>
       <!--ASSERT -->
@@ -3853,7 +3907,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="empty(cac:PartyIdentification/cbc:ID[not(@schemeID)])">
                <xsl:attribute name="id">BR-FR-CO-10_BT-29-1</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -3870,7 +3924,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="count(distinct-values(cac:PartyIdentification/cbc:ID/@schemeID)) = count(cac:PartyIdentification/cbc:ID/@schemeID)">
                <xsl:attribute name="id">BR-FR-CO-10_BT-29-2</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -3880,12 +3934,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M55"/>
+      <xsl:apply-templates select="*" mode="M59"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="cac:AccountingCustomerParty/cac:Party"
                  priority="1008"
-                 mode="M55">
+                 mode="M59">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="cac:AccountingCustomerParty/cac:Party"/>
       <!--ASSERT -->
@@ -3895,7 +3949,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="empty(cac:PartyIdentification/cbc:ID[not(@schemeID)])">
                <xsl:attribute name="id">BR-FR-CO-10_BT-46-1</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -3912,7 +3966,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="count(distinct-values(cac:PartyIdentification/cbc:ID/@schemeID)) = count(cac:PartyIdentification/cbc:ID/@schemeID)">
                <xsl:attribute name="id">BR-FR-CO-10_BT-46-2</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -3922,10 +3976,10 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M55"/>
+      <xsl:apply-templates select="*" mode="M59"/>
    </xsl:template>
    <!--RULE -->
-   <xsl:template match="cac:PayeeParty" priority="1007" mode="M55">
+   <xsl:template match="cac:PayeeParty" priority="1007" mode="M59">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl" context="cac:PayeeParty"/>
       <!--ASSERT -->
       <xsl:choose>
@@ -3934,7 +3988,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="empty(cac:PartyIdentification/cbc:ID[not(@schemeID)])">
                <xsl:attribute name="id">BR-FR-CO-10_BT-60-1</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -3951,7 +4005,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="count(distinct-values(cac:PartyIdentification/cbc:ID/@schemeID)) = count(cac:PartyIdentification/cbc:ID/@schemeID)">
                <xsl:attribute name="id">BR-FR-CO-10_BT-60-2</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -3961,12 +4015,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M55"/>
+      <xsl:apply-templates select="*" mode="M59"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="cac:AccountingCustomerParty/cac:Party/cac:AgentParty"
                  priority="1006"
-                 mode="M55">
+                 mode="M59">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="cac:AccountingCustomerParty/cac:Party/cac:AgentParty"/>
       <!--ASSERT -->
@@ -3976,7 +4030,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="empty(cac:PartyIdentification/cbc:ID[not(@schemeID)])">
                <xsl:attribute name="id">BR-FR-CO-10_EXT-FR-FE-06-1</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -3993,7 +4047,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="count(distinct-values(cac:PartyIdentification/cbc:ID/@schemeID)) = count(cac:PartyIdentification/cbc:ID/@schemeID)">
                <xsl:attribute name="id">BR-FR-CO-10_EXT-FR-FE-06-2</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -4003,12 +4057,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M55"/>
+      <xsl:apply-templates select="*" mode="M59"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="cac:PaymentMeans/cac:PaymentMandate/cac:PayerParty"
                  priority="1005"
-                 mode="M55">
+                 mode="M59">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="cac:PaymentMeans/cac:PaymentMandate/cac:PayerParty"/>
       <!--ASSERT -->
@@ -4018,7 +4072,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="empty(cac:PartyIdentification/cbc:ID[not(@schemeID)])">
                <xsl:attribute name="id">BR-FR-CO-10_EXT-FR-FE-46-1</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -4035,7 +4089,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="count(distinct-values(cac:PartyIdentification/cbc:ID/@schemeID)) = count(cac:PartyIdentification/cbc:ID/@schemeID)">
                <xsl:attribute name="id">BR-FR-CO-10_EXT-FR-FE-46-2</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -4045,12 +4099,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M55"/>
+      <xsl:apply-templates select="*" mode="M59"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="cac:AccountingSupplierParty/cac:Party/cac:AgentParty"
                  priority="1004"
-                 mode="M55">
+                 mode="M59">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="cac:AccountingSupplierParty/cac:Party/cac:AgentParty"/>
       <!--ASSERT -->
@@ -4060,7 +4114,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="empty(cac:PartyIdentification/cbc:ID[not(@schemeID)])">
                <xsl:attribute name="id">BR-FR-CO-10_EXT-FR-FE-69-1</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -4077,7 +4131,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="count(distinct-values(cac:PartyIdentification/cbc:ID/@schemeID)) = count(cac:PartyIdentification/cbc:ID/@schemeID)">
                <xsl:attribute name="id">BR-FR-CO-10_EXT-FR-FE-69-2</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -4087,12 +4141,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M55"/>
+      <xsl:apply-templates select="*" mode="M59"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="cac:AccountingCustomerParty/cac:Party/cac:ServiceProviderParty/cac:Party"
                  priority="1003"
-                 mode="M55">
+                 mode="M59">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="cac:AccountingCustomerParty/cac:Party/cac:ServiceProviderParty/cac:Party"/>
       <!--ASSERT -->
@@ -4102,7 +4156,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="empty(cac:PartyIdentification/cbc:ID[not(@schemeID)])">
                <xsl:attribute name="id">BR-FR-CO-10_EXT-FR-FE-92-1</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -4119,7 +4173,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="count(distinct-values(cac:PartyIdentification/cbc:ID/@schemeID)) = count(cac:PartyIdentification/cbc:ID/@schemeID)">
                <xsl:attribute name="id">BR-FR-CO-10_EXT-FR-FE-92-2</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -4129,12 +4183,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M55"/>
+      <xsl:apply-templates select="*" mode="M59"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="cac:AccountingSupplierParty/cac:Party/cac:ServiceProviderParty/cac:Party"
                  priority="1002"
-                 mode="M55">
+                 mode="M59">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="cac:AccountingSupplierParty/cac:Party/cac:ServiceProviderParty/cac:Party"/>
       <!--ASSERT -->
@@ -4144,7 +4198,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="empty(cac:PartyIdentification/cbc:ID[not(@schemeID)])">
                <xsl:attribute name="id">BR-FR-CO-10_EXT-FR-FE-115-1</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -4161,7 +4215,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="count(distinct-values(cac:PartyIdentification/cbc:ID/@schemeID)) = count(cac:PartyIdentification/cbc:ID/@schemeID)">
                <xsl:attribute name="id">BR-FR-CO-10_EXT-FR-FE-115-2</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -4171,12 +4225,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M55"/>
+      <xsl:apply-templates select="*" mode="M59"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:Delivery/cac:DeliveryLocation | cn:CreditNote/cac:Delivery/cac:DeliveryLocation"
                  priority="1001"
-                 mode="M55">
+                 mode="M59">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:Delivery/cac:DeliveryLocation | cn:CreditNote/cac:Delivery/cac:DeliveryLocation"/>
       <!--ASSERT -->
@@ -4186,7 +4240,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="empty(cbc:ID[not(@schemeID)])">
                <xsl:attribute name="id">BR-FR-CO-10_BT-71-1</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -4203,7 +4257,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="count(distinct-values(cbc:ID/@schemeID)) = count(cbc:ID/@schemeID)">
                <xsl:attribute name="id">BR-FR-CO-10_BT-71-2</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -4213,12 +4267,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M55"/>
+      <xsl:apply-templates select="*" mode="M59"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:InvoiceLine/cac:Delivery/cac:DeliveryLocation | cn:CreditNote/cac:CreditNoteLine/cac:Delivery/cac:DeliveryLocation"
                  priority="1000"
-                 mode="M55">
+                 mode="M59">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:InvoiceLine/cac:Delivery/cac:DeliveryLocation | cn:CreditNote/cac:CreditNoteLine/cac:Delivery/cac:DeliveryLocation"/>
       <!--ASSERT -->
@@ -4228,12 +4282,12 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="empty(cbc:ID[not(@schemeID)])">
                <xsl:attribute name="id">BR-FR-CO-10_EXT-FR-FE-146-1</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
                <svrl:text>
-        BR-FR-CO-10/EXT-FR-FE-146] : Si l’identifiant global du livré à à la ligne (EXT-FR-FE-146 ) est renseigné, alors son schéma (EXT-FR-FE-147) doit également être renseigné.
+        BR-FR-CO-10/EXT-FR-FE-146] : Si l’identifiant global du livré à à la ligne (EXT-FR-FE-146 ) est renseigné, alors son schéma (EXT-FR-FE-148) doit également être renseigné.
       </svrl:text>
             </svrl:failed-assert>
          </xsl:otherwise>
@@ -4245,7 +4299,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="count(distinct-values(cbc:ID/@schemeID)) = count(cbc:ID/@schemeID)">
                <xsl:attribute name="id">BR-FR-CO-10_EXT-FR-FE-146-2</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -4255,16 +4309,16 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M55"/>
+      <xsl:apply-templates select="*" mode="M59"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M55"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M55">
-      <xsl:apply-templates select="*" mode="M55"/>
+   <xsl:template match="text()" priority="-1" mode="M59"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M59">
+      <xsl:apply-templates select="*" mode="M59"/>
    </xsl:template>
    <!--PATTERN BR-FR-CO-12BR-FR-CO-12 — Contrôle des devises et du montant de TVA en comptabilité si la facture n’est pas en EUR-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-CO-12 — Contrôle des devises et du montant de TVA en comptabilité si la facture n’est pas en EUR</svrl:text>
    <!--RULE -->
-   <xsl:template match="ubl:Invoice | cn:CreditNote" priority="1000" mode="M56">
+   <xsl:template match="ubl:Invoice | cn:CreditNote" priority="1000" mode="M60">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice | cn:CreditNote"/>
       <xsl:variable name="invoiceCurrency" select="cbc:DocumentCurrencyCode"/>
@@ -4278,7 +4332,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="not($invoiceCurrency != 'EUR') or ($accountingCurrency = 'EUR' and string($taxAmountValueEUR))">
                <xsl:attribute name="id">BR-FR-CO-12_BT-5</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -4298,16 +4352,16 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M56"/>
+      <xsl:apply-templates select="*" mode="M60"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M56"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M56">
-      <xsl:apply-templates select="*" mode="M56"/>
+   <xsl:template match="text()" priority="-1" mode="M60"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M60">
+      <xsl:apply-templates select="*" mode="M60"/>
    </xsl:template>
    <!--PATTERN BR-FR-CO-14BR-FR-CO-14 — Vérification de la note TXD pour les vendeurs membres d’un assujetti unique-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-CO-14 — Vérification de la note TXD pour les vendeurs membres d’un assujetti unique</svrl:text>
    <!--RULE -->
-   <xsl:template match="ubl:Invoice | cn:CreditNote" priority="1000" mode="M57">
+   <xsl:template match="ubl:Invoice | cn:CreditNote" priority="1000" mode="M61">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice | cn:CreditNote"/>
       <xsl:variable name="isAU"
@@ -4325,7 +4379,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="not($isAU) or $hasTXDNote">
                <xsl:attribute name="id">BR-FR-CO-14_BT-29-1</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -4338,16 +4392,16 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M57"/>
+      <xsl:apply-templates select="*" mode="M61"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M57"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M57">
-      <xsl:apply-templates select="*" mode="M57"/>
+   <xsl:template match="text()" priority="-1" mode="M61"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M61">
+      <xsl:apply-templates select="*" mode="M61"/>
    </xsl:template>
    <!--PATTERN BR-FR-CO-15BR-FR-CO-15 — Présence du représentant fiscal si le vendeur est membre d’un assujetti unique (BT-29-1 = 0231)-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-CO-15 — Présence du représentant fiscal si le vendeur est membre d’un assujetti unique (BT-29-1 = 0231)</svrl:text>
    <!--RULE -->
-   <xsl:template match="ubl:Invoice | cn:CreditNote" priority="1000" mode="M58">
+   <xsl:template match="ubl:Invoice | cn:CreditNote" priority="1000" mode="M62">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice | cn:CreditNote"/>
       <xsl:variable name="isAU"
@@ -4361,7 +4415,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="not($isAU) or (exists($fiscalRep) and string($fiscalRepVAT))">
                <xsl:attribute name="id">BR-FR-CO-15_BT-29-1</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -4376,18 +4430,18 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M58"/>
+      <xsl:apply-templates select="*" mode="M62"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M58"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M58">
-      <xsl:apply-templates select="*" mode="M58"/>
+   <xsl:template match="text()" priority="-1" mode="M62"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M62">
+      <xsl:apply-templates select="*" mode="M62"/>
    </xsl:template>
    <!--PATTERN BR-FR-DEC-01BR-FR-DEC-01 — Format des montants numériques (max 19 caractères, 2 décimales, séparateur « . »)-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-DEC-01 — Format des montants numériques (max 19 caractères, 2 décimales, séparateur « . »)</svrl:text>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:AllowanceCharge/cbc:BaseAmount | cn:CreditNote/cac:AllowanceCharge/cbc:BaseAmount"
                  priority="1016"
-                 mode="M59">
+                 mode="M63">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:AllowanceCharge/cbc:BaseAmount | cn:CreditNote/cac:AllowanceCharge/cbc:BaseAmount"/>
       <xsl:variable name="amount" select="normalize-space(.)"/>
@@ -4398,7 +4452,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-decimal-19-2($amount)">
                <xsl:attribute name="id">BR-FR-DEC-01_BT-93_BT-100</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -4410,12 +4464,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M59"/>
+      <xsl:apply-templates select="*" mode="M63"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:AllowanceCharge/cbc:Amount | cn:CreditNote/cac:AllowanceCharge/cbc:Amount"
                  priority="1015"
-                 mode="M59">
+                 mode="M63">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:AllowanceCharge/cbc:Amount | cn:CreditNote/cac:AllowanceCharge/cbc:Amount"/>
       <xsl:variable name="amount" select="normalize-space(.)"/>
@@ -4426,7 +4480,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-decimal-19-2($amount)">
                <xsl:attribute name="id">BR-FR-DEC-01_BT-92_BT-99</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -4438,12 +4492,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M59"/>
+      <xsl:apply-templates select="*" mode="M63"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="cac:LegalMonetaryTotal/cbc:LineExtensionAmount"
                  priority="1014"
-                 mode="M59">
+                 mode="M63">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="cac:LegalMonetaryTotal/cbc:LineExtensionAmount"/>
       <xsl:variable name="amount" select="normalize-space(.)"/>
@@ -4454,7 +4508,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-decimal-19-2($amount)">
                <xsl:attribute name="id">BR-FR-DEC-01_BT-106</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -4466,12 +4520,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M59"/>
+      <xsl:apply-templates select="*" mode="M63"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="cac:LegalMonetaryTotal/cbc:AllowanceTotalAmount"
                  priority="1013"
-                 mode="M59">
+                 mode="M63">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="cac:LegalMonetaryTotal/cbc:AllowanceTotalAmount"/>
       <xsl:variable name="amount" select="normalize-space(.)"/>
@@ -4482,7 +4536,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-decimal-19-2($amount)">
                <xsl:attribute name="id">BR-FR-DEC-01_BT-107</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -4494,12 +4548,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M59"/>
+      <xsl:apply-templates select="*" mode="M63"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="cac:LegalMonetaryTotal/cbc:ChargeTotalAmount"
                  priority="1012"
-                 mode="M59">
+                 mode="M63">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="cac:LegalMonetaryTotal/cbc:ChargeTotalAmount"/>
       <xsl:variable name="amount" select="normalize-space(.)"/>
@@ -4510,7 +4564,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-decimal-19-2($amount)">
                <xsl:attribute name="id">BR-FR-DEC-01_BT-108</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -4522,12 +4576,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M59"/>
+      <xsl:apply-templates select="*" mode="M63"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="cac:LegalMonetaryTotal/cbc:TaxExclusiveAmount"
                  priority="1011"
-                 mode="M59">
+                 mode="M63">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="cac:LegalMonetaryTotal/cbc:TaxExclusiveAmount"/>
       <xsl:variable name="amount" select="normalize-space(.)"/>
@@ -4538,7 +4592,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-decimal-19-2($amount)">
                <xsl:attribute name="id">BR-FR-DEC-01_BT-109</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -4550,10 +4604,10 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M59"/>
+      <xsl:apply-templates select="*" mode="M63"/>
    </xsl:template>
    <!--RULE -->
-   <xsl:template match="cac:TaxTotal/cbc:TaxAmount" priority="1010" mode="M59">
+   <xsl:template match="cac:TaxTotal/cbc:TaxAmount" priority="1010" mode="M63">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="cac:TaxTotal/cbc:TaxAmount"/>
       <xsl:variable name="amount" select="normalize-space(.)"/>
@@ -4564,7 +4618,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-decimal-19-2($amount)">
                <xsl:attribute name="id">BR-FR-DEC-01_BT-110</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -4576,10 +4630,10 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M59"/>
+      <xsl:apply-templates select="*" mode="M63"/>
    </xsl:template>
    <!--RULE -->
-   <xsl:template match="cac:TaxTotal/cbc:TaxAmount" priority="1009" mode="M59">
+   <xsl:template match="cac:TaxTotal/cbc:TaxAmount" priority="1009" mode="M63">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="cac:TaxTotal/cbc:TaxAmount"/>
       <xsl:variable name="amount" select="normalize-space(.)"/>
@@ -4590,7 +4644,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-decimal-19-2($amount)">
                <xsl:attribute name="id">BR-FR-DEC-01_BT-111</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -4602,12 +4656,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M59"/>
+      <xsl:apply-templates select="*" mode="M63"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="cac:LegalMonetaryTotal/cbc:TaxInclusiveAmount"
                  priority="1008"
-                 mode="M59">
+                 mode="M63">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="cac:LegalMonetaryTotal/cbc:TaxInclusiveAmount"/>
       <xsl:variable name="amount" select="normalize-space(.)"/>
@@ -4618,7 +4672,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-decimal-19-2($amount)">
                <xsl:attribute name="id">BR-FR-DEC-01_BT-112</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -4630,12 +4684,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M59"/>
+      <xsl:apply-templates select="*" mode="M63"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="cac:LegalMonetaryTotal/cbc:PrepaidAmount"
                  priority="1007"
-                 mode="M59">
+                 mode="M63">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="cac:LegalMonetaryTotal/cbc:PrepaidAmount"/>
       <xsl:variable name="amount" select="normalize-space(.)"/>
@@ -4646,7 +4700,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-decimal-19-2($amount)">
                <xsl:attribute name="id">BR-FR-DEC-01_BT-113</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -4658,12 +4712,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M59"/>
+      <xsl:apply-templates select="*" mode="M63"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="cac:LegalMonetaryTotal/cbc:PayableRoundingAmount"
                  priority="1006"
-                 mode="M59">
+                 mode="M63">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="cac:LegalMonetaryTotal/cbc:PayableRoundingAmount"/>
       <xsl:variable name="amount" select="normalize-space(.)"/>
@@ -4674,7 +4728,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-decimal-19-2($amount)">
                <xsl:attribute name="id">BR-FR-DEC-01_BT-114</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -4686,12 +4740,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M59"/>
+      <xsl:apply-templates select="*" mode="M63"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="cac:LegalMonetaryTotal/cbc:PayableAmount"
                  priority="1005"
-                 mode="M59">
+                 mode="M63">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="cac:LegalMonetaryTotal/cbc:PayableAmount"/>
       <xsl:variable name="amount" select="normalize-space(.)"/>
@@ -4702,7 +4756,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-decimal-19-2($amount)">
                <xsl:attribute name="id">BR-FR-DEC-01_BT-115</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -4714,12 +4768,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M59"/>
+      <xsl:apply-templates select="*" mode="M63"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="cac:TaxTotal/cac:TaxSubtotal/cbc:TaxableAmount"
                  priority="1004"
-                 mode="M59">
+                 mode="M63">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="cac:TaxTotal/cac:TaxSubtotal/cbc:TaxableAmount"/>
       <xsl:variable name="amount" select="normalize-space(.)"/>
@@ -4730,7 +4784,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-decimal-19-2($amount)">
                <xsl:attribute name="id">BR-FR-DEC-01_BT-116</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -4742,12 +4796,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M59"/>
+      <xsl:apply-templates select="*" mode="M63"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="cac:TaxTotal/cac:TaxSubtotal/cbc:TaxAmount"
                  priority="1003"
-                 mode="M59">
+                 mode="M63">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="cac:TaxTotal/cac:TaxSubtotal/cbc:TaxAmount"/>
       <xsl:variable name="amount" select="normalize-space(.)"/>
@@ -4758,7 +4812,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-decimal-19-2($amount)">
                <xsl:attribute name="id">BR-FR-DEC-01_BT-117</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -4770,12 +4824,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M59"/>
+      <xsl:apply-templates select="*" mode="M63"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:InvoiceLine/cbc:LineExtensionAmount | cn:CreditNote/cac:CreditNoteLine/cbc:LineExtensionAmount"
                  priority="1002"
-                 mode="M59">
+                 mode="M63">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:InvoiceLine/cbc:LineExtensionAmount | cn:CreditNote/cac:CreditNoteLine/cbc:LineExtensionAmount"/>
       <xsl:variable name="amount" select="normalize-space(.)"/>
@@ -4786,7 +4840,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-decimal-19-2($amount)">
                <xsl:attribute name="id">BR-FR-DEC-01_BT-131</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -4798,12 +4852,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M59"/>
+      <xsl:apply-templates select="*" mode="M63"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:InvoiceLine/cac:AllowanceCharge/cbc:Amount | cn:CreditNote/cac:CreditNoteLine/cac:AllowanceCharge/cbc:Amount"
                  priority="1001"
-                 mode="M59">
+                 mode="M63">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:InvoiceLine/cac:AllowanceCharge/cbc:Amount | cn:CreditNote/cac:CreditNoteLine/cac:AllowanceCharge/cbc:Amount"/>
       <xsl:variable name="amount" select="normalize-space(.)"/>
@@ -4814,7 +4868,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-decimal-19-2($amount)">
                <xsl:attribute name="id">BR-FR-DEC-01_BT-136_BT-141</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -4826,12 +4880,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M59"/>
+      <xsl:apply-templates select="*" mode="M63"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:InvoiceLine/cac:AllowanceCharge/cbc:BaseAmount | cn:CreditNote/cac:CreditNoteLine/cac:AllowanceCharge/cbc:BaseAmount"
                  priority="1000"
-                 mode="M59">
+                 mode="M63">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:InvoiceLine/cac:AllowanceCharge/cbc:BaseAmount | cn:CreditNote/cac:CreditNoteLine/cac:AllowanceCharge/cbc:BaseAmount"/>
       <xsl:variable name="amount" select="normalize-space(.)"/>
@@ -4842,7 +4896,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-decimal-19-2($amount)">
                <xsl:attribute name="id">BR-FR-DEC-01_BT-137_BT-142</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -4854,18 +4908,18 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M59"/>
+      <xsl:apply-templates select="*" mode="M63"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M59"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M59">
-      <xsl:apply-templates select="*" mode="M59"/>
+   <xsl:template match="text()" priority="-1" mode="M63"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M63">
+      <xsl:apply-templates select="*" mode="M63"/>
    </xsl:template>
    <!--PATTERN BR-FR-DEC-02BR-FR-DEC-02 — Format des quantités numériques (max 19 caractères, 4 décimales, séparateur « . »)-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-DEC-02 — Format des quantités numériques (max 19 caractères, 4 décimales, séparateur « . »)</svrl:text>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:InvoiceLine/cbc:InvoicedQuantity | cn:CreditNote/cac:CreditNoteLine/cbc:CreditedQuantity"
                  priority="1001"
-                 mode="M60">
+                 mode="M64">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:InvoiceLine/cbc:InvoicedQuantity | cn:CreditNote/cac:CreditNoteLine/cbc:CreditedQuantity"/>
       <xsl:variable name="quantity" select="normalize-space(.)"/>
@@ -4876,7 +4930,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-decimal-19-4($quantity)">
                <xsl:attribute name="id">BR-FR-DEC-02_BT-129</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -4892,12 +4946,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M60"/>
+      <xsl:apply-templates select="*" mode="M64"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:InvoiceLine | cn:CreditNote/cac:CreditNoteLine"
                  priority="1000"
-                 mode="M60">
+                 mode="M64">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:InvoiceLine | cn:CreditNote/cac:CreditNoteLine"/>
       <xsl:variable name="quantity" select="normalize-space(cac:Price/cbc:BaseQuantity)"/>
@@ -4908,7 +4962,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="not($quantity) or custom:is-valid-decimal-19-4($quantity)">
                <xsl:attribute name="id">BR-FR-DEC-02_BT-149</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -4924,29 +4978,29 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M60"/>
+      <xsl:apply-templates select="*" mode="M64"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M60"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M60">
-      <xsl:apply-templates select="*" mode="M60"/>
+   <xsl:template match="text()" priority="-1" mode="M64"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M64">
+      <xsl:apply-templates select="*" mode="M64"/>
    </xsl:template>
    <!--PATTERN BR-FR-DEC-03BR-FR-DEC-03 — Format des montants positifs (max 19 caractères, 6 décimales, séparateur « . »)-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-DEC-03 — Format des montants positifs (max 19 caractères, 6 décimales, séparateur « . »)</svrl:text>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:InvoiceLine | cn:CreditNote/cac:CreditNoteLine"
                  priority="1002"
-                 mode="M61">
+                 mode="M65">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:InvoiceLine | cn:CreditNote/cac:CreditNoteLine"/>
       <xsl:variable name="amount" select="normalize-space(cac:Price/cbc:PriceAmount)"/>
       <!--ASSERT -->
       <xsl:choose>
-         <xsl:when test="not($amount) or custom:is-valid-decimal-19-6-positive($amount)"/>
+         <xsl:when test="not($amount) or (custom:isSpecialContractBD(/ubl:Invoice|/cn:CreditNote) and custom:is-valid-decimal-19-6($amount)) or (not(custom:isSpecialContractBD(/ubl:Invoice|/cn:CreditNote)) and custom:is-valid-decimal-19-6-positive($amount))"/>
          <xsl:otherwise>
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
-                                test="not($amount) or custom:is-valid-decimal-19-6-positive($amount)">
+                                test="not($amount) or (custom:isSpecialContractBD(/ubl:Invoice|/cn:CreditNote) and custom:is-valid-decimal-19-6($amount)) or (not(custom:isSpecialContractBD(/ubl:Invoice|/cn:CreditNote)) and custom:is-valid-decimal-19-6-positive($amount))">
                <xsl:attribute name="id">BR-FR-DEC-03_BT-146</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -4962,23 +5016,23 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M61"/>
+      <xsl:apply-templates select="*" mode="M65"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:InvoiceLine/cac:Price/cac:AllowanceCharge | cn:CreditNote/cac:CreditNoteLine/cac:Price/cac:AllowanceCharge"
                  priority="1001"
-                 mode="M61">
+                 mode="M65">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:InvoiceLine/cac:Price/cac:AllowanceCharge | cn:CreditNote/cac:CreditNoteLine/cac:Price/cac:AllowanceCharge"/>
       <xsl:variable name="amount" select="normalize-space(cbc:Amount)"/>
       <!--ASSERT -->
       <xsl:choose>
-         <xsl:when test="not($amount) or custom:is-valid-decimal-19-6-positive($amount)"/>
+         <xsl:when test="not($amount) or (custom:isSpecialContractBD(/ubl:Invoice|/cn:CreditNote) and custom:is-valid-decimal-19-6($amount)) or (not(custom:isSpecialContractBD(/ubl:Invoice|/cn:CreditNote)) and custom:is-valid-decimal-19-6-positive($amount))"/>
          <xsl:otherwise>
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
-                                test="not($amount) or custom:is-valid-decimal-19-6-positive($amount)">
+                                test="not($amount) or (custom:isSpecialContractBD(/ubl:Invoice|/cn:CreditNote) and custom:is-valid-decimal-19-6($amount)) or (not(custom:isSpecialContractBD(/ubl:Invoice|/cn:CreditNote)) and custom:is-valid-decimal-19-6-positive($amount))">
                <xsl:attribute name="id">BR-FR-DEC-03_BT-147</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -4994,23 +5048,23 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M61"/>
+      <xsl:apply-templates select="*" mode="M65"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:InvoiceLine/cac:Price/cac:AllowanceCharge/cbc:BaseAmount | cn:CreditNote/cac:CreditNoteLine/cac:Price/cac:AllowanceCharge/cbc:BaseAmount"
                  priority="1000"
-                 mode="M61">
+                 mode="M65">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:InvoiceLine/cac:Price/cac:AllowanceCharge/cbc:BaseAmount | cn:CreditNote/cac:CreditNoteLine/cac:Price/cac:AllowanceCharge/cbc:BaseAmount"/>
       <xsl:variable name="amount" select="normalize-space(.)"/>
       <!--ASSERT -->
       <xsl:choose>
-         <xsl:when test="not($amount) or custom:is-valid-decimal-19-6-positive($amount)"/>
+         <xsl:when test="not($amount) or (custom:isSpecialContractBD(/ubl:Invoice|/cn:CreditNote) and custom:is-valid-decimal-19-6($amount)) or (not(custom:isSpecialContractBD(/ubl:Invoice|/cn:CreditNote)) and custom:is-valid-decimal-19-6-positive($amount))"/>
          <xsl:otherwise>
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
-                                test="not($amount) or custom:is-valid-decimal-19-6-positive($amount)">
+                                test="not($amount) or (custom:isSpecialContractBD(/ubl:Invoice|/cn:CreditNote) and custom:is-valid-decimal-19-6($amount)) or (not(custom:isSpecialContractBD(/ubl:Invoice|/cn:CreditNote)) and custom:is-valid-decimal-19-6-positive($amount))">
                <xsl:attribute name="id">BR-FR-DEC-03_BT-148</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -5026,18 +5080,18 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M61"/>
+      <xsl:apply-templates select="*" mode="M65"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M61"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M61">
-      <xsl:apply-templates select="*" mode="M61"/>
+   <xsl:template match="text()" priority="-1" mode="M65"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M65">
+      <xsl:apply-templates select="*" mode="M65"/>
    </xsl:template>
    <!--PATTERN BR-FR-DEC-04BR-FR-DEC-04 — Format des taux de TVA (max 4 caractères, 2 décimales, séparateur « . »)-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-DEC-04 — Format des taux de TVA (max 4 caractères, 2 décimales, séparateur « . »)</svrl:text>
    <!--RULE -->
    <xsl:template match="cac:AllowanceCharge/cac:TaxCategory/cbc:Percent"
                  priority="1002"
-                 mode="M62">
+                 mode="M66">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="cac:AllowanceCharge/cac:TaxCategory/cbc:Percent"/>
       <xsl:variable name="rate" select="normalize-space(.)"/>
@@ -5048,7 +5102,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-percent-4-2-positive($rate)">
                <xsl:attribute name="id">BR-FR-DEC-04_BT-96_BT-103</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -5064,12 +5118,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M62"/>
+      <xsl:apply-templates select="*" mode="M66"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="cac:TaxTotal/cac:TaxSubtotal/cac:TaxCategory/cbc:Percent"
                  priority="1001"
-                 mode="M62">
+                 mode="M66">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="cac:TaxTotal/cac:TaxSubtotal/cac:TaxCategory/cbc:Percent"/>
       <xsl:variable name="rate" select="normalize-space(.)"/>
@@ -5080,7 +5134,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-percent-4-2-positive($rate)">
                <xsl:attribute name="id">BR-FR-DEC-04_BT-119</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -5096,12 +5150,12 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M62"/>
+      <xsl:apply-templates select="*" mode="M66"/>
    </xsl:template>
    <!--RULE -->
    <xsl:template match="cac:Item/cac:ClassifiedTaxCategory/cbc:Percent"
                  priority="1000"
-                 mode="M62">
+                 mode="M66">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="cac:Item/cac:ClassifiedTaxCategory/cbc:Percent"/>
       <xsl:variable name="rate" select="normalize-space(.)"/>
@@ -5112,7 +5166,7 @@
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                                 test="custom:is-valid-percent-4-2-positive($rate)">
                <xsl:attribute name="id">BR-FR-DEC-04_BT-152</xsl:attribute>
-               <xsl:attribute name="flag">warning</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
@@ -5128,19 +5182,19 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M62"/>
+      <xsl:apply-templates select="*" mode="M66"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M62"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M62">
-      <xsl:apply-templates select="*" mode="M62"/>
+   <xsl:template match="text()" priority="-1" mode="M66"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M66">
+      <xsl:apply-templates select="*" mode="M66"/>
    </xsl:template>
-   <!--PATTERN BR-FR-MV-01BR-FR-MV-01 — lorsque le cadre de facturation est S8, B8 ou M8, Vérification du sous-type de ligne  - BR-FR-MV-02 — Vérification de la présence d'une ligne GROUP sans parent -->
+   <!--PATTERN BR-FR-MV-01BR-FR-MV-01 — lorsque le cadre de facturation est S8, B8, M8 ou S9, B9, M9, Vérification du sous-type de ligne  - BR-FR-MV-02 — Vérification de la présence d'une ligne GROUP sans parent -->
    <xsl:variable name="invoiceID" select="(ubl:Invoice|/cn:CreditNote)/cbc:ID"/>
-   <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-MV-01 — lorsque le cadre de facturation est S8, B8 ou M8, Vérification du sous-type de ligne  - BR-FR-MV-02 — Vérification de la présence d'une ligne GROUP sans parent </svrl:text>
+   <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-MV-01 — lorsque le cadre de facturation est S8, B8, M8 ou S9, B9, M9, Vérification du sous-type de ligne  - BR-FR-MV-02 — Vérification de la présence d'une ligne GROUP sans parent </svrl:text>
    <!--RULE -->
    <xsl:template match="cac:InvoiceLine|cac:CreditNoteLine"
                  priority="1000"
-                 mode="M63">
+                 mode="M67">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="cac:InvoiceLine|cac:CreditNoteLine"/>
       <!--ASSERT -->
@@ -5155,7 +5209,7 @@
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
                <svrl:text>
-        [BR-FR-MV-01/EXT-FR-FE-163] : Lorsque le cadre de facturation (BT-23) est S8, B8 ou M8, chaque ligne (BG-25) doit contenir un sous-type de ligne EXT-FR-FE-163. Cadre de facturation "<xsl:text/>
+        [BR-FR-MV-01/EXT-FR-FE-163] : Lorsque le cadre de facturation (BT-23) est S8, B8, M8 ou S9, B9, M9, chaque ligne (BG-25) doit contenir un sous-type de ligne EXT-FR-FE-163. Cadre de facturation "<xsl:text/>
                   <xsl:value-of select="../cbc:ProfileID"/>
                   <xsl:text/>", ligne "<xsl:text/>
                   <xsl:value-of select="cbc:ID"/>
@@ -5169,24 +5223,24 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M63"/>
+      <xsl:apply-templates select="*" mode="M67"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M63"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M63">
-      <xsl:apply-templates select="*" mode="M63"/>
+   <xsl:template match="text()" priority="-1" mode="M67"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M67">
+      <xsl:apply-templates select="*" mode="M67"/>
    </xsl:template>
    <!--PATTERN BR-FR-MV-02BR-FR-MV-02 — lorsque le cadre de facturation est S8, B8 ou M8, Vérification de la présence d'une ligne GROUP sans parent -->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-MV-02 — lorsque le cadre de facturation est S8, B8 ou M8, Vérification de la présence d'une ligne GROUP sans parent </svrl:text>
    <!--RULE -->
-   <xsl:template match="ubl:Invoice|/cn:CreditNote" priority="1000" mode="M64">
+   <xsl:template match="ubl:Invoice|/cn:CreditNote" priority="1000" mode="M68">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice|/cn:CreditNote"/>
       <!--ASSERT -->
       <xsl:choose>
-         <xsl:when test="not(custom:isSpecialContract(/ubl:Invoice|/cn:CreditNote))          or (count((cac:InvoiceLine|cac:CreditNoteLine)/cac:BillingReference[(cac:InvoiceDocumentReference/cbc:ID = $invoiceID) and (cac:InvoiceDocumentReference/cbc:DocumentStatusCode = 'GROUP') and not(cac:BillingReferenceLine/cbc:ID)]) &gt;= 1)"/>
+         <xsl:when test="not(custom:isSpecialContractMV(/ubl:Invoice|/cn:CreditNote))          or (count((cac:InvoiceLine|cac:CreditNoteLine)/cac:BillingReference[(cac:InvoiceDocumentReference/cbc:ID = $invoiceID) and (cac:InvoiceDocumentReference/cbc:DocumentStatusCode = 'GROUP') and not(cac:BillingReferenceLine/cbc:ID)]) &gt;= 1)"/>
          <xsl:otherwise>
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
-                                test="not(custom:isSpecialContract(/ubl:Invoice|/cn:CreditNote)) or (count((cac:InvoiceLine|cac:CreditNoteLine)/cac:BillingReference[(cac:InvoiceDocumentReference/cbc:ID = $invoiceID) and (cac:InvoiceDocumentReference/cbc:DocumentStatusCode = 'GROUP') and not(cac:BillingReferenceLine/cbc:ID)]) &gt;= 1)">
+                                test="not(custom:isSpecialContractMV(/ubl:Invoice|/cn:CreditNote)) or (count((cac:InvoiceLine|cac:CreditNoteLine)/cac:BillingReference[(cac:InvoiceDocumentReference/cbc:ID = $invoiceID) and (cac:InvoiceDocumentReference/cbc:DocumentStatusCode = 'GROUP') and not(cac:BillingReferenceLine/cbc:ID)]) &gt;= 1)">
                <xsl:attribute name="id">BR-FR-MV-02_EXT-FR-FE-163</xsl:attribute>
                <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
@@ -5199,18 +5253,90 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M64"/>
+      <xsl:apply-templates select="*" mode="M68"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M64"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M64">
-      <xsl:apply-templates select="*" mode="M64"/>
+   <xsl:template match="text()" priority="-1" mode="M68"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M68">
+      <xsl:apply-templates select="*" mode="M68"/>
    </xsl:template>
-   <!--PATTERN BR-FR-MV-03BR-FR-MV-03 — Vérification des données obligatoires pour les lignes GROUP sans parent lorsque le cadre de facturation est S8, B8 ou M8-->
-   <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-MV-03 — Vérification des données obligatoires pour les lignes GROUP sans parent lorsque le cadre de facturation est S8, B8 ou M8</svrl:text>
+   <!--PATTERN BR-FR-BD-02-->
+
+   <!--RULE -->
+   <xsl:template match="ubl:Invoice|/cn:CreditNote" priority="1000" mode="M69">
+      <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
+                       context="ubl:Invoice|/cn:CreditNote"/>
+      <!--ASSERT -->
+      <xsl:choose>
+         <xsl:when test="not(custom:isSpecialContractBD(/ubl:Invoice|/cn:CreditNote))          or (count((cac:InvoiceLine|cac:CreditNoteLine)/cac:BillingReference[(cac:InvoiceDocumentReference/cbc:ID = $invoiceID) and (cac:InvoiceDocumentReference/cbc:DocumentStatusCode = 'GROUP') and not(cac:BillingReferenceLine/cbc:ID)]) = 2)"/>
+         <xsl:otherwise>
+            <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
+                                test="not(custom:isSpecialContractBD(/ubl:Invoice|/cn:CreditNote)) or (count((cac:InvoiceLine|cac:CreditNoteLine)/cac:BillingReference[(cac:InvoiceDocumentReference/cbc:ID = $invoiceID) and (cac:InvoiceDocumentReference/cbc:DocumentStatusCode = 'GROUP') and not(cac:BillingReferenceLine/cbc:ID)]) = 2)">
+               <xsl:attribute name="id">BR-FR-BD-02_EXT-FR-FE-163</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
+               <xsl:attribute name="location">
+                  <xsl:apply-templates select="." mode="schematron-select-full-path"/>
+               </xsl:attribute>
+               <svrl:text>
+        BR-FR-BD-02/EXT-FR-FE-163 : Lorsque le cadre de facturation (BT-23) est S9, B9 ou M9, la facture doit contenir exactement deux ligne (BG-25) avec le sous-type de ligne (ram:LineStatusReasonCode) égal à "GROUP" et sans identifiant de ligne parent (ram:ParentLineID).
+        Veuillez vérifier que cette ligne est présente.
+      </svrl:text>
+            </svrl:failed-assert>
+         </xsl:otherwise>
+      </xsl:choose>
+      <!--ASSERT -->
+      <xsl:choose>
+         <xsl:when test="not(custom:isSpecialContractBD(/ubl:Invoice|/cn:CreditNote)) or (count((cac:InvoiceLine|cac:CreditNoteLine)/cac:BillingReference[(cac:InvoiceDocumentReference/cbc:ID = $invoiceID) and (cac:InvoiceDocumentReference/cbc:DocumentStatusCode = 'GROUP') and not(cac:BillingReferenceLine/cbc:ID)          and ../cac:Item/cac:ManufacturerParty/cac:PartyLegalEntity/cbc:CompanyID = ../../cac:AccountingSupplierParty/cac:Party/cac:PartyLegalEntity/cbc:CompanyID]) = 1)"/>
+         <xsl:otherwise>
+            <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
+                                test="not(custom:isSpecialContractBD(/ubl:Invoice|/cn:CreditNote)) or (count((cac:InvoiceLine|cac:CreditNoteLine)/cac:BillingReference[(cac:InvoiceDocumentReference/cbc:ID = $invoiceID) and (cac:InvoiceDocumentReference/cbc:DocumentStatusCode = 'GROUP') and not(cac:BillingReferenceLine/cbc:ID) and ../cac:Item/cac:ManufacturerParty/cac:PartyLegalEntity/cbc:CompanyID = ../../cac:AccountingSupplierParty/cac:Party/cac:PartyLegalEntity/cbc:CompanyID]) = 1)">
+               <xsl:attribute name="id">BR-FR-BD-02_BT-30</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
+               <xsl:attribute name="location">
+                  <xsl:apply-templates select="." mode="schematron-select-full-path"/>
+               </xsl:attribute>
+               <svrl:text>
+        invoiceID : <xsl:text/>
+                  <xsl:value-of select="$invoiceID"/>
+                  <xsl:text/>
+        BR-FR-BD-02/BT-30 : Lorsque le cadre de facturation (BT-23) est S9, B9 ou M9, la facture doit contenir exactement deux ligne (BG-25) avec le sous-type de ligne (ram:LineStatusReasonCode) égal à "GROUP" et sans identifiant de ligne parent (ram:ParentLineID),
+        pour lesquelles l'une a pour ID legal Vendeur à la ligne (EXT-FR-FE-167) l'ID légal du VENDEUR (BT-30). Veuillez vérifier qu'il y a une ligne GROUP avec ID Vendeur de ligne = ID VENDEUR (BT-30).
+      </svrl:text>
+            </svrl:failed-assert>
+         </xsl:otherwise>
+      </xsl:choose>
+      <!--ASSERT -->
+      <xsl:choose>
+         <xsl:when test="not(custom:isSpecialContractBD(/ubl:Invoice|/cn:CreditNote)) or (count((cac:InvoiceLine|cac:CreditNoteLine)/cac:BillingReference[(cac:InvoiceDocumentReference/cbc:ID = $invoiceID) and (cac:InvoiceDocumentReference/cbc:DocumentStatusCode = 'GROUP') and not(cac:BillingReferenceLine/cbc:ID)          and ../cac:Item/cac:ManufacturerParty/cac:PartyLegalEntity/cbc:CompanyID = ../../cac:AccountingCustomerParty/cac:Party/cac:PartyLegalEntity/cbc:CompanyID]) = 1)"/>
+         <xsl:otherwise>
+            <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
+                                test="not(custom:isSpecialContractBD(/ubl:Invoice|/cn:CreditNote)) or (count((cac:InvoiceLine|cac:CreditNoteLine)/cac:BillingReference[(cac:InvoiceDocumentReference/cbc:ID = $invoiceID) and (cac:InvoiceDocumentReference/cbc:DocumentStatusCode = 'GROUP') and not(cac:BillingReferenceLine/cbc:ID) and ../cac:Item/cac:ManufacturerParty/cac:PartyLegalEntity/cbc:CompanyID = ../../cac:AccountingCustomerParty/cac:Party/cac:PartyLegalEntity/cbc:CompanyID]) = 1)">
+               <xsl:attribute name="id">BR-FR-BD-02_BT-47</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
+               <xsl:attribute name="location">
+                  <xsl:apply-templates select="." mode="schematron-select-full-path"/>
+               </xsl:attribute>
+               <svrl:text>
+        invoiceID : <xsl:text/>
+                  <xsl:value-of select="$invoiceID"/>
+                  <xsl:text/>
+        BR-FR-BD-02/BT-47 : Lorsque le cadre de facturation (BT-23) est S9, B9 ou M9, la facture doit contenir exactement deux ligne (BG-25) avec le sous-type de ligne (ram:LineStatusReasonCode) égal à "GROUP" et sans identifiant de ligne parent (ram:ParentLineID),
+        pour lesquelles l'une a pour ID légale de Vendeur à la ligne (EXT-FR-FE-167) l'ID légal de l'ACHETEUR (BT-47). Veuillez vérifier qu'il y a une ligne GROUP avec ID Vendeur de ligne = ID ACHETEUR (BT-47).
+      </svrl:text>
+            </svrl:failed-assert>
+         </xsl:otherwise>
+      </xsl:choose>
+      <xsl:apply-templates select="*" mode="M69"/>
+   </xsl:template>
+   <xsl:template match="text()" priority="-1" mode="M69"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M69">
+      <xsl:apply-templates select="*" mode="M69"/>
+   </xsl:template>
+   <!--PATTERN BR-FR-MV-03BR-FR-MV-03 — Vérification des données obligatoires pour les lignes GROUP sans parent lorsque le cadre de facturation est S8, B8, M8 ou S9, B9, M9-->
+   <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-MV-03 — Vérification des données obligatoires pour les lignes GROUP sans parent lorsque le cadre de facturation est S8, B8, M8 ou S9, B9, M9</svrl:text>
    <!--RULE -->
    <xsl:template match="(ubl:Invoice/cac:InvoiceLine|cn:CreditNote/cac:CreditNoteLine)/cac:BillingReference[(cac:InvoiceDocumentReference/cbc:ID = $invoiceID) and (cac:InvoiceDocumentReference/cbc:DocumentStatusCode = 'GROUP') and not(cac:BillingReferenceLine/cbc:ID)]"
                  priority="1000"
-                 mode="M65">
+                 mode="M70">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="(ubl:Invoice/cac:InvoiceLine|cn:CreditNote/cac:CreditNoteLine)/cac:BillingReference[(cac:InvoiceDocumentReference/cbc:ID = $invoiceID) and (cac:InvoiceDocumentReference/cbc:DocumentStatusCode = 'GROUP') and not(cac:BillingReferenceLine/cbc:ID)]"/>
       <!--ASSERT -->
@@ -5231,7 +5357,7 @@
                   <xsl:text/> : Valeur actuelle : "<xsl:text/>
                   <xsl:value-of select="../cac:Item/cac:ManufacturerParty/cac:PartyLegalEntity/cbc:RegistrationName"/>
                   <xsl:text/>".
-        Lorsque le cadre de facturation (BT-23) est S8, B8 ou M8 et que la ligne est de type GROUP sans parent, le nom du vendeur (EXT-FR-FE-164) doit être renseigné. 
+        Lorsque le cadre de facturation (BT-23) est S8, B8, M8 ou S9, B9, M9 et que la ligne est de type GROUP sans parent, le nom du vendeur (EXT-FR-FE-164) doit être renseigné. 
       </svrl:text>
             </svrl:failed-assert>
          </xsl:otherwise>
@@ -5254,7 +5380,7 @@
                   <xsl:text/> : Valeur actuelle : "<xsl:text/>
                   <xsl:value-of select="../cac:Item/cac:ManufacturerParty/cac:PartyLegalEntity/cbc:CompanyID"/>
                   <xsl:text/>".
-        Lorsque le cadre de facturation (BT-23) est S8, B8 ou M8 et que la ligne est de type GROUP sans parent, l'identifiant du vendeur (EXT-FR-FE-167) doit être renseigné.
+        Lorsque le cadre de facturation (BT-23) est S8, B8, M8 ou S9, B9, M9 et que la ligne est de type GROUP sans parent, l'identifiant du vendeur (EXT-FR-FE-167) doit être renseigné.
       </svrl:text>
             </svrl:failed-assert>
          </xsl:otherwise>
@@ -5277,7 +5403,7 @@
                   <xsl:text/> : Valeur actuelle : "<xsl:text/>
                   <xsl:value-of select="..//cac:Item/cac:ManufacturerParty/cac:PostalAddress/cac:Country/cbc:IdentificationCode"/>
                   <xsl:text/>'.
-        Lorsque le cadre de facturation (BT-23) est S8, B8 ou M8 et que la ligne est de type GROUP sans parent, le code pays du vendeur (EXT-FR-FE-177) doit être renseigné.
+        Lorsque le cadre de facturation (BT-23) est S8, B8, M8 ou S9, B9, M9 et que la ligne est de type GROUP sans parent, le code pays du vendeur (EXT-FR-FE-177) doit être renseigné.
       </svrl:text>
             </svrl:failed-assert>
          </xsl:otherwise>
@@ -5363,25 +5489,25 @@
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
                <svrl:text>
-          [BR-FR-MV-03/BT-128] : Pour une ligne GROUP sans parent, une valeur d'objet facturé (ram:IssuerAssignedID) avec identifiant de schéma (ram:ReferenceTypeCode) = AVV doit être présente et différente de M8/S8/B8 : Ligne : <xsl:text/>
+          [BR-FR-MV-03/BT-128] : Pour une ligne GROUP sans parent, une valeur d'objet facturé (ram:IssuerAssignedID) avec identifiant de schéma (ram:ReferenceTypeCode) = AVV doit être présente et différente de S8, B8, M8 ou S9, B9, M9 : Ligne : <xsl:text/>
                   <xsl:value-of select="../cbc:ID"/>
                   <xsl:text/>
                </svrl:text>
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M65"/>
+      <xsl:apply-templates select="*" mode="M70"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M65"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M65">
-      <xsl:apply-templates select="*" mode="M65"/>
+   <xsl:template match="text()" priority="-1" mode="M70"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M70">
+      <xsl:apply-templates select="*" mode="M70"/>
    </xsl:template>
    <!--PATTERN BR-FR-MV-05BR-FR-MV-05 — Vérification de la cohérence des totaux HT entre la ligne GROUP et ses lignes enfants-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-MV-05 — Vérification de la cohérence des totaux HT entre la ligne GROUP et ses lignes enfants</svrl:text>
    <!--RULE -->
    <xsl:template match="(ubl:Invoice/cac:InvoiceLine|cn:CreditNote/cac:CreditNoteLine)/cac:BillingReference[(cac:InvoiceDocumentReference/cbc:ID = $invoiceID)][(cac:InvoiceDocumentReference/cbc:DocumentStatusCode = 'GROUP') and not(cac:BillingReferenceLine/cbc:ID)]"
                  priority="1000"
-                 mode="M66">
+                 mode="M71">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="(ubl:Invoice/cac:InvoiceLine|cn:CreditNote/cac:CreditNoteLine)/cac:BillingReference[(cac:InvoiceDocumentReference/cbc:ID = $invoiceID)][(cac:InvoiceDocumentReference/cbc:DocumentStatusCode = 'GROUP') and not(cac:BillingReferenceLine/cbc:ID)]"/>
       <xsl:variable name="grouplineID" select="normalize-space(../cbc:ID)"/>
@@ -5412,23 +5538,23 @@
                   <xsl:text/>. Valeur actuelle : "<xsl:text/>
                   <xsl:value-of select="../cbc:LineExtensionAmount"/>
                   <xsl:text/>".
-        Lorsque le cadre de facturation (BT-23) est S8, B8 ou M8, le total HT (ram:LineTotalAmount) de la ligne GROUP doit être égal (tolérance ±0,01 * nombre de sous-lignes) à la somme des totaux HT des lignes enfants dont le ParentLineID correspond à l'identifiant de la ligne GROUP (ram:LineID).
+        Lorsque le cadre de facturation (BT-23) est S8, B8, M8 ou S9, B9, M9, le total HT (ram:LineTotalAmount) de la ligne GROUP doit être égal (tolérance ±0,01 * nombre de sous-lignes) à la somme des totaux HT des lignes enfants dont le ParentLineID correspond à l'identifiant de la ligne GROUP (ram:LineID).
       </svrl:text>
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M66"/>
+      <xsl:apply-templates select="*" mode="M71"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M66"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M66">
-      <xsl:apply-templates select="*" mode="M66"/>
+   <xsl:template match="text()" priority="-1" mode="M71"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M71">
+      <xsl:apply-templates select="*" mode="M71"/>
    </xsl:template>
    <!--PATTERN BR-FR-MV-06BR-FR-MV-06 — Vérification de la cohérence de l'identifiant légal du vendeur entre une ligne et sa ligne parent-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-MV-06 — Vérification de la cohérence de l'identifiant légal du vendeur entre une ligne et sa ligne parent</svrl:text>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:InvoiceLine|cn:CreditNote/cac:CreditNoteLine"
                  priority="1000"
-                 mode="M67">
+                 mode="M72">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:InvoiceLine|cn:CreditNote/cac:CreditNoteLine"/>
       <xsl:variable name="parentlineID"
@@ -5436,7 +5562,7 @@
       <xsl:variable name="legalID"
                     select="normalize-space(cac:Item/cac:ManufacturerParty/cac:PartyLegalEntity/cbc:CompanyID)"/>
       <xsl:variable name="legalIDParent"
-                    select="normalize-space((../cac:InvoiceLine| ../../cac:CreditNoteLine)[cbc:ID = $parentlineID]/cac:Item/cac:ManufacturerParty/cac:PartyLegalEntity/cbc:CompanyID)"/>
+                    select="normalize-space((../cac:InvoiceLine| ../cac:CreditNoteLine)[cbc:ID = $parentlineID]/cac:Item/cac:ManufacturerParty/cac:PartyLegalEntity/cbc:CompanyID)"/>
       <!--ASSERT -->
       <xsl:choose>
          <xsl:when test="not(custom:isSpecialContract(/ubl:Invoice|/cn:CreditNote))          or ($legalID != '' and (not($parentlineID) or $legalID = $legalIDParent))"/>
@@ -5458,23 +5584,23 @@
                   <xsl:text/>, ParentlegalID : <xsl:text/>
                   <xsl:value-of select="$legalIDParent"/>
                   <xsl:text/>.
-        Lorsque le cadre de facturation (BT-23) est S8, B8 ou M8, chaque ligne (BG-25) doit contenir un identifiant légal de vendeur (ram:ID). Si la ligne a un identifiant de ligne parent (ram:ParentLineID), cet identifiant doit être identique à celui de la ligne parent.
+        Lorsque le cadre de facturation (BT-23) est S8, B8, M8 ou S9, B9, M9, chaque ligne (BG-25) doit contenir un identifiant légal de vendeur (ram:ID). Si la ligne a un identifiant de ligne parent (ram:ParentLineID), cet identifiant doit être identique à celui de la ligne parent.
       </svrl:text>
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M67"/>
+      <xsl:apply-templates select="*" mode="M72"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M67"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M67">
-      <xsl:apply-templates select="*" mode="M67"/>
+   <xsl:template match="text()" priority="-1" mode="M72"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M72">
+      <xsl:apply-templates select="*" mode="M72"/>
    </xsl:template>
    <!--PATTERN BR-FR-MV-07BR-FR-MV-07 — Vérification de la cohérence du numéro de facture codifié AFL entre une ligne et sa ligne parent-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-MV-07 — Vérification de la cohérence du numéro de facture codifié AFL entre une ligne et sa ligne parent</svrl:text>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cac:InvoiceLine|cn:CreditNote/cac:CreditNoteLine"
                  priority="1000"
-                 mode="M68">
+                 mode="M73">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cac:InvoiceLine|cn:CreditNote/cac:CreditNoteLine"/>
       <xsl:variable name="parentlineID"
@@ -5482,7 +5608,7 @@
       <xsl:variable name="numfact"
                     select="normalize-space(cac:DocumentReference[cbc:DocumentTypeCode = '130']/cbc:ID[@schemeID = 'AFL'])"/>
       <xsl:variable name="numfactparent"
-                    select="normalize-space((../cac:InvoiceLine| ../../cac:CreditNoteLine)[cbc:ID = $parentlineID]/cac:DocumentReference[cbc:DocumentTypeCode = '130']/cbc:ID[@schemeID = 'AFL'])"/>
+                    select="normalize-space((../cac:InvoiceLine| ../cac:CreditNoteLine)[cbc:ID = $parentlineID]/cac:DocumentReference[cbc:DocumentTypeCode = '130']/cbc:ID[@schemeID = 'AFL'])"/>
       <!--ASSERT -->
       <xsl:choose>
          <xsl:when test="not(custom:isSpecialContract(/ubl:Invoice|/cn:CreditNote))          or ($numfact != '' and (not($parentlineID) or $numfact = $numfactparent))"/>
@@ -5504,23 +5630,23 @@
                   <xsl:text/>, numfact ligne parent : <xsl:text/>
                   <xsl:value-of select="$numfactparent"/>
                   <xsl:text/>. 
-        Lorsque le cadre de facturation (BT-23) est S8, B8 ou M8, chaque ligne (BG-25) doit contenir un numéro de facture codifié AFL (BT-128). Si la ligne a un identifiant de ligne parent (EXT-FR-FE-162), ce numéro doit être identique à celui de la ligne parent.
+        Lorsque le cadre de facturation (BT-23) est S8, B8, M8 ou S9, B9, M9, chaque ligne (BG-25) doit contenir un numéro de facture codifié AFL (BT-128). Si la ligne a un identifiant de ligne parent (EXT-FR-FE-162), ce numéro doit être identique à celui de la ligne parent.
       </svrl:text>
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M68"/>
+      <xsl:apply-templates select="*" mode="M73"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M68"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M68">
-      <xsl:apply-templates select="*" mode="M68"/>
+   <xsl:template match="text()" priority="-1" mode="M73"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M73">
+      <xsl:apply-templates select="*" mode="M73"/>
    </xsl:template>
    <!--PATTERN BR-FR-MV-08BR-FR-MV-08 — Vérification de la raison d'exemption TVA contenant le numéro de sous-facture en ligne entre #-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-MV-08 — Vérification de la raison d'exemption TVA contenant le numéro de sous-facture en ligne entre #</svrl:text>
    <!--RULE -->
    <xsl:template match="(ubl:Invoice/cac:InvoiceLine|cn:CreditNote/cac:CreditNoteLine)[cac:BillingReference[cac:InvoiceDocumentReference/cbc:ID = $invoiceID]/cac:InvoiceDocumentReference/cbc:DocumentStatusCode = 'DETAIL']"
                  priority="1000"
-                 mode="M69">
+                 mode="M74">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="(ubl:Invoice/cac:InvoiceLine|cn:CreditNote/cac:CreditNoteLine)[cac:BillingReference[cac:InvoiceDocumentReference/cbc:ID = $invoiceID]/cac:InvoiceDocumentReference/cbc:DocumentStatusCode = 'DETAIL']"/>
       <xsl:variable name="numfact"
@@ -5543,23 +5669,23 @@
                   <xsl:value-of select="cac:Item/cac:ClassifiedTaxCategory/cbc:TaxExemptionReason"/>
                   <xsl:text/> - Num fact ligne: <xsl:text/>
                   <xsl:value-of select="$numfact"/>
-                  <xsl:text/>. Lorsque le cadre de facturation (BT-23) est S8, B8 ou M8, chaque ligne (BG-25) doit contenir une raison d'exemption TVA en texte commençant par le numéro de sous-facture en ligne entre #.
+                  <xsl:text/>. Lorsque le cadre de facturation (BT-23) est S8, B8, M8 ou S9, B9, M9, chaque ligne (BG-25) doit contenir une raison d'exemption TVA en texte commençant par le numéro de sous-facture en ligne entre #.
       </svrl:text>
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M69"/>
+      <xsl:apply-templates select="*" mode="M74"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M69"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M69">
-      <xsl:apply-templates select="*" mode="M69"/>
+   <xsl:template match="text()" priority="-1" mode="M74"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M74">
+      <xsl:apply-templates select="*" mode="M74"/>
    </xsl:template>
    <!--PATTERN BR-FR-MV-09BR-FR-MV-09 — Vérification de la cohérence du montant total TVA pour une ligne GROUP avec la somme des ventilations TVA liées-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-MV-09 — Vérification de la cohérence du montant total TVA pour une ligne GROUP avec la somme des ventilations TVA liées</svrl:text>
    <!--RULE -->
    <xsl:template match="(ubl:Invoice/cac:InvoiceLine|cn:CreditNote/cac:CreditNoteLine)/cac:BillingReference[cac:InvoiceDocumentReference/cbc:ID = $invoiceID][(cac:InvoiceDocumentReference/cbc:DocumentStatusCode = 'GROUP') and not(cac:BillingReferenceLine/cbc:ID)]"
                  priority="1000"
-                 mode="M70">
+                 mode="M75">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="(ubl:Invoice/cac:InvoiceLine|cn:CreditNote/cac:CreditNoteLine)/cac:BillingReference[cac:InvoiceDocumentReference/cbc:ID = $invoiceID][(cac:InvoiceDocumentReference/cbc:DocumentStatusCode = 'GROUP') and not(cac:BillingReferenceLine/cbc:ID)]"/>
       <xsl:variable name="numfact"
@@ -5588,23 +5714,23 @@
                   <xsl:text/>, Somme TVA : <xsl:text/>
                   <xsl:value-of select="$sumvat"/>
                   <xsl:text/>.
-        Lorsque le cadre de facturation (BT-23) est S8, B8 ou M8, le montant total TVA de la ligne GROUP (EXT-FR-FE-181) doit être égal  à la somme des montants de TVA des ventilations TVA (BT-117) dont la raison d'exemption (ram:ExemptionReason) commence par le numéro de facture en ligne (BT-128 avec ReferenceTypeCode = AFL) entre #.
+        Lorsque le cadre de facturation (BT-23) est S8, B8, M8 ou S9, B9, M9, le montant total TVA de la ligne GROUP (EXT-FR-FE-181) doit être égal  à la somme des montants de TVA des ventilations TVA (BT-117) dont la raison d'exemption (ram:ExemptionReason) commence par le numéro de facture en ligne (BT-128 avec ReferenceTypeCode = AFL) entre #.
       </svrl:text>
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M70"/>
+      <xsl:apply-templates select="*" mode="M75"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M70"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M70">
-      <xsl:apply-templates select="*" mode="M70"/>
+   <xsl:template match="text()" priority="-1" mode="M75"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M75">
+      <xsl:apply-templates select="*" mode="M75"/>
    </xsl:template>
    <!--PATTERN BR-FR-MV-10BR-FR-MV-10 — Vérification de la cohérence du montant total avec TVA pour une ligne GROUP-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-MV-10 — Vérification de la cohérence du montant total avec TVA pour une ligne GROUP</svrl:text>
    <!--RULE -->
    <xsl:template match="(ubl:Invoice/cac:InvoiceLine|cn:CreditNote/cac:CreditNoteLine)/cac:BillingReference[cac:InvoiceDocumentReference/cbc:ID = $invoiceID][(cac:InvoiceDocumentReference/cbc:DocumentStatusCode = 'GROUP') and not(cac:BillingReferenceLine/cbc:ID)]"
                  priority="1000"
-                 mode="M71">
+                 mode="M76">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="(ubl:Invoice/cac:InvoiceLine|cn:CreditNote/cac:CreditNoteLine)/cac:BillingReference[cac:InvoiceDocumentReference/cbc:ID = $invoiceID][(cac:InvoiceDocumentReference/cbc:DocumentStatusCode = 'GROUP') and not(cac:BillingReferenceLine/cbc:ID)]"/>
       <xsl:variable name="invcurrency" select="../../cbc:DocumentCurrencyCode"/>
@@ -5637,66 +5763,72 @@
         HT : <xsl:text/>
                   <xsl:value-of select="../cbc:LineExtensionAmount"/>
                   <xsl:text/>
-        Lorsque le cadre de facturation (BT-23) est S8, B8 ou M8, si le montant total avec TVA (EXT-FR-FE-184) est présent pour une ligne GROUP sans parent, alors la différence entre ce montant et la somme du montant HT (BT-131) et du montant TVA (EXT-FR-FE-181) doit être inférieure ou égale à 0,01 × le nombre de sous-lignes DETAIL. Valeur actuelle : "<xsl:text/>
+        Lorsque le cadre de facturation (BT-23) est S8, B8, M8 ou S9, B9, M9, si le montant total avec TVA (EXT-FR-FE-184) est présent pour une ligne GROUP sans parent, alors la différence entre ce montant et la somme du montant HT (BT-131) et du montant TVA (EXT-FR-FE-181) doit être inférieure ou égale à 0,01 × le nombre de sous-lignes DETAIL. Valeur actuelle : "<xsl:text/>
                   <xsl:value-of select="."/>
                   <xsl:text/>'.
       </svrl:text>
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M71"/>
+      <xsl:apply-templates select="*" mode="M76"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M71"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M71">
-      <xsl:apply-templates select="*" mode="M71"/>
+   <xsl:template match="text()" priority="-1" mode="M76"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M76">
+      <xsl:apply-templates select="*" mode="M76"/>
    </xsl:template>
    <!--PATTERN BR-FR-MV-11BR-FR-MV-11 — Vérification de la cohérence entre l'identifiant de facture à la ligne (AFL) et le numéro de facture (BT-1) pour le Vendeur principal-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-MV-11 — Vérification de la cohérence entre l'identifiant de facture à la ligne (AFL) et le numéro de facture (BT-1) pour le Vendeur principal</svrl:text>
+   <xsl:variable name="sellerID"
+                 select="(ubl:Invoice | cn:CreditNote)/cac:AccountingSupplierParty/cac:Party/cac:PartyLegalEntity/cbc:CompanyID"/>
+   <xsl:variable name="nbSubinvoiceSeller"
+                 select="count((ubl:Invoice/cac:InvoiceLine|cn:CreditNote/cac:CreditNoteLine)[normalize-space(cac:Item/cac:ManufacturerParty/cac:PartyLegalEntity/cbc:CompanyID) = $sellerID and cac:BillingReference[cac:InvoiceDocumentReference/cbc:DocumentStatusCode = 'GROUP' and not(cac:BillingReferenceLine/cbc:ID)]/cac:InvoiceDocumentReference/cbc:ID = $invoiceID][cac:DocumentReference[cbc:DocumentTypeCode = '130']/cbc:ID[@schemeID = 'AFL'] = $invoiceID])"/>
    <!--RULE -->
-   <xsl:template match="(ubl:Invoice/cac:InvoiceLine|cn:CreditNote/cac:CreditNoteLine)[normalize-space(cac:Item/cac:ManufacturerParty/cac:PartyLegalEntity/cbc:CompanyID) = normalize-space(../cac:AccountingSupplierParty/cac:Party/cac:PartyLegalEntity/cbc:CompanyID)]/cac:BillingReference[cac:InvoiceDocumentReference/cbc:ID = $invoiceID][(cac:InvoiceDocumentReference/cbc:DocumentStatusCode = 'GROUP') and not(cac:BillingReferenceLine/cbc:ID)]"
+   <xsl:template match="(ubl:Invoice/cac:InvoiceLine|cn:CreditNote/cac:CreditNoteLine)[normalize-space(cac:Item/cac:ManufacturerParty/cac:PartyLegalEntity/cbc:CompanyID) = $sellerID]/cac:BillingReference[cac:InvoiceDocumentReference/cbc:ID = $invoiceID][(cac:InvoiceDocumentReference/cbc:DocumentStatusCode = 'GROUP') and not(cac:BillingReferenceLine/cbc:ID)]"
                  priority="1000"
-                 mode="M72">
+                 mode="M77">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
-                       context="(ubl:Invoice/cac:InvoiceLine|cn:CreditNote/cac:CreditNoteLine)[normalize-space(cac:Item/cac:ManufacturerParty/cac:PartyLegalEntity/cbc:CompanyID) = normalize-space(../cac:AccountingSupplierParty/cac:Party/cac:PartyLegalEntity/cbc:CompanyID)]/cac:BillingReference[cac:InvoiceDocumentReference/cbc:ID = $invoiceID][(cac:InvoiceDocumentReference/cbc:DocumentStatusCode = 'GROUP') and not(cac:BillingReferenceLine/cbc:ID)]"/>
-      <xsl:variable name="lineinvID"
+                       context="(ubl:Invoice/cac:InvoiceLine|cn:CreditNote/cac:CreditNoteLine)[normalize-space(cac:Item/cac:ManufacturerParty/cac:PartyLegalEntity/cbc:CompanyID) = $sellerID]/cac:BillingReference[cac:InvoiceDocumentReference/cbc:ID = $invoiceID][(cac:InvoiceDocumentReference/cbc:DocumentStatusCode = 'GROUP') and not(cac:BillingReferenceLine/cbc:ID)]"/>
+      <xsl:variable name="numFactLine"
                     select="normalize-space(../cac:DocumentReference[cbc:DocumentTypeCode = '130']/cbc:ID[@schemeID = 'AFL'])"/>
       <!--ASSERT -->
       <xsl:choose>
-         <xsl:when test="not(custom:isSpecialContract(/ubl:Invoice|/cn:CreditNote)) or $lineinvID = $invoiceID"/>
+         <xsl:when test="not(custom:isSpecialContract(/ubl:Invoice|/cn:CreditNote)) or ($nbSubinvoiceSeller = 1) or ($nbSubinvoiceSeller = 0 and $numFactLine = $invoiceID) or ($nbSubinvoiceSeller &gt; 1 and $numFactLine != $invoiceID)"/>
          <xsl:otherwise>
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
-                                test="not(custom:isSpecialContract(/ubl:Invoice|/cn:CreditNote)) or $lineinvID = $invoiceID">
+                                test="not(custom:isSpecialContract(/ubl:Invoice|/cn:CreditNote)) or ($nbSubinvoiceSeller = 1) or ($nbSubinvoiceSeller = 0 and $numFactLine = $invoiceID) or ($nbSubinvoiceSeller &gt; 1 and $numFactLine != $invoiceID)">
                <xsl:attribute name="id">BR-FR-MV-11_BT-128</xsl:attribute>
                <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
                <svrl:text>
-        [BR-FR-MV-11/BT-128] : ID Seller : <xsl:text/>
-                  <xsl:value-of select="normalize-space(../cac:AccountingSupplierParty/cac:Party/cac:PartyLegalEntity/cbc:CompanyID)"/>
+        [BR-FR-MV-11/BT-128]-ID Seller : <xsl:text/>
+                  <xsl:value-of select="$sellerID"/>
                   <xsl:text/>, NB ligne GROUP seller : <xsl:text/>
                   <xsl:value-of select="../cbc:ID"/>
                   <xsl:text/>
         Numero de facture (BT-1) : <xsl:text/>
                   <xsl:value-of select="$invoiceID"/>
-                  <xsl:text/>, num fact en ligne <xsl:text/>
-                  <xsl:value-of select="$lineinvID"/>
+                  <xsl:text/>, Nb de Ligne GROUP avec Num fact : <xsl:text/>
+                  <xsl:value-of select="$nbSubinvoiceSeller"/>
+                  <xsl:text/>, NumFact de ligne : <xsl:text/>
+                  <xsl:value-of select="$numFactLine"/>
                   <xsl:text/>. 
-        Lorsque le cadre de facturation (BT-23) est S8, B8 ou M8 et que le vendeur principal (BG-4) dispose d'un groupe de lignes, l'identifiant de facture à la ligne (ram:IssuerAssignedID avec ReferenceTypeCode = AFL) doit être identique au numéro de facture (ram:ID dans ExchangedDocument).
+        [BR-FR-MV-11/BT-128]Lorsque le cadre de facturation (BT-23) est S8, B8, M8 ou S9, B9, M9, si le Vendeur principal identifié dans le bloc Vendeur (BG-4) de la facture au travers de son identifiant légal (BT-30) dispose d'un groupe de lignes de facturation, alors il doit exister au moins une ligne (BG-25) avec sous-type de ligne (EXT-FR-FE-163) = "GROUP" et sans identifiant de ligne Parent (EXT-FR-FE-162), pour laquelle le numéro de facture à la ligne (Valeur de BT-128 avec BT-128-1 = AFL) est égal au numéro de facture (BT-1).
       </svrl:text>
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M72"/>
+      <xsl:apply-templates select="*" mode="M77"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M72"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M72">
-      <xsl:apply-templates select="*" mode="M72"/>
+   <xsl:template match="text()" priority="-1" mode="M77"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M77">
+      <xsl:apply-templates select="*" mode="M77"/>
    </xsl:template>
    <!--PATTERN BR-FR-MV-12BR-FR-MV-12 — Vérification de l'unicité des numéros de facture AFL pour les lignes GROUP sans parent-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-MV-12 — Vérification de l'unicité des numéros de facture AFL pour les lignes GROUP sans parent</svrl:text>
    <!--RULE -->
-   <xsl:template match="ubl:Invoice|/cn:CreditNote" priority="1000" mode="M73">
+   <xsl:template match="ubl:Invoice|/cn:CreditNote" priority="1000" mode="M78">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice|/cn:CreditNote"/>
       <!--ASSERT -->
@@ -5711,31 +5843,31 @@
                   <xsl:apply-templates select="." mode="schematron-select-full-path"/>
                </xsl:attribute>
                <svrl:text>
-        [BR-FR-MV-12/BT-128] : Lorsque le cadre de facturation (BT-23) est S8, B8 ou M8, les numéros de facture à la ligne (ram:IssuerAssignedID avec ReferenceTypeCode = AFL) pour les lignes GROUP sans parent doivent être uniques. Veuillez vérifier que chaque numéro est distinct.
+        [BR-FR-MV-12/BT-128] : Lorsque le cadre de facturation (BT-23) est S8, B8, M8 ou S9, B9, M9, les numéros de facture à la ligne (ram:IssuerAssignedID avec ReferenceTypeCode = AFL) pour les lignes GROUP sans parent doivent être uniques. Veuillez vérifier que chaque numéro est distinct.
       </svrl:text>
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M73"/>
+      <xsl:apply-templates select="*" mode="M78"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M73"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M73">
-      <xsl:apply-templates select="*" mode="M73"/>
+   <xsl:template match="text()" priority="-1" mode="M78"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M78">
+      <xsl:apply-templates select="*" mode="M78"/>
    </xsl:template>
    <!--PATTERN BR-FR-MV-13BR-FR-MV-13 — Vérification que le code type de facture (BT-3) n'est pas un type auto-facturé interdit-->
    <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-MV-13 — Vérification que le code type de facture (BT-3) n'est pas un type auto-facturé interdit</svrl:text>
    <!--RULE -->
    <xsl:template match="ubl:Invoice/cbc:InvoiceTypeCode|/cn:CreditNote/cbc:CreditNoteTypeCode"
                  priority="1000"
-                 mode="M74">
+                 mode="M79">
       <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
                        context="ubl:Invoice/cbc:InvoiceTypeCode|/cn:CreditNote/cbc:CreditNoteTypeCode"/>
       <!--ASSERT -->
       <xsl:choose>
-         <xsl:when test="not(custom:isSpecialContract(/ubl:Invoice|/cn:CreditNote))          or (normalize-space(.) != ''          and not(. = '389' or . = '261' or . = '501' or . = '500' or . = '502' or . = '471' or . = '473'))"/>
+         <xsl:when test="not(custom:isSpecialContractMV(/ubl:Invoice|/cn:CreditNote))          or (normalize-space(.) != ''          and not(normalize-space(.) = ('389','261','501','500','502','471','473')))"/>
          <xsl:otherwise>
             <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
-                                test="not(custom:isSpecialContract(/ubl:Invoice|/cn:CreditNote)) or (normalize-space(.) != '' and not(. = '389' or . = '261' or . = '501' or . = '500' or . = '502' or . = '471' or . = '473'))">
+                                test="not(custom:isSpecialContractMV(/ubl:Invoice|/cn:CreditNote)) or (normalize-space(.) != '' and not(normalize-space(.) = ('389','261','501','500','502','471','473')))">
                <xsl:attribute name="id">BR-FR-MV-13_BT-3</xsl:attribute>
                <xsl:attribute name="flag">fatal</xsl:attribute>
                <xsl:attribute name="location">
@@ -5749,10 +5881,147 @@
             </svrl:failed-assert>
          </xsl:otherwise>
       </xsl:choose>
-      <xsl:apply-templates select="*" mode="M74"/>
+      <xsl:apply-templates select="*" mode="M79"/>
    </xsl:template>
-   <xsl:template match="text()" priority="-1" mode="M74"/>
-   <xsl:template match="@*|node()" priority="-2" mode="M74">
-      <xsl:apply-templates select="*" mode="M74"/>
+   <xsl:template match="text()" priority="-1" mode="M79"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M79">
+      <xsl:apply-templates select="*" mode="M79"/>
+   </xsl:template>
+   <!--PATTERN BR-FR-BD-13BR-FR-BD-13 — Vérification que le code type de facture (BT-3) n'est pas un type auto-facturé interdit-->
+   <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-BD-13 — Vérification que le code type de facture (BT-3) n'est pas un type auto-facturé interdit</svrl:text>
+   <!--RULE -->
+   <xsl:template match="ubl:Invoice/cbc:InvoiceTypeCode|/cn:CreditNote/cbc:CreditNoteTypeCode"
+                 priority="1000"
+                 mode="M80">
+      <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
+                       context="ubl:Invoice/cbc:InvoiceTypeCode|/cn:CreditNote/cbc:CreditNoteTypeCode"/>
+      <!--ASSERT -->
+      <xsl:choose>
+         <xsl:when test="not(custom:isSpecialContractBD(/ubl:Invoice|/cn:CreditNote))          or (normalize-space(.) != ''          and (normalize-space(.) = ('389','261','501','500','502','471','473')))"/>
+         <xsl:otherwise>
+            <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
+                                test="not(custom:isSpecialContractBD(/ubl:Invoice|/cn:CreditNote)) or (normalize-space(.) != '' and (normalize-space(.) = ('389','261','501','500','502','471','473')))">
+               <xsl:attribute name="id">BR-FR-MV-BD_BT-3</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
+               <xsl:attribute name="location">
+                  <xsl:apply-templates select="." mode="schematron-select-full-path"/>
+               </xsl:attribute>
+               <svrl:text>
+        [BR-FR-BD-13/BT-3] : Lorsque le cadre de facturation (BT-23) est S9, B9 ou M9, le code type de facture (ram:TypeCode) DOIT être l'un des types auto-facturés suivants : 389, 261, 501, 500, 502, 471, 473. Valeur actuelle : "<xsl:text/>
+                  <xsl:value-of select="."/>
+                  <xsl:text/>'.
+      </svrl:text>
+            </svrl:failed-assert>
+         </xsl:otherwise>
+      </xsl:choose>
+      <xsl:apply-templates select="*" mode="M80"/>
+   </xsl:template>
+   <xsl:template match="text()" priority="-1" mode="M80"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M80">
+      <xsl:apply-templates select="*" mode="M80"/>
+   </xsl:template>
+   <!--PATTERN BR-FR-MV-14BR-FR-MV-14 — Facture antérieure pour une facture rectificative ou un Avoir Multi-Vendeur -->
+   <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-MV-14 — Facture antérieure pour une facture rectificative ou un Avoir Multi-Vendeur </svrl:text>
+   <!--RULE -->
+   <xsl:template match="(ubl:Invoice | cn:CreditNote)[(cbc:InvoiceTypeCode | cbc:CreditNoteTypeCode) = ('384','472','381','396','503')]/(cac:InvoiceLine | cac:CreditNoteLine)/cac:BillingReference[cac:InvoiceDocumentReference/cbc:ID = $invoiceID][(cac:InvoiceDocumentReference/cbc:DocumentStatusCode = 'GROUP') and not(cac:BillingReferenceLine/cbc:ID)]"
+                 priority="1000"
+                 mode="M81">
+      <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
+                       context="(ubl:Invoice | cn:CreditNote)[(cbc:InvoiceTypeCode | cbc:CreditNoteTypeCode) = ('384','472','381','396','503')]/(cac:InvoiceLine | cac:CreditNoteLine)/cac:BillingReference[cac:InvoiceDocumentReference/cbc:ID = $invoiceID][(cac:InvoiceDocumentReference/cbc:DocumentStatusCode = 'GROUP') and not(cac:BillingReferenceLine/cbc:ID)]"/>
+      <!--ASSERT -->
+      <xsl:choose>
+         <xsl:when test="not(custom:isSpecialContractMV(/ubl:Invoice|/cn:CreditNote)) or exists(../cac:BillingReference[cac:InvoiceDocumentReference/cbc:ID != $invoiceID]/cac:InvoiceDocumentReference/cbc:ID)"/>
+         <xsl:otherwise>
+            <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
+                                test="not(custom:isSpecialContractMV(/ubl:Invoice|/cn:CreditNote)) or exists(../cac:BillingReference[cac:InvoiceDocumentReference/cbc:ID != $invoiceID]/cac:InvoiceDocumentReference/cbc:ID)">
+               <xsl:attribute name="id">BR-FR-MV-14-EXT-FR-FE-136</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
+               <xsl:attribute name="location">
+                  <xsl:apply-templates select="." mode="schematron-select-full-path"/>
+               </xsl:attribute>
+               <svrl:text>
+        BR-FR-MV-14-EXT-FR-FE-136 : Num Facture antérieure manquant ligne <xsl:text/>
+                  <xsl:value-of select="../cbc:ID"/>
+                  <xsl:text/> : Lorsque le cadre de facturation (BT-23) est S8, B8 ou M8, et pour les factures rectificatives et avoirs chaque ligne (BG-25) avec un sous-type de ligne (EXT-FR-FE-163) égal à "GROUP" et sans identifiant de ligne Parent (EXT-FR-FE-162) doit comprendre un identifiant de facture antérieure à la ligne (EXT-FR-FE-136) ainsi que sa date (EXT-FR-FE-138).
+      </svrl:text>
+            </svrl:failed-assert>
+         </xsl:otherwise>
+      </xsl:choose>
+      <!--ASSERT -->
+      <xsl:choose>
+         <xsl:when test="not(custom:isSpecialContractMV(/ubl:Invoice|/cn:CreditNote)) or exists(../cac:BillingReference[cac:InvoiceDocumentReference/cbc:ID != $invoiceID]/cac:InvoiceDocumentReference/cbc:IssueDate)"/>
+         <xsl:otherwise>
+            <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
+                                test="not(custom:isSpecialContractMV(/ubl:Invoice|/cn:CreditNote)) or exists(../cac:BillingReference[cac:InvoiceDocumentReference/cbc:ID != $invoiceID]/cac:InvoiceDocumentReference/cbc:IssueDate)">
+               <xsl:attribute name="id">BR-FR-MV-14-EXT-FR-FE-138</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
+               <xsl:attribute name="location">
+                  <xsl:apply-templates select="." mode="schematron-select-full-path"/>
+               </xsl:attribute>
+               <svrl:text>
+        BR-FR-MV-14-EXT-FR-FE-138 : Date Facture antérieure manquant ligne <xsl:text/>
+                  <xsl:value-of select="../cbc:ID"/>
+                  <xsl:text/> : Lorsque le cadre de facturation (BT-23) est S8, B8 ou M8, et pour les factures rectificatives et avoirs chaque ligne (BG-25) avec un sous-type de ligne (EXT-FR-FE-163) égal à "GROUP" et sans identifiant de ligne Parent (EXT-FR-FE-162) doit comprendre un identifiant de facture antérieure à la ligne (EXT-FR-FE-136) ainsi que sa date (EXT-FR-FE-138).
+      </svrl:text>
+            </svrl:failed-assert>
+         </xsl:otherwise>
+      </xsl:choose>
+      <xsl:apply-templates select="*" mode="M81"/>
+   </xsl:template>
+   <xsl:template match="text()" priority="-1" mode="M81"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M81">
+      <xsl:apply-templates select="*" mode="M81"/>
+   </xsl:template>
+   <!--PATTERN BR-FR-BD-14BR-FR-BD-14 — Facture antérieure pour une facture rectificative ou un Avoir Multi-Vendeur -->
+   <svrl:text xmlns:svrl="http://purl.oclc.org/dsdl/svrl">BR-FR-BD-14 — Facture antérieure pour une facture rectificative ou un Avoir Multi-Vendeur </svrl:text>
+   <!--RULE -->
+   <xsl:template match="(ubl:Invoice | cn:CreditNote)[(cbc:InvoiceTypeCode | cbc:CreditNoteTypeCode) = ('261','471','473','502')]/(cac:InvoiceLine | cac:CreditNoteLine)/cac:BillingReference[cac:InvoiceDocumentReference/cbc:ID = $invoiceID][(cac:InvoiceDocumentReference/cbc:DocumentStatusCode = 'GROUP') and not(cac:BillingReferenceLine/cbc:ID)]"
+                 priority="1000"
+                 mode="M82">
+      <svrl:fired-rule xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
+                       context="(ubl:Invoice | cn:CreditNote)[(cbc:InvoiceTypeCode | cbc:CreditNoteTypeCode) = ('261','471','473','502')]/(cac:InvoiceLine | cac:CreditNoteLine)/cac:BillingReference[cac:InvoiceDocumentReference/cbc:ID = $invoiceID][(cac:InvoiceDocumentReference/cbc:DocumentStatusCode = 'GROUP') and not(cac:BillingReferenceLine/cbc:ID)]"/>
+      <!--ASSERT -->
+      <xsl:choose>
+         <xsl:when test="not(custom:isSpecialContractBD(/ubl:Invoice|/cn:CreditNote)) or exists(../cac:BillingReference[cac:InvoiceDocumentReference/cbc:ID != $invoiceID]/cac:InvoiceDocumentReference/cbc:ID)"/>
+         <xsl:otherwise>
+            <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
+                                test="not(custom:isSpecialContractBD(/ubl:Invoice|/cn:CreditNote)) or exists(../cac:BillingReference[cac:InvoiceDocumentReference/cbc:ID != $invoiceID]/cac:InvoiceDocumentReference/cbc:ID)">
+               <xsl:attribute name="id">BR-FR-BD-14-EXT-FR-FE-136</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
+               <xsl:attribute name="location">
+                  <xsl:apply-templates select="." mode="schematron-select-full-path"/>
+               </xsl:attribute>
+               <svrl:text>
+         BR-FR-BD-14-EXT-FR-FE-136 : Num Facture antérieure manquant ligne <xsl:text/>
+                  <xsl:value-of select="../cbc:ID"/>
+                  <xsl:text/> : Lorsque le cadre de facturation (BT-23) est S9, B9 ou M9, et pour les factures rectificatives et avoirs chaque ligne (BG-25) avec un sous-type de ligne (EXT-FR-FE-163) égal à "GROUP" et sans identifiant de ligne Parent (EXT-FR-FE-162) doit comprendre un identifiant de facture antérieure à la ligne (EXT-FR-FE-136) ainsi que sa date (EXT-FR-FE-138).
+      </svrl:text>
+            </svrl:failed-assert>
+         </xsl:otherwise>
+      </xsl:choose>
+      <!--ASSERT -->
+      <xsl:choose>
+         <xsl:when test="not(custom:isSpecialContractBD(/ubl:Invoice|/cn:CreditNote)) or exists(../cac:BillingReference[cac:InvoiceDocumentReference/cbc:ID != $invoiceID]/cac:InvoiceDocumentReference/cbc:IssueDate)"/>
+         <xsl:otherwise>
+            <svrl:failed-assert xmlns:svrl="http://purl.oclc.org/dsdl/svrl"
+                                test="not(custom:isSpecialContractBD(/ubl:Invoice|/cn:CreditNote)) or exists(../cac:BillingReference[cac:InvoiceDocumentReference/cbc:ID != $invoiceID]/cac:InvoiceDocumentReference/cbc:IssueDate)">
+               <xsl:attribute name="id">BR-FR-BD-14-EXT-FR-FE-138</xsl:attribute>
+               <xsl:attribute name="flag">fatal</xsl:attribute>
+               <xsl:attribute name="location">
+                  <xsl:apply-templates select="." mode="schematron-select-full-path"/>
+               </xsl:attribute>
+               <svrl:text>       
+        BR-FR-BD-14-EXT-FR-FE-138 : Date Facture antérieure manquant ligne <xsl:text/>
+                  <xsl:value-of select="../cbc:ID"/>
+                  <xsl:text/> : Lorsque le cadre de facturation (BT-23) est S9, B9 ou M9, et pour les factures rectificatives et avoirs chaque ligne (BG-25) avec un sous-type de ligne (EXT-FR-FE-163) égal à "GROUP" et sans identifiant de ligne Parent (EXT-FR-FE-162) doit comprendre un identifiant de facture antérieure à la ligne (EXT-FR-FE-136) ainsi que sa date (EXT-FR-FE-138).
+      </svrl:text>
+            </svrl:failed-assert>
+         </xsl:otherwise>
+      </xsl:choose>
+      <xsl:apply-templates select="*" mode="M82"/>
+   </xsl:template>
+   <xsl:template match="text()" priority="-1" mode="M82"/>
+   <xsl:template match="@*|node()" priority="-2" mode="M82">
+      <xsl:apply-templates select="*" mode="M82"/>
    </xsl:template>
 </xsl:stylesheet>

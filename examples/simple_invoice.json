@@ -5,7 +5,19 @@
   "delivery_date": "20240115",
   "notes": [
     "Order #12345 - Contact: John Doe",
-    "Merci pour votre confiance"
+    "Merci pour votre confiance",
+    {
+      "subject_code": "PMT",
+      "content": "Indemnite forfaitaire pour frais de recouvrement: 40 EUR."
+    },
+    {
+      "subject_code": "PMD",
+      "content": "Penalites de retard exigibles au taux legal en vigueur."
+    },
+    {
+      "subject_code": "AAB",
+      "content": "Aucun escompte pour paiement anticipe."
+    }
   ],
   "seller": {
     "name": "Acme Freelance",
@@ -16,6 +28,7 @@
       "country_code": "FR"
     },
     "vat_number": "FR123456789",
+    "siren": "123456789",
     "iban": "FR7630001007941234567890185",
     "bic": "BDFEFRPP",
     "bank_name": "Banque de France"
@@ -27,7 +40,8 @@
       "city": "Paris",
       "postcode": "75001",
       "country_code": "FR"
-    }
+    },
+    "siren": "987654321"
   },
   "lines": [
     {
@@ -58,6 +72,8 @@
   },
   "due_date": "20240217",
   "payment_terms": "Paiement à 30 jours net",
+  "business_process_type": "B1",
+  "payment_means_code": "58",
   "currency_code": "EUR",
   "profile": "en16931"
 }

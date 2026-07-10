@@ -91,6 +91,8 @@ class HybridValidator:
                 # Development check: skip Schematron if jar is missing, don't fail parsing.
             else:
                 try:
+                    xslt_path = os.path.abspath(self.xslt_path)
+                    saxon_jar = os.path.abspath(self.saxon_jar)
                     # Strip BOM and prepare safe XML
                     xml_text = xml_content.decode('utf-8-sig')
                     # Parse with lxml to strip entities before passing to Saxon to prevent XXE
@@ -101,16 +103,20 @@ class HybridValidator:
                     with tempfile.NamedTemporaryFile(suffix=".xml", delete=False) as tmp_in:
                         tmp_in.write(safe_xml_bytes)
                         tmp_in_path = tmp_in.name
+                    with tempfile.NamedTemporaryFile(suffix=".svrl.xml", delete=False) as tmp_out:
+                        tmp_out_path = tmp_out.name
                         
                     try:
                         proc = subprocess.run(
                             [
                                 "java",
                                 "-Xms32m", "-Xmx256m",
-                                "-jar", self.saxon_jar,
+                                "-jar", saxon_jar,
                                 f"-s:{tmp_in_path}",
-                                f"-xsl:{self.xslt_path}"
+                                f"-xsl:{xslt_path}",
+                                f"-o:{tmp_out_path}",
                             ],
+                            cwd=os.path.dirname(xslt_path),
                             capture_output=True,
                             timeout=30
                         )
@@ -120,14 +126,17 @@ class HybridValidator:
                             errors.append(ValidationError("SYS-SAXON", "Saxon Execution Failed", "", "error", ValidationLayer.SYSTEM))
                             schematron_valid = False
                         else:
-                            svrl_result = proc.stdout
+                            with open(tmp_out_path, "rb") as svrl_file:
+                                svrl_result = svrl_file.read()
+                            if not svrl_result and proc.stdout:
+                                svrl_result = proc.stdout
                             if svrl_result:
                                 svrl_doc = etree.fromstring(svrl_result)
                                 ns = {"svrl": "http://purl.oclc.org/dsdl/svrl"}
                                 
                                 failed_asserts = svrl_doc.xpath("//svrl:failed-assert", namespaces=ns)
                                 for fa in failed_asserts:
-                                    role = (fa.get("role") or "error").lower()
+                                    role = (fa.get("role") or fa.get("flag") or "error").lower()
                                     is_error = role in ("error", "fatal")
                                     
                                     if is_error:
@@ -145,6 +154,8 @@ class HybridValidator:
                                     ))
                     finally:
                         os.unlink(tmp_in_path)
+                        if os.path.exists(tmp_out_path):
+                            os.unlink(tmp_out_path)
                             
                 except subprocess.TimeoutExpired:
                     logger.error("Saxon Schematron timeout")

@@ -17,7 +17,7 @@
 # ----------------------------------------
 FROM eclipse-temurin:21-jdk-jammy AS jlink-builder
 
-ARG VERAPDF_VERSION=1.30.1
+ARG VERAPDF_VERSION=1.30.2
 ARG VERAPDF_MAJOR_MINOR=1.30
 
 RUN apt-get update && apt-get install -y --no-install-recommends \

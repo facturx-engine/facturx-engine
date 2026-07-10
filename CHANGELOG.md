@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.1] - 2026-07-10
+
+### Fixed
+- **Validation**: Hardened Saxon-HE subprocess execution for BR-FR CTC validation by writing SVRL output to an explicit file, resolving XSLT/JAR paths absolutely, and running Saxon from the stylesheet directory.
+- **Validation**: Correctly reads Schematron `flag` severity attributes in addition to `role`, matching the official French BR-FR CTC artifacts.
+- **Compliance**: Updated runtime validation artifacts to FNFE `FNFE_RFE_INVOICE_1.4.0` and CEN EN 16931 validation artifacts `1.3.16`.
+- **Compliance**: Added Factur-X `1.09` / ZUGFeRD `2.5` EN16931 and BASICWL XSD validation artifacts and switched runtime schema selection to the new XSDs.
+- **Generation**: Added France 1.4.0 mapping support for `business_process_type` (BT-23), SIREN legal identifiers, and electronic routing addresses (BT-34/BT-49).
+- **Compatibility**: Removed obsolete `check_schematron` arguments for `factur-x==4.2` generation and merge flows.
+- **Extraction**: PDF XML extraction now accepts raw `bytes` as well as file-like streams.
+
+### Changed
+- **Dependencies**: Updated `python-multipart` to 0.0.30 and VeraPDF to 1.30.2 to clear current Trivy findings.
+- **CI/CD**: Updated GitHub Actions to current Node 24-compatible releases, pinned Trivy, generated release SBOMs from the freshly built image digest, and signed images by digest with Cosign.
+
 ## [1.7.0] - 2026-03-10
 
 ### Added

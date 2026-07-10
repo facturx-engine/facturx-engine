@@ -75,7 +75,7 @@ tags_metadata = [
 # Create FastAPI application
 app = FastAPI(
     title=PRODUCT_NAME,
-    description="Production-ready REST API for Factur-X (ZUGFeRD 2.4) conversions and data extraction.",
+    description="Production-ready REST API for Factur-X (ZUGFeRD 2.5) conversions and data extraction.",
     version=__version__,
     openapi_tags=tags_metadata,
 )
@@ -178,13 +178,13 @@ async def startup_event():
     # 1. INTEGRITY CHECK: Critical Schemas
     # Use absolute path relative to this file to be robust against CWD changes
     base_dir = Path(__file__).parent
-    schema_path = base_dir / "resources" / "schemas" / "Factur-X_1.08_EN16931.xsd"
+    schema_path = base_dir / "resources" / "schemas" / "Factur-X_1.09_EN16931.xsd"
     
     if not schema_path.exists():
         logger.critical(f"🚨 FATAL: Validation schema missing at {schema_path}")
         logger.critical("   The application cannot start without EN16931 schemas.")
         sys.exit(1)
-    logger.info("✅ Schema integrity verified (Factur-X 1.08).")
+    logger.info("✅ Schema integrity verified (Factur-X 1.09).")
 
     # 2. VERAPDF & SAXON CHECK: Verify custom JRE + JARs are accessible
     verapdf_jar = os.getenv("VERAPDF_JAR", "")

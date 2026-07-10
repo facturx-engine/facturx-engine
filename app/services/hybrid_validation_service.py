@@ -22,13 +22,13 @@ logger = logging.getLogger(__name__)
 
 # Path configuration
 PROJECT_ROOT = Path(__file__).parent.parent.parent
-# Validation artifacts - Factur-X 1.08 / ZUGFeRD 2.4 (January 2026)
+# Validation artifacts - Factur-X 1.09 / ZUGFeRD 2.5 (June 2026)
 SCHEMA_ROOT = PROJECT_ROOT / "app" / "resources" / "schemas"
-XSD_PATH = SCHEMA_ROOT / "Factur-X_1.08_EN16931.xsd"
+XSD_PATH = SCHEMA_ROOT / "Factur-X_1.09_EN16931.xsd"
 XSLT_PATH = SCHEMA_ROOT / "_XSLT_EN16931" / "FACTUR-X_EN16931.xslt"
 
-# Factur-X 1.08 BASICWL (XSD structure validation)
-BASICWL_XSD_PATH = SCHEMA_ROOT / "Factur-X_1.08_BASICWL.xsd"
+# Factur-X 1.09 BASICWL (XSD structure validation)
+BASICWL_XSD_PATH = SCHEMA_ROOT / "Factur-X_1.09_BASICWL.xsd"
 
 # XRechnung 3.0.2 — CII (Cross-Industry Invoice)
 XRECHNUNG_30_ROOT = SCHEMA_ROOT / "xrechnung_3.0.2" / "cii"
@@ -41,7 +41,7 @@ XRECHNUNG_30_XSLT = XRECHNUNG_30_ROOT / "xslt" / "XRechnung-CII-validation.xsl"
 XRECHNUNG_30_UBL_ROOT = SCHEMA_ROOT / "xrechnung_3.0.2" / "ubl"
 XRECHNUNG_30_UBL_XSLT = XRECHNUNG_30_UBL_ROOT / "xslt" / "XRechnung-UBL-validation.xsl"
 
-# EN16931 UBL Schematron — base rules for UBL (Peppol BIS 3.0, generic UBL invoices)
+# EN16931 UBL Schematron v1.3.16 - base rules for UBL
 UBL_EN16931_XSLT = SCHEMA_ROOT / "_XSLT_EN16931_UBL" / "EN16931-UBL-validation.xslt"
 
 # UBL 2.1 XSD — OASIS structural schemas (R5)
@@ -50,7 +50,7 @@ UBL_EN16931_XSLT = SCHEMA_ROOT / "_XSLT_EN16931_UBL" / "EN16931-UBL-validation.x
 UBL_XSD_INVOICE_PATH = SCHEMA_ROOT / "ubl-2.1" / "xsd" / "maindoc" / "UBL-Invoice-2.1.xsd"
 UBL_XSD_CREDITNOTE_PATH = SCHEMA_ROOT / "ubl-2.1" / "xsd" / "maindoc" / "UBL-CreditNote-2.1.xsd"
 
-# French regulatory rules — BR-FR CTC v1.2.0 (France 2026 mandate / Chorus Pro parity)
+# French regulatory rules — BR-FR CTC v1.4.0 (France 2026 mandate / XP Z12-012)
 BR_FR_CTC_ROOT = SCHEMA_ROOT / "_BR_FR_CTC"
 BR_FR_CTC_CII_XSLT = BR_FR_CTC_ROOT / "BR-FR-CII.xsl"
 BR_FR_CTC_UBL_XSLT = BR_FR_CTC_ROOT / "BR-FR-UBL.xsl"

@@ -55,6 +55,9 @@ def get_xml_from_pdf(pdf_input, check_xsd=False, check_schematron=False, **kwarg
         Tuple of (xml_filename, xml_bytes). Returns (None, None) if no
         XML is found.
     """
+    if isinstance(pdf_input, bytes):
+        pdf_input = BytesIO(pdf_input)
+
     # Ensure we can re-read the stream after upstream tries
     if isinstance(pdf_input, BytesIO):
         start_pos = pdf_input.tell()
@@ -64,7 +67,7 @@ def get_xml_from_pdf(pdf_input, check_xsd=False, check_schematron=False, **kwarg
     # 1. Try upstream first (handles factur-x.xml, zugferd-invoice.xml)
     try:
         xml_filename, xml_content = _upstream_get_xml_from_pdf(
-            pdf_input, check_xsd=check_xsd, check_schematron=check_schematron, **kwargs
+            pdf_input, check_xsd=check_xsd, **kwargs
         )
         if xml_content:
             return xml_filename, xml_content
