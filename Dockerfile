@@ -19,9 +19,10 @@ FROM eclipse-temurin:21-jdk-jammy AS jlink-builder
 
 ARG VERAPDF_VERSION=1.30.2
 ARG VERAPDF_MAJOR_MINOR=1.30
+ARG JACKSON_VERSION=2.21.4
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    wget ca-certificates unzip && \
+    wget ca-certificates unzip zip && \
     rm -rf /var/lib/apt/lists/*
 
 # Write AutomatedInstallation XML for IzPack headless installer.
@@ -89,6 +90,25 @@ RUN JAR=$(find /opt/verapdf/bin -maxdepth 1 \
     test -n "$JAR" || { echo "ERROR: VeraPDF JAR not found after installation" >&2; exit 1; } && \
     echo "Packaging VeraPDF JAR: $JAR" && \
     cp "$JAR" /verapdf.jar
+
+# veraPDF 1.30.2 still ships Jackson 2.21.1 inside its fat JAR.
+# Overlay the compatible 2.21.4 patch release to pick up the published
+# fixes for CVE-2026-54512 and CVE-2026-54513 without switching to a
+# non-stable veraPDF build line.
+RUN mkdir -p /tmp/jackson-overlay && \
+    for artifact in jackson-annotations jackson-core jackson-databind; do \
+    wget -q "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/${artifact}/${JACKSON_VERSION}/${artifact}-${JACKSON_VERSION}.jar" \
+    -O "/tmp/${artifact}.jar" && \
+    unzip -q -o "/tmp/${artifact}.jar" -d /tmp/jackson-overlay; \
+    done && \
+    rm -f \
+    /tmp/jackson-overlay/META-INF/MANIFEST.MF \
+    /tmp/jackson-overlay/META-INF/*.SF \
+    /tmp/jackson-overlay/META-INF/*.RSA \
+    /tmp/jackson-overlay/META-INF/*.DSA && \
+    cd /tmp/jackson-overlay && \
+    zip -q -r /verapdf.jar . && \
+    rm -rf /tmp/jackson-overlay /tmp/jackson-annotations.jar /tmp/jackson-core.jar /tmp/jackson-databind.jar
 
 # Detect required JDK modules via jdeps, then merge with a known-good base set.
 # --ignore-missing-deps: tolerates non-modular (automatic module) dependencies
