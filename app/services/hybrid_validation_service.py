@@ -29,6 +29,7 @@ XSLT_PATH = SCHEMA_ROOT / "_XSLT_EN16931" / "FACTUR-X_EN16931.xslt"
 
 # Factur-X 1.09 BASICWL (XSD structure validation)
 BASICWL_XSD_PATH = SCHEMA_ROOT / "Factur-X_1.09_BASICWL.xsd"
+EXTENDED_XSD_PATH = SCHEMA_ROOT / "Factur-X_1.09_EXTENDED.xsd"
 
 # XRechnung 3.0.2 — CII (Cross-Industry Invoice)
 XRECHNUNG_30_ROOT = SCHEMA_ROOT / "xrechnung_3.0.2" / "cii"
@@ -211,9 +212,9 @@ class HybridValidationService:
                 effective_xslt_path = str(XSLT_PATH)
                 logger.info(f"Profile '{detected_profile}': applying full EN16931 XSD + Schematron rules")
             elif detected_profile == "extended":
-                effective_xsd_path = "" # Still skip XSD as it is too strict (EN16931)
+                effective_xsd_path = str(EXTENDED_XSD_PATH)
                 effective_xslt_path = str(SCHEMA_ROOT / "_XSLT_EXTENDED" / "FACTUR-X_EXTENDED.xslt")
-                logger.info(f"Profile '{detected_profile}': applying EXTENDED Schematron rules")
+                logger.info(f"Profile '{detected_profile}': applying EXTENDED XSD + Schematron rules")
             elif detected_profile == "basic":
                 effective_xslt_path = str(SCHEMA_ROOT / "_XSLT_BASIC" / "FACTUR-X_BASIC.xslt")
                 logger.info(f"Profile '{detected_profile}': applying BASIC Schematron rules")

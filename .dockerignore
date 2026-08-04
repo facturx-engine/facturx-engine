@@ -48,6 +48,9 @@ tests/
 htmlcov/
 
 # Verification Artifacts
+_ubl_extract/
+trivy-*.err
+trivy-*.json
 verify_output.pdf
 verify_input.pdf
 verify_out.txt

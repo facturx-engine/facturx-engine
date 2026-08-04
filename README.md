@@ -125,7 +125,7 @@ curl -X POST "http://localhost:8000/v1/merge" \
 
 You can parse CII XML in a day. But EN 16931 compliance isn't parsing - it's **ongoing maintenance**:
 
-- **Regulatory watch**: Schematron rules change with every spec revision (XRechnung 3.0.2, Factur-X 1.0.07...). Who updates your validation logic when Chorus Pro or KoSIT ships new business rules?
+- **Regulatory watch**: Schematron rules change with every spec revision (XRechnung 3.0.2, Factur-X 1.09...). Who updates your validation logic when Chorus Pro or KoSIT ships new business rules?
 - **Edge-case coverage**: Real-world invoices contain malformed IBANs, amounts with 3+ decimal places that cause silent rounding errors, dates in the past, negative totals masquerading as standard invoices. The engine's test corpus covers 200+ of these cases.
 - **Validation depth**: A syntactically valid invoice can still break your accounting pipeline. The engine runs the same Schematron rules as Chorus Pro and KoSIT, catching issues before they corrupt your database.
 

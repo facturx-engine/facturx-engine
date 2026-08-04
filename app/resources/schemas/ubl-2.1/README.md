@@ -1,27 +1,14 @@
-# UBL 2.1 XSD — OASIS
+# UBL 2.1 XSD - OASIS
 
-## Missing files: `xsd/maindoc/UBL-Invoice-2.1.xsd` and `UBL-CreditNote-2.1.xsd`
+This directory vendors the complete OASIS UBL 2.1 `xsd/` directory (79 schemas),
+used for structural validation of UBL invoices and credit notes.
 
-This directory must contain the OASIS UBL 2.1 XSD schemas for structural validation.
+Source: https://docs.oasis-open.org/ubl/os-UBL-2.1/UBL-2.1.zip
 
-### How to obtain them
+Archive SHA-256:
+`60b80d76394a8a2add90723ecb8e0e2e9d826775de9749df37a72d60703f86ed`
 
-1. Download the official OASIS UBL 2.1 package:
-   https://docs.oasis-open.org/ubl/os-UBL-2.1/UBL-2.1.zip
+The main entry points are:
 
-2. Extract the archive and copy the **entire `xsd/` folder** here:
-   ```
-   app/resources/schemas/ubl-2.1/
-   └── xsd/
-       ├── common/           (shared component schemas)
-       └── maindoc/
-           ├── UBL-Invoice-2.1.xsd
-           ├── UBL-CreditNote-2.1.xsd
-           └── ... (other document types)
-   ```
-
-### Fallback behaviour
-
-When these files are **absent**, `HybridValidationService` skips XSD structural validation
-for UBL documents and applies Schematron (EN16931-UBL or XRechnung UBL) only.
-The service logs a DEBUG-level message and continues normally.
+- `xsd/maindoc/UBL-Invoice-2.1.xsd`
+- `xsd/maindoc/UBL-CreditNote-2.1.xsd`
