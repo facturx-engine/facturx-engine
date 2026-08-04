@@ -171,7 +171,14 @@ RUN apt-get update && apt-get upgrade -y && \
 # Install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip setuptools && \
-    pip install --no-cache-dir -r requirements.txt
+    pip install --no-cache-dir -r requirements.txt && \
+    rm -rf /root/.cache/pip \
+           /usr/local/lib/python3.11/ensurepip \
+           /usr/local/lib/python3.11/site-packages/pip \
+           /usr/local/lib/python3.11/site-packages/pip-*.dist-info \
+           /usr/local/bin/pip \
+           /usr/local/bin/pip3 \
+           /usr/local/bin/pip3.11
 
 # Copy application code
 COPY app/ app/
