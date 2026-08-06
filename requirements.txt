@@ -1,4 +1,4 @@
-fastapi==0.136.1
+fastapi==0.141.1
 uvicorn==0.46.0
 python-multipart==0.0.30
 factur-x==4.2
