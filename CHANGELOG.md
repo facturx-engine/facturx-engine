@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-08-17
+
 ### Changed
 - **Serialize**: Replace recovery and fallback mapping with the strict `2.0.0` ERP contract. Malformed, incomplete, unsupported, or not fully validated invoices now fail with HTTP 422 and stable diagnostics.
 - **Extract**: Mark heuristic extraction explicitly as a non-importable `preview`.
