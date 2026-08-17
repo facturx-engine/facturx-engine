@@ -1,9 +1,10 @@
 """
 Pydantic models for API request/response validation.
 """
+from decimal import Decimal, InvalidOperation
 from typing import Any, Dict, List, Literal, Optional, Union
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class Address(BaseModel):
@@ -154,9 +155,58 @@ class InvoiceMetadata(BaseModel):
     payment_discount: Optional[PaymentDiscount] = Field(None, description="Payment discount terms")
     payment_means_code: Optional[str] = Field(None, description="Payment means code (e.g. 58=SEPA, 10=Cash)")
 
+    @model_validator(mode="after")
+    def validate_generation_contract(self) -> "InvoiceMetadata":
+        """Reject incomplete or arithmetically inconsistent generation input.
+
+        The generator must not manufacture a tax breakdown or postal address to
+        make an otherwise incomplete invoice look usable.
+        """
+
+        line_level_profiles = {"basic", "en16931", "extended", "xrechnung_3.0"}
+        if self.profile in line_level_profiles:
+            if not self.lines:
+                raise ValueError(f"profile '{self.profile}' requires at least one line")
+            if not self.tax_details:
+                raise ValueError(
+                    f"profile '{self.profile}' requires an explicit tax_details breakdown"
+                )
+            if self.seller.address is None or self.buyer.address is None:
+                raise ValueError(
+                    f"profile '{self.profile}' requires explicit seller and buyer postal addresses"
+                )
+
+        try:
+            basis_total = Decimal(self.amounts.tax_basis_total)
+            tax_total = Decimal(self.amounts.tax_total)
+            gross_total = Decimal(self.amounts.grand_total)
+            due_total = Decimal(self.amounts.due_payable)
+            prepaid = Decimal(self.amounts.prepaid or "0")
+            breakdown_basis = sum(
+                (Decimal(item.basis_amount) for item in self.tax_details), Decimal("0")
+            )
+            breakdown_tax = sum(
+                (Decimal(item.calculated_amount) for item in self.tax_details),
+                Decimal("0"),
+            )
+        except InvalidOperation as exc:
+            raise ValueError("monetary amounts and tax_details must contain valid decimals") from exc
+
+        tolerance = Decimal("0.01")
+        if self.tax_details and abs(breakdown_basis - basis_total) > tolerance:
+            raise ValueError("tax_details basis sum does not match amounts.tax_basis_total")
+        if self.tax_details and abs(breakdown_tax - tax_total) > tolerance:
+            raise ValueError("tax_details tax sum does not match amounts.tax_total")
+        if abs((basis_total + tax_total) - gross_total) > tolerance:
+            raise ValueError("amounts.grand_total must equal tax_basis_total plus tax_total")
+        if abs((gross_total - prepaid) - due_total) > tolerance:
+            raise ValueError("amounts.due_payable must equal grand_total minus prepaid")
+
+        return self
+
 
 class ValidationErrorDetail(BaseModel):
-    """Structured validation error for Community Edition."""
+    """Structured technical validation error."""
     rule_id: Optional[str] = Field(None, description="Rule identifier (e.g. BR-CO-10)")
     message: str = Field(..., description="Error message")
     severity: str = Field(default="error", description="error or warning")
@@ -169,10 +219,10 @@ class SkippedLayer(BaseModel):
 
 
 class ProHint(BaseModel):
-    """Teaser showing what Pro Smart Diagnostics would provide."""
-    error_count: int = Field(..., description="Number of errors Pro would explain")
-    warning_count: int = Field(..., description="Number of warnings Pro would explain")
-    message: str = Field(..., description="Human-readable upgrade hint")
+    """Legacy compatibility shape for an enhanced-diagnostics summary."""
+    error_count: int = Field(..., description="Number of errors in the summary")
+    warning_count: int = Field(..., description="Number of warnings in the summary")
+    message: str = Field(..., description="Human-readable diagnostics note")
 
 
 class ValidationResult(BaseModel):
@@ -182,15 +232,15 @@ class ValidationResult(BaseModel):
     flavor: Optional[str] = Field(None, description="Detected flavor/level")
     errors: List[ValidationErrorDetail] = Field(default_factory=list, description="List of validation errors")
     validation_mode: Optional[str] = Field(None, description="Validation mode")
-    pdfa_valid: Optional[bool] = Field(None, description="PDF/A-3b compliance (null if input was raw XML or VeraPDF unavailable)")
+    pdfa_valid: Optional[bool] = Field(None, description="PDF/A-3b validation result (null if the layer did not run or did not apply)")
     validation_completeness: str = Field(default="full", description="full if all applicable layers ran, partial if some were skipped")
     layers_executed: List[str] = Field(default_factory=list, description="Validation layers that actually ran (xsd, schematron, pdfa3b, br_fr_ctc)")
     layers_skipped: List[SkippedLayer] = Field(default_factory=list, description="Validation layers that were skipped with reasons")
-    pro_hint: Optional[ProHint] = Field(None, description="Teaser: what Pro Smart Diagnostics would provide for these results")
+    pro_hint: Optional[ProHint] = Field(None, description="Optional enhanced-diagnostics summary in enabled builds")
 
 
 class DiagnosticDetail(BaseModel):
-    """A single diagnostic with human-readable explanation (Pro Feature)."""
+    """A single diagnostic with a human-readable explanation."""
     rule_id: str = Field(..., description="EN 16931 rule ID (e.g., BR-CO-10)")
     severity: str = Field(..., description="Severity: error, warning, info")
     title: str = Field(..., description="Short, actionable title")
@@ -200,7 +250,7 @@ class DiagnosticDetail(BaseModel):
 
 
 class ProValidationResult(BaseModel):
-    """Enhanced validation result with Smart Diagnostics (Pro Feature)."""
+    """Historical licensed response with enhanced diagnostics."""
     valid: bool = Field(..., description="Whether the file is valid")
     format: Optional[str] = Field(None, description="Detected format")
     flavor: Optional[str] = Field(None, description="Detected profile")
@@ -208,7 +258,7 @@ class ProValidationResult(BaseModel):
     warning_count: int = Field(default=0, description="Total number of warnings")
     diagnostics: List[DiagnosticDetail] = Field(default_factory=list, description="Smart diagnostics with explanations")
     validation_mode: str = Field(default="pro_diagnostics", description="Always 'pro_diagnostics' for this response type")
-    pdfa_valid: Optional[bool] = Field(None, description="PDF/A-3b compliance (null if input was raw XML or VeraPDF unavailable)")
+    pdfa_valid: Optional[bool] = Field(None, description="PDF/A-3b validation result (null if the layer did not run or did not apply)")
     validation_completeness: str = Field(default="full", description="full if all applicable layers ran, partial if some were skipped")
     layers_executed: List[str] = Field(default_factory=list, description="Validation layers that actually ran")
     layers_skipped: List[SkippedLayer] = Field(default_factory=list, description="Validation layers that were skipped with reasons")

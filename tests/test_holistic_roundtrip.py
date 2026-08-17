@@ -31,6 +31,9 @@ def test_xrechnung_30_roundtrip():
         lines=[
             LineItem(name="Cloud Service", quantity=1.0, net_price=100.0, net_total=100.0, vat_rate=19.0)
         ],
+        tax_details=[
+            {"calculated_amount": "19.00", "basis_amount": "100.00", "rate": "19.00", "category_code": "S"}
+        ],
         amounts=MonetaryAmounts(
             tax_basis_total="100.00",
             tax_total="19.00",
@@ -49,7 +52,7 @@ def test_xrechnung_30_roundtrip():
     
     # Check Profile Persistence
     assert invoice_json.profile == "xrechnung_3.0"
-    assert invoice_json.format == "factur-x"
+    assert invoice_json.format == "cii"
     
     # Check Reference Persistence (Serializer)
     assert invoice_json.buyer_reference == "BUYER-REF-123"
@@ -71,8 +74,11 @@ def test_zugferd_en16931_parity():
         buyer_reference="PARITY-REF",
         contract_reference="CONTRACT-XYZ",
         seller=SellerInfo(name="S", address={"line1": "A", "city": "C", "postcode": "1", "country_code": "FR"}),
-        buyer=BuyerInfo(name="B"),
+        buyer=BuyerInfo(name="B", address={"line1": "B", "city": "C", "postcode": "2", "country_code": "FR"}),
         lines=[LineItem(name="I", quantity=1.0, net_price=10.0, net_total=10.0, vat_rate=20.0)],
+        tax_details=[
+            {"calculated_amount": "2.00", "basis_amount": "10.00", "rate": "20.00", "category_code": "S"}
+        ],
         amounts=MonetaryAmounts(tax_basis_total="10.00", tax_total="2.00", grand_total="12.00", due_payable="12.00")
     )
     xml_str = GeneratorService.generate_xml(metadata)
@@ -96,8 +102,11 @@ def test_audit_fixes_regression_prevention():
         issue_date="20260219",
         profile="en16931",
         seller=SellerInfo(name="S", address={"line1": "A", "city": "C", "postcode": "1", "country_code": "FR"}),
-        buyer=BuyerInfo(name="B"),
+        buyer=BuyerInfo(name="B", address={"line1": "B", "city": "C", "postcode": "2", "country_code": "FR"}),
         lines=[LineItem(name="I", quantity=1.0, net_price=10.0, net_total=10.0, vat_rate=20.0)],
+        tax_details=[
+            {"calculated_amount": "2.00", "basis_amount": "10.00", "rate": "20.00", "category_code": "S"}
+        ],
         amounts=MonetaryAmounts(tax_basis_total="10.00", tax_total="2.00", grand_total="12.00", due_payable="12.00")
     )
     xml_str = GeneratorService.generate_xml(metadata)

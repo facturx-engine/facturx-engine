@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PHP Factur-X Library Alternative (API) | Factur-X Engine</title>
     <meta name="description"
-        content="Looking for a PHP Factur-X library? Discover why our self-hosted Docker API is a safer alternative for Symfony and Laravel to generate compliant e-invoices.">
+        content="Looking for a PHP Factur-X library? Use a self-hosted Docker API from Symfony or Laravel to generate and technically validate e-invoice artifacts.">
     <link rel="canonical" href="https://facturx-engine.github.io/facturx-engine/tutorials/php-facturx.html" />
     <link rel="icon" href="https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png" type="image/png">
 
@@ -14,12 +14,12 @@
     <meta property="og:type" content="article">
     <meta property="og:url" content="https://facturx-engine.github.io/facturx-engine/tutorials/php-facturx.html">
     <meta property="og:title" content="PHP Factur-X Library Alternative (API) | Factur-X Engine">
-    <meta property="og:description" content="Self-hosted Docker API as a safer alternative for Symfony and Laravel to generate compliant Factur-X e-invoices.">
+    <meta property="og:description" content="Self-hosted Docker API for generating and technically validating Factur-X artifacts from Symfony and Laravel.">
     <meta property="og:image" content="https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png">
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="PHP Factur-X API Alternative | Factur-X Engine">
-    <meta name="twitter:description" content="Handle strict E-Rechnung and Factur-X compliance in Symfony and Laravel without complex PDF or XML dependencies.">
+    <meta name="twitter:description" content="Handle Factur-X generation and validation workflows from Symfony and Laravel without adding PDF or XML tooling to the PHP process.">
     <meta name="twitter:image" content="https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png">
 
     <!-- Breadcrumb Schema -->
@@ -92,7 +92,7 @@
           "name": "What is the best PHP library for generating Factur-X or XRechnung invoices?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "No PHP library provides full EN 16931 Schematron validation out of the box. Libraries like horstoeko/zugferd generate CII XML but do not run Saxon-HE Schematron checks, which are required for legal compliance in France, Germany, and Belgium. The recommended approach for PHP is to call a self-hosted REST API (such as Factur-X Engine) via Guzzle or curl. The engine handles Saxon-HE, VeraPDF, and all profile-specific business rules internally."
+            "text": "A self-hosted REST API is one option when you want to keep PDF, XML Schema and Schematron tooling outside the PHP process. Factur-X Engine reports which configured validation layers actually ran or were skipped; callers must inspect that evidence and retain their own legal and business controls."
           }
         },
         {
@@ -108,7 +108,7 @@
           "name": "Can I validate Factur-X invoices from PHP before archiving them?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes. POST /v1/validate accepts a PDF or XML file and returns JSON with is_valid (boolean) and errors (array of Schematron rule violations). Use this as a pre-archiving gate in your PHP application to reject non-compliant supplier invoices before they enter your accounting system."
+            "text": "Yes. POST /v1/validate accepts a PDF or XML file and returns structured validation results, including executed and skipped layers. Use it as technical evidence in a wider pre-archiving workflow, not as the sole accounting or acceptance decision."
           }
         }
       ]
@@ -144,8 +144,8 @@
                     Alternative (API)
                 </h1>
                 <p class="text-lg text-slate-400 leading-relaxed">
-                    The robust alternative to fragile <strong>PHP Factur-X libraries</strong>. Handle strict E-Rechnung
-                    and Factur-X compliance in Symfony, Laravel, or WordPress without complex PDF or XML dependencies.
+                    A containerized alternative to embedding Factur-X PDF, XML Schema and Schematron tooling directly
+                    in Symfony, Laravel, or WordPress.
                 </p>
             </div>
 
@@ -201,10 +201,9 @@ try {
                 <div class="space-y-4">
                     <h2 class="text-2xl font-bold text-white">PHP Libraries vs Docker API</h2>
                     <p class="text-slate-400">
-                        Libraries like <code>horstoeko/zugferd</code> generate CII XML but skip the Schematron
-                        validation required for legal compliance. Libraries wrapping <code>tcpdf</code> or
-                        <code>Ghostscript</code> for PDF/A-3 embedding consume large amounts of RAM and break
-                        on edge cases. The Docker API approach isolates all complexity:
+                        Libraries and a Docker API make different integration trade-offs. A container can centralize
+                        PDF, XML Schema and Schematron dependencies and report the checks that ran, while an embedded
+                        library avoids a service boundary. Choose based on your runtime and validation requirements:
                     </p>
                     <div class="overflow-x-auto mt-4">
                         <table class="w-full text-sm text-slate-400 border border-white/10 rounded-lg">
@@ -327,9 +326,9 @@ class GenerateFacturXInvoice implements ShouldQueue
                 <div class="space-y-4">
                     <h2 class="text-2xl font-bold text-white">Use Case: Validate Supplier Invoices Before Archiving</h2>
                     <p class="text-slate-400">
-                        When receiving e-invoices from suppliers via EDI or email attachment, validate compliance
-                        before injecting into your accounting system. Non-compliant invoices (broken VAT math,
-                        missing IBAN, wrong profile) are rejected with a structured error report:
+                        When receiving e-invoices from suppliers via EDI or email attachment, run the configured
+                        technical checks before your own accounting controls. Detected VAT arithmetic, payment-data
+                        or profile errors are returned in a structured report:
                     </p>
                     <div class="bg-black border border-white/10 rounded-lg p-6 overflow-x-auto">
                         <pre class="font-mono text-sm text-slate-300"><code>&lt;?php

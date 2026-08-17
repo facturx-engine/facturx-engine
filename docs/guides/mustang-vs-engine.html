@@ -104,7 +104,7 @@
           "name": "When should I choose Factur-X Engine over Mustangproject?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Choose Factur-X Engine if you work in Python, Node.js, PHP, or any non-Java stack; if you need polyglot support across multiple services; if you want stricter EN 16931 Schematron validation with VeraPDF PDF/A-3b compliance checks; or if you need a centralized validation microservice with zero JVM dependency in each service."
+            "text": "Choose Factur-X Engine if you want a language-neutral local HTTP boundary, centralized CII/UBL processing, explicit reporting of executed and skipped validation layers, or strict versioned JSON serialization. Choose only after testing the supported document profiles against your own corpus."
           }
         },
         {
@@ -219,7 +219,7 @@
                             <tr class="border-b border-white/5">
                                 <td class="py-4 px-4 font-bold text-white">License</td>
                                 <td class="py-4 px-4">Apache 2.0</td>
-                                <td class="py-4 px-4">MIT (Community) / Commercial (Pro)</td>
+                                <td class="py-4 px-4">Published source: MIT; Intake currently evaluated by key in the same image</td>
                             </tr>
                         </tbody>
                     </table>
@@ -266,7 +266,7 @@
                             </li>
                             <li class="flex gap-2">
                                 <span class="text-amber-500 mt-1 shrink-0">&bull;</span>
-                                <span>You need an <strong class="text-white">air-gapped, containerized</strong> solution</span>
+                                <span>You need a <strong class="text-white">self-hosted, containerized</strong> solution that you can place on a restricted network</span>
                             </li>
                             <li class="flex gap-2">
                                 <span class="text-amber-500 mt-1 shrink-0">&bull;</span>
@@ -397,13 +397,17 @@ curl -X POST <span class="text-green-400">"http://localhost:8000/v1/convert"</sp
                     <div>
                         <h3 class="text-lg font-bold text-white mb-2">Memory Management</h3>
                         <p class="text-slate-400">
-                            Mustangproject runs inside your JVM &mdash; memory is shared with your application. Factur-X Engine runs Saxon-HE and VeraPDF as isolated subprocesses: each validation spawns a short-lived process, and memory is reclaimed by the OS immediately after completion. No JVM memory leaks under sustained load.
+                            Mustangproject runs inside your JVM, while Factur-X Engine places an HTTP and container
+                            boundary around the processing stack. Resource behavior depends on worker configuration,
+                            enabled validators and workload; measure both options under your own sustained load.
                         </p>
                     </div>
                     <div>
                         <h3 class="text-lg font-bold text-white mb-2">Validation Depth</h3>
                         <p class="text-slate-400">
-                            The engine executes the official EN 16931 Schematron rules (the same ones used by Chorus Pro and KoSIT) via Saxon-HE. The Pro edition adds Smart Diagnostics that translate cryptic XPath errors into actionable messages like <code class="bg-slate-800 px-1 py-0.5 rounded text-amber-500">INVALID-IBAN</code> or <code class="bg-slate-800 px-1 py-0.5 rounded text-amber-500">TOO-MANY-DECIMALS</code>.
+                            The engine executes bundled EN 16931 and XRechnung validation artifacts. Results identify
+                            executed and skipped layers; they do not claim parity with a receiving platform. An Intake
+                            evaluation key also enables enhanced human-readable diagnostics.
                         </p>
                     </div>
                     <div>

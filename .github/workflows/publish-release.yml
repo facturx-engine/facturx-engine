@@ -73,10 +73,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # ----------------------------------------------------------------
-      # DECOUPLED: Pro Source Code is now managed differently (Admin Vault)
-      # ----------------------------------------------------------------
-
       - name: Extract metadata (tags, labels)
         id: meta
         uses: docker/metadata-action@v6
@@ -147,4 +143,3 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           repository: ${{ env.DOCKER_IMAGE }}
           readme-filepath: ./README.md
-

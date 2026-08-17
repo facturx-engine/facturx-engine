@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+- **Serialize**: Replace recovery and fallback mapping with the strict `2.0.0` ERP contract. Malformed, incomplete, unsupported, or not fully validated invoices now fail with HTTP 422 and stable diagnostics.
+- **Extract**: Mark heuristic extraction explicitly as a non-importable `preview`.
+- **Trust boundaries**: Document that validation reports technical checks only and that generation does not guarantee fiscal, regulatory, or recipient acceptance.
+- **Operations**: Make Prometheus metrics opt-in through `METRICS_ENABLED=true` and `METRICS_TOKEN`, independently of commercial licensing.
+- **Commercial status**: Replace inactive paid checkout links with the free Intake evaluation path and remove unsupported SLA, security-response, and compliance commitments.
+
+### Legal
+- **Repository license**: Restore an unmodified MIT license for all code published in this repository. The previous proprietary exceptions were incompatible with the repository-wide grant and have been removed.
+
 ## [1.8.3] - 2026-08-04
 
 ### Added

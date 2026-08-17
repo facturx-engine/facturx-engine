@@ -95,14 +95,14 @@ class MetricsCollector:
             self._labeled_counters[metric][label] += value
 
     def inc_labeled(self, metric: str, label: str, value: int = 1):
-        """Increment a labeled counter (Pro feature)."""
+        """Increment a labeled counter."""
         with self._lock:
             self._inc_labeled_unlocked(metric, label, value)
     
     def record_validation(self, mode: str, is_valid: bool, profile: str = None, 
                           error_rules: list = None):
         """
-        Record a validation event with business metrics (Pro feature).
+        Record a validation event with business metrics.
         
         Args:
             mode: "pro", "teaser", or "lite"

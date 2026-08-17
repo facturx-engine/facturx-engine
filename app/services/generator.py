@@ -127,8 +127,8 @@ class GeneratorService:
             
             logger.info(f"Successfully generated Factur-X PDF for invoice {metadata.invoice_number}")
             
-            # AUTOMATIC VALIDATION (Quality Gate)
-            # Ensure we never deliver a broken or non-compliant file
+            # Automatic technical validation of the generated XML. This is a
+            # quality gate, not a guarantee of fiscal or recipient acceptance.
             from app.services.hybrid_validation_service import HybridValidationService
             # OPTIMIZATION: Validate raw XML bytes directly to avoid expensive PDF extraction
             validation_res = HybridValidationService.validate(xml_bytes, "generated_check.xml")
@@ -136,9 +136,8 @@ class GeneratorService:
             if not validation_res["is_valid"]:
                 errors = validation_res.get("errors", [])
                 error_msg = errors[0].get("message") if errors else "Unknown validation error"
-                logger.error(f"Generated PDF failed compliance check: {errors}")
-                # We fail strict. A generated invoice MUST be valid.
-                raise ValueError(f"Generated Factur-X PDF failed compliance check: {error_msg}")
+                logger.error(f"Generated PDF failed the configured validation checks: {errors}")
+                raise ValueError(f"Generated Factur-X PDF failed validation: {error_msg}")
                 
             return result_bytes
             

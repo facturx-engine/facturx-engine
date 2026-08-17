@@ -19,15 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-## Proprietary Exceptions (Open Core)
-
-This software uses an "Open Core" model. The core of this Software (the "Community Edition") is licensed under the MIT License above.
-
-However, certain advanced features and modules (the "Pro Edition" features) embedded within this repository and/or the distributed Docker image are strictly proprietary and commercial.
-
-Any code pathways, modules, or features explicitly activated by the presence of a valid `LICENSE_KEY` environment variable (including, but not limited to, the `app/serializer.py` ERP JSON Transformation logic and VeraPDF PDF/A-3 compliance integration logic) are NOT covered by the MIT License.
-
-Using, modifying to bypass license checks, or reproducing these proprietary modules without a valid commercial license agreement from NexaFlow constitutes a violation of copyright law.

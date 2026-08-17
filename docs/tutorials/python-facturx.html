@@ -147,7 +147,7 @@
                     Stateless API
                 </h1>
                 <p class="text-lg text-slate-400 leading-relaxed">
-                    Searching for a <strong>Python Factur-X library</strong> to generate EN16931 compliant e-invoices?
+                    Searching for a <strong>Python Factur-X library</strong> to generate and validate EN 16931 invoice artifacts?
                     Instead of fighting native binary <strong>Factur-X Python</strong> parsing, you can integrate the
                     stateless <strong>Factur-X Engine
                         API</strong> into your FastAPI, Django, or script-based workflows using the standard `requests`
@@ -325,9 +325,9 @@ class Command(BaseCommand):
                 <div class="space-y-4">
                     <h2 class="text-2xl font-bold text-white">Use Case: Validate Received Invoices Before Archiving</h2>
                     <p class="text-slate-400">
-                        When receiving e-invoices from suppliers, validate compliance before injecting them into
-                        your accounting system. Non-compliant invoices (e.g. missing IBAN for SEPA payment,
-                        broken VAT math) are rejected early with a clear error report:
+                        When receiving e-invoices from suppliers, run the configured technical checks before your
+                        own accounting controls. Detected issues such as a missing IBAN for the declared payment
+                        method or broken VAT arithmetic are returned in a structured report:
                     </p>
                     <div class="bg-black border border-white/10 rounded-lg p-6 overflow-x-auto">
                         <pre class="font-mono text-sm text-slate-300"><code>import requests

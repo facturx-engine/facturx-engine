@@ -1,7 +1,7 @@
 """
 Business-Ready JSON Serializer.
 Transitions from XML (CII/UBL) to a normalized, high-precision JSON format.
-Pro Feature: Supports UBL, CII, and automatic field translation.
+Legacy demo mapper retained for compatibility; the public route is disabled.
 """
 import logging
 from datetime import date, datetime
@@ -363,5 +363,4 @@ class BusinessReadySerializer:
                 logger.warning(f"Skipping malformed UBL tax entry: {e}")
 
         return breakdown
-
 

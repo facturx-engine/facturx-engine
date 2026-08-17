@@ -128,5 +128,31 @@ def test_xml_generation_missing_fields(client):
     assert data["type"] == "urn:facturx:error:invalid_metadata"
 
 
+def test_xml_generation_rejects_missing_tax_breakdown(client):
+    """Line-level profiles must not manufacture a tax breakdown."""
+    metadata = valid_metadata()
+    metadata["tax_details"] = []
+
+    response = client.post(
+        "/v1/xml",
+        data={"metadata": json.dumps(metadata)},
+    )
+
+    assert response.status_code == 400
+    assert response.json()["type"] == "urn:facturx:error:invalid_metadata"
+
+
+def test_xml_generation_does_not_invent_delivery_date(client):
+    metadata = valid_metadata()
+
+    response = client.post(
+        "/v1/xml",
+        data={"metadata": json.dumps(metadata)},
+    )
+
+    assert response.status_code == 200
+    assert "ActualDeliverySupplyChainEvent" not in response.text
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v", "-s"])

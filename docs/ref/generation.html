@@ -108,8 +108,8 @@
                 <h1 class="text-4xl md:text-6xl font-black text-white tracking-tight mb-6 uppercase">Hybrid PDF
                     Generation</h1>
                 <p class="text-xl text-slate-400 leading-relaxed font-light">
-                    How Factur-X Engine creates compliant **PDF/A-3** files with embedded **Cross Industry Invoice
-                    (CII)** XML.
+                    How Factur-X Engine generates a PDF with embedded Cross Industry Invoice (CII) XML for a
+                    Factur-X workflow, and which checks must still be inspected.
                 </p>
             </div>
 
@@ -118,7 +118,8 @@
                     <h2 class="text-2xl font-bold text-white mb-6 uppercase tracking-tight">PDF/A-3 ISO Standard</h2>
                     <p>
                         Factur-X is a hybrid format. It is a standard PDF (visual representation) that contains an XML
-                        file (structured data). To be compliant, it must follow **ISO 19005-3 (PDF/A-3)**.
+                        file (structured data). Factur-X workflows use ISO 19005-3 (PDF/A-3); generation alone is
+                        not evidence that every applicable PDF/A or business-rule check passed.
                     </p>
                     <div class="mt-8 space-y-6">
                         <div class="flex items-start gap-6">
@@ -128,8 +129,8 @@
                             <div>
                                 <h4 class="text-white font-bold mb-1">XMP Metadata Injection</h4>
                                 <p class="text-sm text-slate-500">The engine injects a specific Factur-X XMP extension
-                                    schema into the PDF metadata, identifying the file as a compliant invoice and
-                                    specifying its profile (MINIMUM, BASIC, COMFORT, or EXTENDED).</p>
+                                    schema into the PDF metadata and declares the selected profile. Validate the
+                                    resulting document separately before relying on that declaration.</p>
                             </div>
                         </div>
                         <div class="flex items-start gap-6">
@@ -164,7 +165,8 @@
                             - Transform JSON to CII XML (Jinja2)<br>
                             - Inject ZUGFeRD XMP Extension<br>
                             - Attach factur-x.xml (AFRelationship)<br>
-                            - Final compliance check
+                            - Return the generated artifact<br>
+                            - Run /v1/validate separately for validation evidence
                         </div>
                     </div>
                 </section>

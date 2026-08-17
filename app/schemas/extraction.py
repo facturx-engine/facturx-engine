@@ -1,6 +1,6 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class ErrorDetail(BaseModel):
@@ -70,6 +70,14 @@ class InvoiceJson(BaseModel):
     }
 
 class ExtractionResult(BaseModel):
+    mode: Literal["preview"] = Field(
+        default="preview",
+        description="Best-effort inspection only; use /v1/serialize for strict mapping",
+    )
+    suitable_for_automatic_import: Literal[False] = Field(
+        default=False,
+        description="Preview extraction must never be used as an automatic accounting import decision",
+    )
     format_detected: Optional[str] = None
     profile_detected: Optional[str] = None
     xml_extracted: bool

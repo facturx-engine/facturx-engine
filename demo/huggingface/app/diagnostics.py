@@ -139,7 +139,7 @@ async def get_diagnostics():
     if not has_license:
         features_enabled.append("mode:community")
     else:
-        features_enabled.append("mode:paid")
+        features_enabled.append("mode:licensed")
     
     # Calculate uptime
     uptime = (datetime.now() - _startup_time).total_seconds()

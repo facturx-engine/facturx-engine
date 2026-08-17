@@ -11,16 +11,14 @@ from fastapi.responses import StreamingResponse
 
 # Magic-byte signatures for supported file types
 _PDF_MAGIC = b"%PDF-"
-_XML_MAGIC_BYTES = (b"<?xml", b"\xef\xbb\xbf<?xml", b"<rsm:", b"<ubl:")  # UTF-8 BOM + common root elements
-
 def _check_pdf_magic(content: bytes) -> bool:
     """Return True if content starts with the PDF magic bytes (%PDF-)."""
     return content[:5] == _PDF_MAGIC
 
 def _check_xml_magic(content: bytes) -> bool:
-    """Return True if content looks like XML (starts with <?xml or a known root element)."""
+    """Return True if content has an XML-like opening token."""
     stripped = content.lstrip(b"\xef\xbb\xbf \t\r\n")  # strip UTF-8 BOM + whitespace
-    return stripped[:5] == b"<?xml" or stripped[:4] in (b"<rsm", b"<ubl", b"<Cro")
+    return stripped.startswith(b"<?xml") or stripped.startswith(b"<")
 
 from app.schemas.errors import ProblemDetails
 from app.schemas.extraction import ExtractionResult
@@ -222,8 +220,8 @@ async def validate_facturx(
     
     Returns a validation report with detected format, flavor, and any errors.
     
-    **Pro Edition**: Smart Diagnostics with actionable human-readable fixes.
-    **Community Edition**: Full raw validation report (Standard EN16931 error codes).
+    The response identifies which validation layers ran or were skipped. Some
+    enhanced diagnostics remain license-gated in historical builds.
     """
     import os
     import time
@@ -423,7 +421,7 @@ async def extract_facturx(
 
         # Extract invoice data
         # Extraction: Always use the full ExtractionService (Open Core Policy)
-        # Pro features are now strictly on Validation and Metrics.
+        # Enhanced validation remains gated in historical licensed builds.
         from app.services.extractor import ExtractionService
         
         result = await ExtractionService.extract_invoice_data_async(
@@ -461,13 +459,8 @@ async def serialize_facturx(
     file: UploadFile = File(..., description="Factur-X PDF or XML file to serialize")
 ):
     """
-    Business-Ready JSON Serialization (Pro Feature).
-    
-    Transforms XML data into a normalized, high-precision JSON format 
-    designed for ERP and accounting system integration.
-    
-    **Trial Mode**: Available for reference files.
-    **Community Mode**: Returns obfuscated (masked) data for schema testing.
+    Historical serializer route. It is disabled in the public demo because the
+    bundled legacy mapper is not safe for automatic ERP import.
     """
     import time
 
@@ -502,7 +495,7 @@ async def serialize_facturx(
                 detail={"error": "INVALID_FILE_TYPE", "message": "File does not appear to be valid XML (bad magic bytes)"}
             )
 
-        from app.license import has_tier, is_licensed
+        from app.license import is_licensed
         
         try:
             if is_licensed():
@@ -510,13 +503,15 @@ async def serialize_facturx(
         except Exception:
             pass
 
-        is_pro_tier = has_tier(["Evaluation", "Pro"])
+        # The public demo intentionally disables strict serialization. Its
+        # bundled legacy serializer does not implement the v2 safety contract.
+        is_pro_tier = False
         if not is_pro_tier:
             raise HTTPException(
                 status_code=403,
                 detail={
-                    "error": "LICENSE_REQUIRED", 
-                    "message": "The Business-Ready Serialization is a Pro feature. Get your free 30-day evaluation key at https://facturx-engine.lemonsqueezy.com"
+                    "error": "FEATURE_NOT_ENABLED",
+                    "message": "Strict serialization is not enabled in the public demo."
                 }
             )
 

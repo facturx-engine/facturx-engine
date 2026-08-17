@@ -1,7 +1,7 @@
-"""
-Extraction service for Community Edition (Open Core).
-Parses Factur-X/ZUGFeRD XML and returns FULL invoice data.
-Pro edition adds advanced validation and compliance features.
+"""Heuristic preview extraction for Factur-X/ZUGFeRD documents.
+
+The output is useful for inspection but is never an automatic-import contract.
+The strict normalized contract lives in ``BusinessReadySerializer``.
 """
 import asyncio
 import logging
@@ -660,4 +660,3 @@ class ExtractionService:
                 logger.warning(f"Skipping malformed tax entry: {e}")
 
         return breakdown
-

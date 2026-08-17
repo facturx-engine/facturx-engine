@@ -92,7 +92,7 @@ curl -X POST "http://localhost:8000/v1/convert" \
 
 ### Result
 
-The generic PDF is transformed into a **compliant PDF/A-3** file. The embedded XML is guaranteed to be valid against **EN 16931**, resolving `BR-CO-09`.
+The generic PDF is transformed into a PDF with embedded XML intended for the selected Factur-X workflow. Run `/v1/validate` on the result and inspect the executed and skipped layers; generation alone does not guarantee PDF/A or EN 16931 validity.
 
 ---
 

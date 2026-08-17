@@ -64,7 +64,7 @@ tags_metadata = [
     },
     {
         "name": "Advanced Integration",
-        "description": "ERP serialization (Pro) and convenience conversion shortcuts for advanced integrations.",
+        "description": "Intake strict ERP serialization and conversion shortcuts for advanced integrations.",
     },
     {
         "name": "Operations",
@@ -75,7 +75,7 @@ tags_metadata = [
 # Create FastAPI application
 app = FastAPI(
     title=PRODUCT_NAME,
-    description="Production-ready REST API for Factur-X (ZUGFeRD 2.5) conversions and data extraction.",
+    description="Self-hosted REST API for technical Factur-X/ZUGFeRD and XRechnung workflows.",
     version=__version__,
     openapi_tags=tags_metadata,
 )
@@ -236,7 +236,7 @@ async def startup_event():
                 logger.critical("   The application is refusing to start to prevent accidental fallback to Demo Mode.")
                 sys.exit(1) # Crash container immediately
             else:
-                logger.info("✅ PRO LICENSE VERIFIED. Full Engine Capabilities Unlocked.")
+                logger.info("✅ License key accepted. Licensed feature gates enabled.")
         else:
             logger.warning("ℹ️ No LICENSE_KEY found. Engine running in Community Mode.")
             
@@ -408,7 +408,7 @@ async def license_status():
     Lightweight license introspection (no secrets exposed).
 
     Returns the current licensing mode, tier, and expiry so operators
-    can verify that a key was accepted without calling a Pro endpoint.
+    can verify that a key was accepted without calling a gated endpoint.
     """
     from app.license import get_license_payload
 
@@ -421,10 +421,11 @@ async def license_status():
             "expires_at": None,
         }
 
+    tier = payload.get("tier")
     return {
-        "mode": "paid",
+        "mode": "evaluation" if tier == "Evaluation" else "licensed",
         "valid": True,
-        "tier": payload.get("tier"),
+        "tier": tier,
         "expires_at": payload.get("exp"),
     }
 
@@ -501,30 +502,17 @@ async def metrics_endpoint(request: Request):
     """
     Prometheus-compatible metrics endpoint.
     
-    Security:
-    - Community Edition: Disabled (HTTP 403).
-    - Pro Edition: Disabled by default. Requires METRICS_ENABLED=true and METRICS_TOKEN=<secret>.
+    Disabled by default. Requires both `METRICS_ENABLED=true` and a
+    `METRICS_TOKEN`; metrics are an operational facility, not a compliance or
+    licensing signal.
     """
     import os
 
     from fastapi.responses import JSONResponse, PlainTextResponse
 
-    from app.license import is_licensed
     from app.metrics import metrics
-    
-    is_pro = os.getenv("LICENSE_KEY") and is_licensed()
-    
-    if not is_pro:
-        # Community Mode: Metrics disabled with upsell message
-        return JSONResponse(
-            status_code=403,
-            content={
-                "error": "PRO_FEATURE_REQUIRED",
-                "message": "Prometheus metrics integration is a Pro feature. Get your evaluation key at https://facturx-engine.lemonsqueezy.com"
-            }
-        )
-        
-    # Pro Mode: Check if explicitly enabled
+
+    # Check if explicitly enabled
     metrics_enabled = os.getenv("METRICS_ENABLED", "false").lower() == "true"
     if not metrics_enabled:
         return JSONResponse(
@@ -532,7 +520,7 @@ async def metrics_endpoint(request: Request):
             content={"error": "NOT_FOUND", "message": "Metrics endpoint is disabled. Set METRICS_ENABLED=true to enable."}
         )
         
-    # Pro Mode: Check Authentication Token
+    # Check authentication token
     expected_token = os.getenv("METRICS_TOKEN", "").strip()
     if not expected_token:
         # If enabled but no token is set, it's a misconfiguration. Fail secure.
@@ -562,7 +550,7 @@ async def metrics_endpoint(request: Request):
             content={"error": "UNAUTHORIZED", "message": "Invalid metrics token"}
         )
     
-    # Authorized Pro User
+    # Authorized operator
     content = metrics.get_prometheus_format()
     
     return PlainTextResponse(

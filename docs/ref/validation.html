@@ -134,18 +134,19 @@
                 <section>
                     <h2 class="text-2xl font-bold text-white mb-6 uppercase tracking-tight">The "Iso-Prod" Proof</h2>
                     <p>
-                        Factur-X Engine uses the official `.xsl` compiled rules from **FNFE (France)** and **KoSIT
-                        (Germany)**. When you validate an invoice with the engine, you get the **exact same result** as
-                        if you submitted it to Chorus Pro or the German public portals.
+                        Factur-X Engine executes the validation artifacts bundled in the selected image. The response
+                        identifies the layers that ran or were skipped. Portal behavior can differ by version,
+                        configuration and additional recipient rules, so this result does not claim parity with a
+                        receiving platform.
                     </p>
                     <div class="p-6 bg-slate-900 border border-amber-500/20 rounded-lg mt-6">
                         <h4 class="font-bold text-white mb-3 flex items-center gap-2">
                             <span class="w-2 h-2 rounded-full bg-amber-500"></span>
                             Performance Benchmark
                         </h4>
-                        <p class="text-sm">A full EN 16931 validation (CII) takes approx <strong>180ms</strong> on a
-                            standard container. Compare this to Java-based libraries which often require 1.5s - 3s due
-                            to JVM startup and class loading.</p>
+                        <p class="text-sm">Latency depends on document size, selected validation layers, worker count,
+                            CPU limits and whether external validator processes are enabled. Benchmark the exact image
+                            and configuration you plan to deploy.</p>
                     </div>
                 </section>
 

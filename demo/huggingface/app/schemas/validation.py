@@ -149,7 +149,7 @@ class InvoiceMetadata(BaseModel):
 
 
 class ValidationErrorDetail(BaseModel):
-    """Structured validation error for Community Edition."""
+    """Structured technical validation error."""
     rule_id: Optional[str] = Field(None, description="Rule identifier (e.g. BR-CO-10)")
     message: str = Field(..., description="Error message")
     severity: str = Field(default="error", description="error or warning")
@@ -161,11 +161,11 @@ class ValidationResult(BaseModel):
     flavor: Optional[str] = Field(None, description="Detected flavor/level")
     errors: List[ValidationErrorDetail] = Field(default_factory=list, description="List of validation errors")
     validation_mode: Optional[str] = Field(None, description="Validation mode")
-    pdfa_valid: Optional[bool] = Field(None, description="PDF/A-3b compliance (null if input was raw XML or VeraPDF unavailable)")
+    pdfa_valid: Optional[bool] = Field(None, description="PDF/A-3b validation result (null if input was raw XML or VeraPDF unavailable)")
 
 
 class DiagnosticDetail(BaseModel):
-    """A single diagnostic with human-readable explanation (Pro Feature)."""
+    """A single diagnostic with a human-readable explanation."""
     rule_id: str = Field(..., description="EN 16931 rule ID (e.g., BR-CO-10)")
     severity: str = Field(..., description="Severity: error, warning, info")
     title: str = Field(..., description="Short, actionable title")
@@ -175,7 +175,7 @@ class DiagnosticDetail(BaseModel):
 
 
 class ProValidationResult(BaseModel):
-    """Enhanced validation result with Smart Diagnostics (Pro Feature)."""
+    """Historical licensed response with enhanced diagnostics."""
     valid: bool = Field(..., description="Whether the file is valid")
     format: Optional[str] = Field(None, description="Detected format")
     flavor: Optional[str] = Field(None, description="Detected profile")
@@ -183,7 +183,7 @@ class ProValidationResult(BaseModel):
     warning_count: int = Field(default=0, description="Total number of warnings")
     diagnostics: List[DiagnosticDetail] = Field(default_factory=list, description="Smart diagnostics with explanations")
     validation_mode: str = Field(default="pro_diagnostics", description="Always 'pro_diagnostics' for this response type")
-    pdfa_valid: Optional[bool] = Field(None, description="PDF/A-3b compliance (null if input was raw XML or VeraPDF unavailable)")
+    pdfa_valid: Optional[bool] = Field(None, description="PDF/A-3b validation result (null if input was raw XML or VeraPDF unavailable)")
 
 
 class ErrorResponse(BaseModel):

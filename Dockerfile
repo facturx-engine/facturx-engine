@@ -137,9 +137,9 @@ RUN DETECTED_VERA=$(jdeps --ignore-missing-deps --print-module-deps /verapdf.jar
 FROM python:3.11-slim-bookworm
 
 LABEL maintainer="Factur-X Engine"
-LABEL description="Self-hosted Factur-X API with EN16931 + PDF/A-3b validation"
+LABEL description="Self-hosted invoice generation, extraction and technical validation API"
 LABEL org.opencontainers.image.title="Factur-X Engine"
-LABEL org.opencontainers.image.description="The Privacy-First Invoicing Engine (100% Air-gapped)"
+LABEL org.opencontainers.image.description="Self-hosted processing for Factur-X, ZUGFeRD, XRechnung, UBL and CII"
 LABEL org.opencontainers.image.vendor="Factur-X Engine"
 LABEL org.opencontainers.image.version="latest"
 LABEL org.opencontainers.image.licenses="MIT"

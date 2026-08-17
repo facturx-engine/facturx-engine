@@ -26,14 +26,14 @@ Choose Factur-X Engine if:
 
 1. **Multi-language stack**: You need to generate invoices from Node.js, PHP, Python, or Go.
 2. **Cloud-Native / Microservices**: You want to scale the e-invoicing logic independently from your main application.
-3. **Security (Privacy)**: You need an air-gapped solution that works 100% offline without leaking data to SaaS providers.
+3. **Local processing**: You need invoice processing that can run without sending invoice data to a hosted SaaS API; network isolation remains your deployment responsibility.
 4. **DevOps Simplicity**: You want to avoid "Dependency Hell" (Ghostscript, versions of lxml, Java JRE conflicts).
 
 ## Performance Comparison
 
-- **MustangProject**: JVM startup overhead can be an issue for short-lived tasks (Lambda/Functions). Continuous memory usage is higher due to JVM.
-- **Factur-X Engine**: Optimized for high-throughput REST calls. Stateless architecture means memory is released immediately after each request.
+- **MustangProject**: An in-process Java library avoids an HTTP service boundary and fits naturally in JVM applications.
+- **Factur-X Engine**: A long-running container provides a language-neutral HTTP boundary. Measure latency and memory with your own documents and deployment settings.
 
 ## Summary
 
-Factur-X Engine is designed as **Infrastructure-as-Code**. It provides a "black box" that handles the painful parts of EN 16931 compliance, allowing your developers to focus on your core business logic rather than PDF/A-3 specification details.
+Factur-X Engine packages invoice generation, validation and extraction tooling behind a local HTTP API. Its results are technical evidence, not a guarantee of regulatory conformity or recipient acceptance.

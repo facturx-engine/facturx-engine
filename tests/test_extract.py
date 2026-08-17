@@ -38,6 +38,8 @@ def test_extract_non_facturx_pdf(client):
     
     assert response.status_code == 200
     data = response.json()
+    assert data["mode"] == "preview"
+    assert data["suitable_for_automatic_import"] is False
     
     # Should detect as not_facturx
     assert data["format_detected"] == "not_facturx"
@@ -144,6 +146,8 @@ def test_end_to_end_convert_validate_extract(client):
     print(f"\nDEBUG_EXTRACT_DATA: {json.dumps(extract_data, indent=2)}")
     
     # Verify extraction succeeded
+    assert extract_data["mode"] == "preview"
+    assert extract_data["suitable_for_automatic_import"] is False
     assert extract_data["format_detected"] == "factur-x"
     assert extract_data["profile_detected"] == "en16931"
     assert extract_data["xml_extracted"] is True
@@ -233,6 +237,8 @@ def test_extract_limitations_on_minimum_profile(client):
 
     assert response.status_code == 200
     data = response.json()
+    assert data["mode"] == "preview"
+    assert data["suitable_for_automatic_import"] is False
     assert data["invoice_json"] is not None
     meta = data["invoice_json"].get("_meta", {})
     limitations = meta.get("limitations")
@@ -242,4 +248,3 @@ def test_extract_limitations_on_minimum_profile(client):
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v", "-s"])
-

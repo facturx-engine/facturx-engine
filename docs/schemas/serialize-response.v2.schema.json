@@ -1,0 +1,766 @@
+{
+  "$defs": {
+    "AddressSchema": {
+      "description": "Postal address as represented in the source invoice.\n\nOptional source values stay null. The engine never fabricates address data.",
+      "properties": {
+        "city": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "City"
+        },
+        "country_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "ISO 3166-1 alpha-2 code when present in the source document",
+          "title": "Country Code"
+        },
+        "line1": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Line1"
+        },
+        "line2": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Line2"
+        },
+        "postcode": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Postcode"
+        }
+      },
+      "title": "AddressSchema",
+      "type": "object"
+    },
+    "BusinessReadyInvoice": {
+      "description": "Normalized invoice contract produced only after a complete strict mapping.",
+      "properties": {
+        "amount_due": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            }
+          ],
+          "title": "Amount Due"
+        },
+        "buyer": {
+          "$ref": "#/$defs/PartySchema"
+        },
+        "buyer_reference": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Buyer Reference"
+        },
+        "contract_reference": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Contract Reference"
+        },
+        "currency": {
+          "title": "Currency",
+          "type": "string"
+        },
+        "document_type_code": {
+          "title": "Document Type Code",
+          "type": "string"
+        },
+        "due_date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Due Date"
+        },
+        "format": {
+          "enum": [
+            "cii",
+            "ubl"
+          ],
+          "title": "Format",
+          "type": "string"
+        },
+        "iban": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Iban"
+        },
+        "invoice_date": {
+          "format": "date",
+          "title": "Invoice Date",
+          "type": "string"
+        },
+        "invoice_number": {
+          "title": "Invoice Number",
+          "type": "string"
+        },
+        "line_items": {
+          "items": {
+            "$ref": "#/$defs/LineItemSchema"
+          },
+          "title": "Line Items",
+          "type": "array"
+        },
+        "payment_means_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Payment Means Code"
+        },
+        "payment_reference": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Payment Reference"
+        },
+        "preceding_invoice_reference": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Preceding Invoice Reference"
+        },
+        "profile": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Detected profile when it can be derived from the source document",
+          "title": "Profile"
+        },
+        "purchase_order_reference": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Purchase Order Reference"
+        },
+        "seller": {
+          "$ref": "#/$defs/PartySchema"
+        },
+        "tax_breakdown": {
+          "items": {
+            "$ref": "#/$defs/TaxBreakdownSchema"
+          },
+          "title": "Tax Breakdown",
+          "type": "array"
+        },
+        "total_gross_amount": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            }
+          ],
+          "title": "Total Gross Amount"
+        },
+        "total_net_amount": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            }
+          ],
+          "title": "Total Net Amount"
+        },
+        "total_tax_amount": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            }
+          ],
+          "title": "Total Tax Amount"
+        }
+      },
+      "required": [
+        "invoice_number",
+        "document_type_code",
+        "invoice_date",
+        "currency",
+        "seller",
+        "buyer",
+        "line_items",
+        "tax_breakdown",
+        "total_net_amount",
+        "total_tax_amount",
+        "total_gross_amount",
+        "amount_due",
+        "format"
+      ],
+      "title": "BusinessReadyInvoice",
+      "type": "object"
+    },
+    "LineItemSchema": {
+      "description": "Normalized invoice line without inferred accounting values.",
+      "properties": {
+        "buyer_assigned_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Buyer Assigned Id"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "line_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Line Id"
+        },
+        "line_total": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            }
+          ],
+          "title": "Line Total"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "net_price": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            }
+          ],
+          "title": "Net Price"
+        },
+        "quantity": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            }
+          ],
+          "title": "Quantity"
+        },
+        "seller_assigned_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Seller Assigned Id"
+        },
+        "unit_code": {
+          "description": "UN/ECE Rec 20 unit code from the source",
+          "title": "Unit Code",
+          "type": "string"
+        },
+        "vat_category": {
+          "title": "Vat Category",
+          "type": "string"
+        },
+        "vat_rate": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            }
+          ],
+          "title": "Vat Rate"
+        }
+      },
+      "required": [
+        "name",
+        "quantity",
+        "unit_code",
+        "net_price",
+        "line_total",
+        "vat_rate",
+        "vat_category"
+      ],
+      "title": "LineItemSchema",
+      "type": "object"
+    },
+    "PartySchema": {
+      "description": "Normalized seller or buyer data copied from the source invoice.",
+      "properties": {
+        "address": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AddressSchema"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "electronic_address": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Electronic Address"
+        },
+        "electronic_address_scheme": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Electronic Address Scheme"
+        },
+        "email": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Email"
+        },
+        "name": {
+          "description": "Party name from the source document",
+          "title": "Name",
+          "type": "string"
+        },
+        "registration_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Registration Id"
+        },
+        "vat_number": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Vat Number"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "PartySchema",
+      "type": "object"
+    },
+    "SerializationDiagnostic": {
+      "description": "Stable machine-readable diagnostic for validation or mapping failures.",
+      "properties": {
+        "code": {
+          "title": "Code",
+          "type": "string"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Path"
+        },
+        "severity": {
+          "default": "error",
+          "enum": [
+            "error",
+            "warning"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "source": {
+          "enum": [
+            "xml",
+            "validation",
+            "mapping",
+            "invariant",
+            "system"
+          ],
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "message",
+        "source"
+      ],
+      "title": "SerializationDiagnostic",
+      "type": "object"
+    },
+    "SerializationFailureResponse": {
+      "description": "HTTP 422 response for input that cannot produce the strict contract.",
+      "properties": {
+        "engine_version": {
+          "title": "Engine Version",
+          "type": "string"
+        },
+        "errors": {
+          "items": {
+            "$ref": "#/$defs/SerializationDiagnostic"
+          },
+          "title": "Errors",
+          "type": "array"
+        },
+        "execution_status": {
+          "enum": [
+            "complete",
+            "failed"
+          ],
+          "title": "Execution Status",
+          "type": "string"
+        },
+        "mapping_status": {
+          "enum": [
+            "not_started",
+            "failed"
+          ],
+          "title": "Mapping Status",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "2.0.0",
+          "default": "2.0.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "success": {
+          "const": false,
+          "default": false,
+          "title": "Success",
+          "type": "boolean"
+        },
+        "suggested_route": {
+          "enum": [
+            "manual_review",
+            "reject_input"
+          ],
+          "title": "Suggested Route",
+          "type": "string"
+        },
+        "validation_status": {
+          "enum": [
+            "not_run",
+            "rejected",
+            "incomplete",
+            "passed"
+          ],
+          "title": "Validation Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "engine_version",
+        "execution_status",
+        "mapping_status",
+        "validation_status",
+        "suggested_route",
+        "errors"
+      ],
+      "title": "SerializationFailureResponse",
+      "type": "object"
+    },
+    "SerializationResponse": {
+      "description": "Successful strict serialization response.\n\nSuccess means that the configured validation layers passed and every material\nsource value supported by this schema was mapped without recovery or defaults.\nIt does not mean that an ERP may book or pay the invoice automatically.",
+      "properties": {
+        "client_checks_required": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Client Checks Required",
+          "type": "array"
+        },
+        "engine_version": {
+          "title": "Engine Version",
+          "type": "string"
+        },
+        "execution_status": {
+          "const": "complete",
+          "default": "complete",
+          "title": "Execution Status",
+          "type": "string"
+        },
+        "invoice": {
+          "$ref": "#/$defs/BusinessReadyInvoice"
+        },
+        "mapping_status": {
+          "const": "complete",
+          "default": "complete",
+          "title": "Mapping Status",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "2.0.0",
+          "default": "2.0.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "success": {
+          "const": true,
+          "default": true,
+          "title": "Success",
+          "type": "boolean"
+        },
+        "suggested_route": {
+          "const": "continue_client_checks",
+          "default": "continue_client_checks",
+          "title": "Suggested Route",
+          "type": "string"
+        },
+        "unmapped": {
+          "items": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "title": "Unmapped",
+          "type": "array"
+        },
+        "validation_status": {
+          "const": "passed",
+          "default": "passed",
+          "title": "Validation Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "engine_version",
+        "invoice"
+      ],
+      "title": "SerializationResponse",
+      "type": "object"
+    },
+    "TaxBreakdownSchema": {
+      "description": "Tax subtotal copied from the source invoice.",
+      "properties": {
+        "basis_amount": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            }
+          ],
+          "title": "Basis Amount"
+        },
+        "category": {
+          "title": "Category",
+          "type": "string"
+        },
+        "rate": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            }
+          ],
+          "title": "Rate"
+        },
+        "tax_amount": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            }
+          ],
+          "title": "Tax Amount"
+        }
+      },
+      "required": [
+        "category",
+        "rate",
+        "basis_amount",
+        "tax_amount"
+      ],
+      "title": "TaxBreakdownSchema",
+      "type": "object"
+    }
+  },
+  "$id": "https://facturx-engine.github.io/facturx-engine/schemas/serialize-response.v2.schema.json",
+  "anyOf": [
+    {
+      "$ref": "#/$defs/SerializationResponse"
+    },
+    {
+      "$ref": "#/$defs/SerializationFailureResponse"
+    }
+  ],
+  "title": "Factur-X Engine strict serialization contract v2"
+}

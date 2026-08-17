@@ -4,7 +4,7 @@ Smart Diagnostics Engine for Factur-X Validation Errors.
 This module provides contextual, human-readable explanations for 
 EN 16931 Schematron validation errors, going beyond raw technical codes.
 
-Pro Feature: Transforms technical errors into actionable diagnostics.
+Transforms technical errors into actionable diagnostics in enabled builds.
 """
 import logging
 import re

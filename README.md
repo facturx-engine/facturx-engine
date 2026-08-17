@@ -1,93 +1,107 @@
 # Factur-X Engine
 
-> **Self-hosted EN 16931 infrastructure for ERP pipelines.** Generate compliant outbound invoices, validate incoming files, and normalize Factur-X, UBL, and CII into usable JSON.
+Self-hosted Docker API for technical e-invoice workflows. It generates,
+validates, inspects, and normalizes Factur-X/ZUGFeRD CII and XRechnung UBL
+documents without uploading invoice data to a hosted service.
 
-![Docker Pulls](https://img.shields.io/docker/pulls/facturxengine/facturx-engine) [![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Live%20Demo-blue)](https://huggingface.co/spaces/Facturx-engine/factur-x-engine-demo) [![GitHub](https://img.shields.io/badge/github-repo-181717?logo=github)](https://github.com/facturx-engine/facturx-engine) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT) ![Standard](https://img.shields.io/badge/standard-EN16931-green.svg) ![Privacy First](https://img.shields.io/badge/Privacy-Air_Gapped-success?logo=shield-dog) ![Saxon-HE](https://img.shields.io/badge/Powered_By-Saxon--HE-blue)
+![Docker Pulls](https://img.shields.io/docker/pulls/facturxengine/facturx-engine)
+[![GitHub](https://img.shields.io/badge/github-repo-181717?logo=github)](https://github.com/facturx-engine/facturx-engine)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
----
+## Scope and responsibility
 
-## Who It's For
+Factur-X Engine is a technical document-processing component. A successful API
+call is not a tax, accounting, legal, or regulatory opinion. Your application
+remains responsible for supplier matching, duplicate detection, purchase-order
+matching, tax policy, payment approval, filing, and acceptance decisions.
 
-Backend developers building **ERP, accounting, or SaaS** integrations who need to process EN 16931 e-invoices (Factur-X, ZUGFeRD, XRechnung) without maintaining their own XML parsing and validation stack.
-
----
+Validation results only describe the rules and layers that actually ran. Check
+`validation_completeness`, `layers_executed`, and `layers_skipped` before using
+a result.
 
 ## Quickstart
 
 ```bash
-docker run -d -p 8000:8000 --name facturx-engine facturxengine/facturx-engine:latest
+docker run -d -p 8000:8000 --name facturx-engine \
+  facturxengine/facturx-engine:latest
 ```
 
----
+Open `http://localhost:8000/docs` for the runtime OpenAPI documentation.
 
-## Receive - Ingest Supplier Invoices
+## API workflows
 
-Your ERP receives a raw XML or PDF from a supplier. The engine validates it, extracts the data, and gives you clean JSON.
+### Receive invoices
 
-### 1. Validate - Compliance Gate
+| Endpoint | Contract |
+| --- | --- |
+| `POST /v1/validate` | Runs the validation layers available in the container and reports exactly which layers ran or were skipped. |
+| `POST /v1/extract` | Best-effort preview of an embedded invoice. Always returns `mode: "preview"` and `suitable_for_automatic_import: false`. |
+| `POST /v1/serialize` | Strict, versioned CII/UBL mapping. Refuses malformed XML, incomplete validation, invented defaults, silently skipped lines, and unsupported material groups. |
 
-Check any CII or UBL invoice (PDF or XML) against EN 16931 Schematron rules before ingesting into your database.
+`/v1/extract` is useful for inspection and troubleshooting. It may expose
+missing, coerced, or truncated values and must not be used as an automatic
+accounting import decision.
+
+`/v1/serialize` returns HTTP 200 only when validation is complete and the
+document can be represented by schema version `2.0.0` without recovery or
+fallback values. A successful response deliberately routes the caller to its
+own remaining controls:
+
+The contract is currently being tested as **Factur-X Engine Intake**. A free
+[30-day evaluation key](https://facturx-engine.lemonsqueezy.com/checkout/buy/99a9ff62-baa6-4a24-ac61-3eebfacddab5)
+enables it in the same public Docker image; without a key, the endpoint returns
+`FEATURE_NOT_ENABLED`. There is no public **paid** checkout during the test.
+
+The tested commercial hypothesis is **€299 excl. VAT, one-time, for one legal
+entity and internal use**. Redistribution, OEM use, SLA, custom integration and
+tax or accounting decisions are outside the proposed scope. This is a price
+test, not an active offer for sale.
+
+```json
+{
+  "success": true,
+  "schema_version": "2.0.0",
+  "execution_status": "complete",
+  "mapping_status": "complete",
+  "validation_status": "passed",
+  "suggested_route": "continue_client_checks",
+  "client_checks_required": [
+    "supplier_master_match",
+    "duplicate_invoice_check",
+    "purchase_order_match",
+    "tax_policy_check",
+    "payment_approval"
+  ]
+}
+```
+
+Invalid, incomplete, or unsupported documents return HTTP 422 with stable
+diagnostics containing `code`, `source`, `path`, and `message`.
+
+### Send invoices
+
+| Endpoint | Contract |
+| --- | --- |
+| `POST /v1/xml` | Generates CII XML from the documented metadata model. |
+| `POST /v1/convert` | Generates CII XML and embeds it into a supplied PDF. Validate the result separately when PDF/A evidence is required. |
+| `POST /v1/merge` | Embeds an existing supported XML document into a supplied PDF/A-3 container. |
+
+Example:
 
 ```bash
 curl -X POST "http://localhost:8000/v1/validate" \
   -F "file=@invoice.xml"
 ```
 
-The response includes `validation_completeness` (`full` or `partial`) and `layers_executed` so your application knows exactly which checks ran.
-
-### 2. Extract - Heuristic Best-Effort JSON
-
-Pull structured data from a received Factur-X/ZUGFeRD PDF or standalone XML.
-
 ```bash
 curl -X POST "http://localhost:8000/v1/extract" \
   -F "file=@invoice.pdf"
 ```
 
-### 3. Serialize - ERP-Ready JSON (Pro)
-
-Unlike raw extraction, `/v1/serialize` returns normalized ERP integration JSON with a [versioned schema](docs/schemas/serialize-response.v1.schema.json) and explicit `fallbacks_applied` transparency.
-
 ```bash
 curl -X POST "http://localhost:8000/v1/serialize" \
-  -F "file=@invoice.pdf"
+  -F "file=@invoice.xml"
 ```
-
-```json
-{
-  "success": true,
-  "schema_version": "1.0.0",
-  "engine_version": "1.x.x",
-  "invoice": {
-    "invoice_number": "INV-2025-0042",
-    "invoice_date": "2025-03-01",
-    "due_date": "2025-03-31",
-    "currency": "EUR",
-    "seller": { "name": "ACME SAS", "vat_number": "FR12345678901" },
-    "buyer": { "name": "Client Corp", "buyer_reference": "PO-9981" },
-    "line_items": [
-      { "name": "Consulting services", "quantity": 5, "unit_code": "HUR", "net_price": 150.00, "line_total": 750.00, "vat_rate": 20.0 }
-    ],
-    "tax_breakdown": [{ "category": "S", "rate": 20.0, "basis_amount": 750.00, "tax_amount": 150.00 }],
-    "total_net_amount": 750.00,
-    "total_tax_amount": 150.00,
-    "total_gross_amount": 900.00,
-    "amount_due": 900.00,
-    "format": "factur-x",
-    "profile": "en16931"
-  }
-}
-```
-
----
-
-## Send - Generate Compliant Invoices
-
-Your ERP has business data. The engine transforms it into regulation-compliant XML or PDF.
-
-### 4. Generate XML - Business Data to CII
-
-Transform your ERP JSON metadata into a Cross-Industry Invoice XML.
 
 ```bash
 curl -X POST "http://localhost:8000/v1/xml" \
@@ -95,135 +109,35 @@ curl -X POST "http://localhost:8000/v1/xml" \
   -o invoice.xml
 ```
 
-### 5. Convert - One-Step PDF Generation
+## Operations
 
-Generates XML from JSON metadata and embeds it into your PDF in a single call.
+| Endpoint | Purpose |
+| --- | --- |
+| `GET /health` | Lightweight liveness probe. |
+| `GET /healthz` | Readiness and validation-tool availability. |
+| `GET /diagnostics` | Protected runtime diagnostics. Configure `DIAGNOSTICS_TOKEN` outside development. |
+| `GET /metrics` | Protected Prometheus output when explicitly enabled. |
 
-```bash
-curl -X POST "http://localhost:8000/v1/convert" \
-  -F "pdf=@examples/invoice_raw.pdf" \
-  -F "metadata=$(cat examples/simple_invoice.json)" \
-  --output invoice_facturx.pdf
-```
-
-### 6. Merge - Assemble PDF + XML
-
-Embed an existing XML (Factur-X, ZUGFeRD, XRechnung) into a PDF container. Use `/v1/validate` on the output when PDF/A evidence is required.
-
-```bash
-curl -X POST "http://localhost:8000/v1/merge" \
-  -F "pdf=@examples/invoice_raw.pdf" \
-  -F "xml=@invoice.xml" \
-  --output invoice_facturx.pdf
-```
-
-**Windows users:** Replace `curl` with `curl.exe` and use PowerShell syntax for file reading.
-
----
-
-## Why Not Roll Your Own?
-
-You can parse CII XML in a day. But EN 16931 compliance isn't parsing - it's **ongoing maintenance**:
-
-- **Regulatory watch**: Schematron rules change with every spec revision (XRechnung 3.0.2, Factur-X 1.09...). Who updates your validation logic when Chorus Pro or KoSIT ships new business rules?
-- **Edge-case coverage**: Real-world invoices contain malformed IBANs, amounts with 3+ decimal places that cause silent rounding errors, dates in the past, negative totals masquerading as standard invoices. The engine's test corpus covers 200+ of these cases.
-- **Validation depth**: A syntactically valid invoice can still break your accounting pipeline. The engine runs the same Schematron rules as Chorus Pro and KoSIT, catching issues before they corrupt your database.
-
-The engine absorbs that maintenance so your team doesn't have to.
-
----
+The API is local by design, but deployment security remains the operator's
+responsibility. Put it behind an authenticated reverse proxy or private network;
+do not expose an unauthenticated container directly to the internet.
 
 ## Documentation
 
-**[Full API Reference](https://facturx-engine.github.io/facturx-engine/ref/api-reference.html)** - All endpoints, parameters, and response formats
-**[Integration Recipes](https://facturx-engine.github.io/facturx-engine/#api)** - Python, Node.js, PHP integration guides
-**[JSON Schema (v1)](docs/schemas/serialize-response.v1.schema.json)** - Versioned response contract for `/v1/serialize`
-**[OpenAPI Specification](https://raw.githubusercontent.com/facturx-engine/facturx-engine/main/docs/openapi.json)** - Machine-readable API spec
-**[Changelog](https://github.com/facturx-engine/facturx-engine/releases)** - Version history and release notes
+- [API reference](https://facturx-engine.github.io/facturx-engine/ref/api-reference.html)
+- [OpenAPI specification](docs/openapi.json)
+- [Strict serialization schema](docs/schemas/serialize-response.v2.schema.json)
+- [Security policy](SECURITY.md)
+- [Changelog](CHANGELOG.md)
 
----
+## Licensing and commercial status
 
-## Community vs Pro
+All code published in this repository is licensed under the [MIT License](LICENSE).
+Intake is being tested in the same repository and Docker image through 30-day
+evaluation keys. The key controls packaged feature availability; it does not
+change the MIT rights granted over published source code.
 
-This **Community** edition is production-ready. Open Core (transparent Python, MIT license).
-
-| | Community | Pro |
-| :--- | :--- | :--- |
-| **Receive** | `/v1/extract` - heuristic best-effort extraction JSON | `/v1/serialize` - normalized ERP integration JSON with [versioned schema](docs/schemas/serialize-response.v1.schema.json) + fallback transparency |
-| **Validate** | EN 16931 Schematron (raw XPath errors) | **Smart Diagnostics** - human-readable errors + proactive scan |
-| **PDF/A-3** | - | VeraPDF compliance check |
-| **Support** | GitHub Issues | Priority email |
-
-**Pricing & license options** (Pro, OEM, Enterprise): **[facturx-engine.lemonsqueezy.com](https://facturx-engine.lemonsqueezy.com)**
-
-### Smart Diagnostics Engine (Pro)
-
-The Pro edition translates cryptic XPath errors into human-readable actions, and runs a proactive scan for silent platform killers:
-
-- `INVALID-IBAN`: Catches malformed IBAN sequences.
-- `TOO-MANY-DECIMALS`: Rejects amounts with >2 fractional digits that cause truncation errors on Chorus Pro.
-- `INVALID-DATE`: Flags dates from the distant past or future.
-- `TYPE-AMOUNT-MISMATCH`: Detects negative totals masquerading as standard invoices.
-
-### 30-Day Evaluation
-
-Test 100% of the Pro features on your own files, within your own infrastructure.
-
-1. Request your evaluation key at **[Factur-X Engine on Lemon Squeezy](https://facturx-engine.lemonsqueezy.com)** (instant delivery).
-2. VeraPDF and Saxon-HE are **already bundled** inside the Docker image. Just inject your key:
-
-   ```bash
-   docker run -d -p 8000:8000 \
-     -e LICENSE_KEY='YOUR_KEY' \
-     facturxengine/facturx-engine:latest
-   ```
-
-3. After 30 days, the engine transitions back to Community Edition. No aggressive locks.
-
----
-
-## Deployment
-
-### Air-Gapped by Design
-
-100% offline execution. No outbound network calls. GDPR/DORA compliant. Licensing is verified via offline cryptographic signatures (Ed25519).
-
-### Architecture
-
-Schematron (Saxon-HE) and PDF/A-3 (VeraPDF) validations run as isolated Java subprocesses. Memory is instantly reclaimed by the OS - no JVM memory leaks under load.
-
-### Configuration
-
-| Variable | Default | Description |
-| :--- | :--- | :--- |
-| `LICENSE_KEY` | *(empty)* | Activates Pro features. Leave empty for Community Edition. |
-| `MAX_UPLOAD_SIZE_MB` | `10` | Size limit for uploaded files. |
-| `FX_VALIDATION_TIMEOUT` | `30` | Timeout in seconds for Saxon/VeraPDF subprocesses. |
-| `VERAPDF_ENABLED` | `true` | Toggle PDF/A-3b validation (Pro only). |
-| `SAXON_JAR` | *(empty)* | Path to the Saxon-HE JAR for Schematron evaluation. |
-| `CORS_ORIGINS` | *(empty)* | Allowed origins (e.g., `http://localhost:3000`). |
-| `WORKERS` | `4` | Number of Gunicorn worker processes. |
-
-### Operations & Monitoring
-
-| Endpoint | Purpose | Availability |
-| :--- | :--- | :--- |
-| `GET /health` | Liveness probe (Kubernetes). | All Editions |
-| `GET /healthz` | Readiness probe. Checks JRE, VeraPDF, Saxon-HE availability. | All Editions |
-| `GET /diagnostics` | System dump (versions, memory, config). | All Editions |
-| `GET /metrics` | Prometheus scrape target (requires `METRICS_ENABLED=true` + `METRICS_TOKEN`). | Pro Only |
-
----
-
-## Legal & Compliance
-
-**Vendor**: NexaFlow
-**License**: [MIT](https://opensource.org/licenses/MIT) (Community) / Commercial (Pro)
-**Compliance**: Designed to respect the EU **Cyber Resilience Act (CRA)**
-
-> **IMPORTANT**: This software is a technical tool for data formatting. It does not replace professional tax advice. Users retain full responsibility for fiscal accuracy. See [full legal disclaimer](https://facturx-engine.github.io/facturx-engine/).
-
----
-
-*Maintained by the Factur-X Engine Team.*
-
+There is currently no public paid checkout, SLA, custom support, or compliance
+commitment. Commercial terms for the tested €299 internal-use offer must be
+activated and reviewed before accepting the first payment. See
+[the evaluation notice](EULA_PRO.md).

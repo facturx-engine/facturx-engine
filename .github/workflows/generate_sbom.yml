@@ -1,4 +1,4 @@
-name: Continuous SBOM Generation (CRA Compliance)
+name: Continuous SBOM Generation
 
 on:
   schedule:

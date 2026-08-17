@@ -1,26 +1,24 @@
 # Factur-X Engine
 
-> The self-hosted translation layer between your ERP and e-invoicing. Ingest, validate, and normalize Factur-X, UBL, and CII into usable JSON — or generate compliant XML from your business data.
+Self-hosted Docker API for technical Factur-X/ZUGFeRD CII and XRechnung UBL workflows.
 
-## Core USP
-- **100% Air-gapped**: Strictly no telemetry, no cloud dependencies. GDPR/DORA compliant.
-- **Isolated Subprocesses**: Saxon-HE and VeraPDF run as sandboxed Java subprocesses. Memory is instantly reclaimed by the OS.
-- **Performance**: High concurrency with Gunicorn/Uvicorn, low memory footprint.
-- **Compliance**: EN 16931, PDF/A-3, official Schematron (CII/UBL).
+## Trust boundaries
+
+- `/v1/validate` reports executed and skipped validation layers.
+- `/v1/extract` is a heuristic preview and always declares `suitable_for_automatic_import: false`.
+- `/v1/serialize` is a strict schema v2 mapping or HTTP 422; it never repairs XML or invents values.
+- Generation endpoints create artifacts but do not prove that every applicable validation layer ran.
+- The caller retains supplier, duplicate, purchase-order, tax-policy and payment decisions.
+- The software does not provide tax, accounting, legal, regulatory or security advice.
+
+## Commercial and licensing status
+
+All published repository code is MIT licensed. Factur-X Engine Intake is being tested in the same Docker image with free 30-day evaluation keys. The tested price is €299 excl. VAT, one-time, for one legal entity and internal use. There is no public paid checkout, SLA or paid support commitment.
 
 ## Links
-- [Documentation Index](https://facturx-engine.github.io/facturx-engine/)
-- [GitHub Repository](https://github.com/facturx-engine/facturx-engine)
-- [Python Tutorial](https://facturx-engine.github.io/facturx-engine/tutorials/python-facturx.html)
-- [Node.js Tutorial](https://facturx-engine.github.io/facturx-engine/tutorials/nodejs-facturx.html)
-- [PHP Tutorial](https://facturx-engine.github.io/facturx-engine/tutorials/php-facturx.html)
-- [XML Validator Guide](https://facturx-engine.github.io/facturx-engine/tools/validator.html)
-- [Full Context for LLMs](llms-full.txt)
 
-## Integration
-The engine exposes a REST API on port 8000.
-- POST `/v1/convert`: PDF + JSON -> Factur-X PDF (Community)
-- POST `/v1/validate`: File -> JSON Compliance Report (Community)
-- POST `/v1/extract`: File -> Standard JSON Data + XML (Community)
-- POST `/v1/serialize`: File -> Business-Ready JSON (Pro)
-- POST `/v1/xml`: JSON -> CII XML (Community)
+- Documentation: https://facturx-engine.github.io/facturx-engine/
+- Free 30-day Intake evaluation: https://facturx-engine.lemonsqueezy.com/checkout/buy/99a9ff62-baa6-4a24-ac61-3eebfacddab5
+- Repository: https://github.com/facturx-engine/facturx-engine
+- OpenAPI: https://facturx-engine.github.io/facturx-engine/openapi.json
+- Strict schema: https://facturx-engine.github.io/facturx-engine/schemas/serialize-response.v2.schema.json

@@ -320,7 +320,7 @@ class HybridValidationService:
                 logger.warning(f"BR-FR CTC validation failed (non-blocking): {fr_ex}")
 
             # 6. PDF/A-3b validation via VeraPDF subprocess (PDF inputs only)
-            # VeraPDF is strictly a Pro feature (Evaluation, Business, Enterprise).
+            # VeraPDF remains gated in historical licensed builds.
             if is_pdf:
                 from app.license import has_tier
                 if has_tier(["Evaluation", "Pro"]):

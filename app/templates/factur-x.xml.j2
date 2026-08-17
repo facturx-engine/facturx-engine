@@ -103,17 +103,15 @@
             {% if seller.email %}<ram:EmailURIUniversalCommunication><ram:URIID>{{ seller.email }}</ram:URIID></ram:EmailURIUniversalCommunication>{% endif %}
         </ram:DefinedTradeContact>
         {% endif %}
+        {% if seller.address %}
         <ram:PostalTradeAddress>
-            {% if seller.address %}
             {% if seller.address.postcode %}<ram:PostcodeCode>{{ seller.address.postcode }}</ram:PostcodeCode>{% endif %}
-            <ram:LineOne>{{ seller.address.line1 or 'Street' }}</ram:LineOne>
+            <ram:LineOne>{{ seller.address.line1 }}</ram:LineOne>
             {% if seller.address.line2 %}<ram:LineTwo>{{ seller.address.line2 }}</ram:LineTwo>{% endif %}
-            <ram:CityName>{{ seller.address.city or 'City' }}</ram:CityName>
-            <ram:CountryID>{{ seller.address.country_code or seller.country_code or 'FR' }}</ram:CountryID>
-            {% else %}
-            <ram:CountryID>{{ seller.country_code or 'FR' }}</ram:CountryID>
-            {% endif %}
+            <ram:CityName>{{ seller.address.city }}</ram:CityName>
+            <ram:CountryID>{{ seller.address.country_code }}</ram:CountryID>
         </ram:PostalTradeAddress>
+        {% endif %}
         {% if seller_endpoint %}
         <ram:URIUniversalCommunication>
           <ram:URIID schemeID="{{ seller.electronic_address_scheme | default('0225') }}">{{ seller_endpoint }}</ram:URIID>
@@ -151,9 +149,9 @@
         {% if buyer.address %}
         <ram:PostalTradeAddress>
             {% if buyer.address.postcode %}<ram:PostcodeCode>{{ buyer.address.postcode }}</ram:PostcodeCode>{% endif %}
-            <ram:LineOne>{{ buyer.address.line1 or 'Street' }}</ram:LineOne>
-            <ram:CityName>{{ buyer.address.city or 'City' }}</ram:CityName>
-            <ram:CountryID>{{ buyer.address.country_code or 'FR' }}</ram:CountryID>
+            <ram:LineOne>{{ buyer.address.line1 }}</ram:LineOne>
+            <ram:CityName>{{ buyer.address.city }}</ram:CityName>
+            <ram:CountryID>{{ buyer.address.country_code }}</ram:CountryID>
         </ram:PostalTradeAddress>
         {% endif %}
         {% if buyer_endpoint %}
@@ -187,11 +185,11 @@
         </ram:PostalTradeAddress>
       </ram:ShipToTradeParty>
       {% endif %}
-      <ram:ActualDeliverySupplyChainEvent>
+      {% if delivery_date %}<ram:ActualDeliverySupplyChainEvent>
         <ram:OccurrenceDateTime>
-          <udt:DateTimeString format="102">{{ delivery_date | default(issue_date) }}</udt:DateTimeString>
+          <udt:DateTimeString format="102">{{ delivery_date }}</udt:DateTimeString>
         </ram:OccurrenceDateTime>
-      </ram:ActualDeliverySupplyChainEvent>
+      </ram:ActualDeliverySupplyChainEvent>{% endif %}
     </ram:ApplicableHeaderTradeDelivery>
     <ram:ApplicableHeaderTradeSettlement>
       {% if creditor_reference %}<ram:CreditorReferenceID>{{ creditor_reference }}</ram:CreditorReferenceID>{% endif %}

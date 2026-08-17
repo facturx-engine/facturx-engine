@@ -1,692 +1,99 @@
-<!DOCTYPE html>
-<html lang="de" class="scroll-smooth">
-
+<!doctype html>
+<html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Factur-X Engine | Selbstgehostete Übersetzungsschicht ERP ↔ E-Rechnung</title>
-    <meta name="description"
-        content="Die selbstgehostete Übersetzungsschicht zwischen Ihrem ERP und der E-Rechnung. Validieren, extrahieren und normalisieren Sie Factur-X, ZUGFeRD und XRechnung in JSON — oder generieren Sie konformes XML aus Ihren Geschäftsdaten.">
-    <!-- Canonical URL to consolidate indexing signals -->
-    <link rel="canonical" href="https://facturx-engine.github.io/facturx-engine/de/" />
-    <link rel="alternate" hreflang="en" href="https://facturx-engine.github.io/facturx-engine/" />
-    <link rel="alternate" hreflang="fr" href="https://facturx-engine.github.io/facturx-engine/fr/" />
-    <link rel="alternate" hreflang="de" href="https://facturx-engine.github.io/facturx-engine/de/" />
-    <link rel="alternate" hreflang="x-default" href="https://facturx-engine.github.io/facturx-engine/" />
-    <link rel="icon" href="https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png" type="image/png">
-
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://facturx-engine.github.io/facturx-engine/de/">
-    <meta property="og:title" content="Factur-X Engine | Selbstgehostete ERP-Übersetzungsschicht">
-    <meta property="og:description"
-        content="Die selbstgehostete Übersetzungsschicht zwischen Ihrem ERP und der E-Rechnung. Validieren, extrahieren und normalisieren Sie in JSON.">
-    <meta property="og:image" content="https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png">
-
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Factur-X Engine | Selbstgehostete ERP-Übersetzungsschicht">
-    <meta name="twitter:description"
-        content="Die selbstgehostete Übersetzungsschicht zwischen Ihrem ERP und der E-Rechnung. Validieren, extrahieren und normalisieren Sie in JSON.">
-    <meta name="twitter:image" content="https://facturx-engine.github.io/facturx-engine/assets/logo_fx_512.png">
-
-    <!-- JSON-LD Schema (Enriched) -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "Factur-X Engine",
-      "operatingSystem": "Docker",
-      "applicationCategory": "BusinessApplication",
-      "url": "https://facturx-engine.github.io/facturx-engine/de/",
-      "inLanguage": "de",
-      "sameAs": [
-          "https://github.com/facturx-engine/facturx-engine",
-          "https://hub.docker.com/r/facturxengine/facturx-engine"
-      ],
-      "description": "Hochleistungs-API für die Erstellung und Validierung von elektronischen Rechnungen (ZUGFeRD, XRechnung).",
-      "offers": { 
-          "@type": "Offer", 
-          "price": "0.00", 
-          "priceCurrency": "EUR" 
-      }
-    }
-    </script>
-
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        amber: {
-                            500: '#f59e0b',
-                            600: '#d97706',
-                        },
-                        slate: {
-                            950: '#020617',
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
-                    },
-                }
-            }
-        }
-    </script>
-
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
-        rel="stylesheet">
-
-    <style>
-        .grid-pattern {
-            background-image: linear-gradient(to right, rgba(245, 158, 11, 0.05) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(245, 158, 11, 0.05) 1px, transparent 1px);
-            background-size: 40px 40px;
-        }
-
-        .glow-amber {
-            box-shadow: 0 0 20px -5px rgba(245, 158, 11, 0.4);
-        }
-
-        .scanline {
-            width: 100%;
-            height: 100px;
-            z-index: 10;
-            background: linear-gradient(0deg, transparent 0%, rgba(245, 158, 11, 0.03) 50%, transparent 100%);
-            position: absolute;
-            top: -100px;
-            animation: scan 10s linear infinite;
-            pointer-events: none;
-        }
-
-        @keyframes scan {
-            0% {
-                top: -100px;
-            }
-
-            100% {
-                top: 100%;
-            }
-        }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Factur-X Engine Intake — striktes ERP-JSON, selbst gehostet</title>
+  <meta name="description" content="Unterstützte Factur-X-, ZUGFeRD- und XRechnung-Rechnungen lokal in striktes, versioniertes ERP-JSON umwandeln. Intake 30 Tage kostenlos evaluieren.">
+  <link rel="canonical" href="https://facturx-engine.github.io/facturx-engine/de/">
+  <link rel="alternate" hreflang="en" href="https://facturx-engine.github.io/facturx-engine/">
+  <link rel="alternate" hreflang="fr" href="https://facturx-engine.github.io/facturx-engine/fr/">
+  <link rel="alternate" hreflang="de" href="https://facturx-engine.github.io/facturx-engine/de/">
+  <link rel="alternate" hreflang="x-default" href="https://facturx-engine.github.io/facturx-engine/">
+  <link rel="stylesheet" href="../assets/site.css">
 </head>
+<body>
+  <header class="topbar"><nav class="nav wrap" aria-label="Hauptnavigation">
+    <a class="brand" href="../">Factur-X <span>Engine</span></a>
+    <div class="nav-links"><a href="#intake">Intake</a><a href="#umfang">Umfang</a><a href="../ref/api-reference.html">API</a><a href="https://github.com/facturx-engine/facturx-engine">GitHub</a><a class="lang" href="../">EN</a><a class="lang" href="../fr/">FR</a></div>
+  </nav></header>
 
-<body class="bg-slate-950 text-slate-300 font-sans selection:bg-amber-500 selection:text-black">
-    <div class="scanline"></div>
-    <div class="fixed inset-0 grid-pattern pointer-events-none"></div>
+  <main>
+    <section class="hero"><div class="wrap hero-grid">
+      <div>
+        <p class="eyebrow">Selbst gehostet · offline-fähig · Docker</p>
+        <h1>Striktes Rechnungs-JSON für Ihren ERP-Eingang.</h1>
+        <p class="lead">Unterstützte Factur-X/ZUGFeRD-CII- und XRechnung-UBL-Rechnungen werden in einen versionierten JSON-Vertrag überführt. Intake bildet alle unterstützten wesentlichen Felder ab oder lehnt das Dokument mit eindeutigen Diagnosen ab.</p>
+        <div class="actions"><a class="button primary" href="https://facturx-engine.lemonsqueezy.com/checkout/buy/99a9ff62-baa6-4a24-ac61-3eebfacddab5">Kostenlosen 30-Tage-Schlüssel erhalten</a><a class="button" href="https://github.com/facturx-engine/facturx-engine#quickstart">Community starten</a></div>
+        <p class="fine">Evaluation für 0 €. Dasselbe öffentliche Docker-Image. Vorgeschlagene interne Lizenz: 299 € zzgl. USt., einmalig. Es gibt noch keinen öffentlichen Bezahl-Checkout.</p>
+      </div>
+      <div class="terminal" aria-label="Beispielantwort der strikten Serialisierung"><div class="terminal-head">POST /v1/serialize → 200</div><pre><code>{
+  <span class="key">"schema_version"</span>: <span class="string">"2.0.0"</span>,
+  <span class="key">"execution_status"</span>: <span class="string">"complete"</span>,
+  <span class="key">"validation_status"</span>: <span class="string">"passed"</span>,
+  <span class="key">"mapping_status"</span>: <span class="string">"complete"</span>,
+  <span class="key">"suggested_route"</span>:
+    <span class="string">"continue_client_checks"</span>
+}
 
-    <!-- Header -->
-    <nav id="nav"
-        class="fixed top-0 w-full z-50 border-b border-white/5 bg-slate-950/80 backdrop-blur-md transition-all duration-300 h-20 flex items-center">
-        <div class="max-w-7xl mx-auto px-6 w-full flex items-center justify-between">
-            <div class="flex items-center gap-3 cursor-pointer" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
-                <div
-                    class="w-10 h-10 border-2 border-amber-500 flex items-center justify-center rounded-sm glow-amber bg-slate-900">
-                    <span class="font-mono font-bold text-amber-500">FX</span>
-                </div>
-                <span class="text-xl font-bold tracking-tighter text-white uppercase">Factur-X <span
-                        class="text-amber-500">Engine</span></span>
-            </div>
+<span class="ok">Keine XML-Reparatur. Keine erfundenen Werte.</span></code></pre></div>
+    </div></section>
 
-            <div
-                class="hidden md:flex items-center gap-10 text-[11px] font-mono tracking-widest uppercase text-slate-500">
-                <a href="#security" class="hover:text-amber-500 transition-colors">Sicherheit</a>
-                <a href="#compliance" class="hover:text-amber-500 transition-colors">Standards</a>
-                <a href="#api" class="hover:text-amber-500 transition-colors">API</a>
-                <a href="#faq" class="hover:text-amber-500 transition-colors">FAQ</a>
-                <div class="h-4 w-px bg-white/10 mx-2"></div>
-                <a href="../" class="hover:text-white transition-colors">EN</a>
-                <a href="../fr/" class="hover:text-white transition-colors">FR</a>
-                <span class="text-amber-500">DE</span>
-            </div>
+    <section class="strip" aria-label="Produkteigenschaften"><div class="wrap strip-grid">
+      <div class="strip-item"><strong>Lokale Verarbeitung</strong><span>Kein Upload an unseren Dienst</span></div>
+      <div class="strip-item"><strong>CII + UBL</strong><span>Ein dokumentierter JSON-Vertrag</span></div>
+      <div class="strip-item"><strong>Strikte Ablehnung</strong><span>HTTP 422 mit stabilen Diagnosen</span></div>
+      <div class="strip-item"><strong>Dasselbe Image</strong><span>Community und Evaluierungsschlüssel</span></div>
+    </div></section>
 
-            <div class="flex items-center gap-4">
-                <a href="https://github.com/facturx-engine/facturx-engine"
-                    class="px-5 py-2 border border-white/10 text-slate-400 text-[10px] font-bold uppercase tracking-widest hover:border-amber-500 hover:text-amber-500 transition-all">
-                    GitHub
-                </a>
-                <a href="https://github.com/facturx-engine/facturx-engine"
-                    class="px-5 py-2 bg-amber-500 text-black text-[10px] font-bold uppercase tracking-widest hover:bg-amber-600 transition-all">
-                    Docs
-                </a>
-            </div>
-        </div>
-    </nav>
+    <section class="section" id="intake"><div class="wrap">
+      <p class="eyebrow">Warum Intake</p><h2>Weniger rechnungsspezifischer Glue Code.</h2>
+      <p class="section-intro">XML-Bibliotheken liefern Knoten. Intake definiert eine engere Grenze für den ERP-Import: Nachweise über ausgeführte Prüfungen, ein stabiles Antwortschema und eine klare Ablehnung, wenn ein Dokument nicht sicher dargestellt werden kann.</p>
+      <div class="grid-3">
+        <article class="card"><span class="number">1</span><h3>Zuerst validieren</h3><p>Zeigt ausgeführte oder übersprungene XSD-, Schematron- und PDF/A-Schichten. Eine unvollständige Validierung kann nicht zu einer erfolgreichen strikten Serialisierung führen.</p></article>
+        <article class="card"><span class="number">2</span><h3>Strikt normalisieren</h3><p>Bildet unterstützte CII- und UBL-Rechnungen auf Schema v2 ab, ohne tolerante XML-Reparatur, erfundene Standardwerte oder stillschweigend ausgelassene wesentliche Gruppen.</p></article>
+        <article class="card"><span class="number">3</span><h3>Ablehnungen erklären</h3><p>Liefert verständlichen Validierungskontext oder stabile Mapping-Diagnosen mit Code, Quellpfad und Meldung statt einer plausibel wirkenden Teilrechnung.</p></article>
+      </div>
+    </div></section>
 
-    <!-- Hero -->
-    <section class="relative pt-48 pb-32 overflow-hidden">
-        <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-20 items-center">
-            <div class="relative z-20">
-                <!-- NEW BADGES -->
-                <div class="flex flex-wrap gap-4 mb-8">
-                    <div
-                        class="inline-flex items-center px-3 py-1 rounded-full border border-sky-500/30 bg-sky-500/10 text-sky-400 text-xs font-bold tracking-wide">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        Powered by Saxon-HE (KoSIT Ready)
-                    </div>
-                    <div
-                        class="inline-flex items-center px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs font-bold tracking-wide">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
-                            </path>
-                        </svg>
-                        Privacy First (Ohne Cloud)
-                    </div>
-                </div>
+    <section class="section alt" id="umfang"><div class="wrap">
+      <p class="eyebrow">Ein Image, zwei Modi</p><h2>Eine eng begrenzte kommerzielle Erweiterung des bestehenden Motors.</h2>
+      <p class="section-intro">Community bleibt ohne Schlüssel nutzbar. Der Evaluierungsschlüssel aktiviert Intake im selben Container.</p>
+      <table class="comparison"><thead><tr><th>Funktion</th><th>Community</th><th>Intake-Evaluation</th></tr></thead><tbody>
+        <tr><td>Unterstütztes CII-XML erzeugen und einbetten</td><td class="yes">Enthalten</td><td class="yes">Enthalten</td></tr>
+        <tr><td>CII/UBL validieren und ausgeführte Schichten melden</td><td class="yes">Enthalten</td><td class="yes">Enthalten</td></tr>
+        <tr><td>Heuristische Extraktionsvorschau</td><td class="yes">Enthalten, nie als importierbar markiert</td><td class="yes">Enthalten</td></tr>
+        <tr><td>Striktes Schema-v2-JSON über <code>/v1/serialize</code></td><td class="dim">Schlüssel erforderlich</td><td class="yes">Aktiviert</td></tr>
+        <tr><td>Erweiterte, verständliche Diagnosen</td><td class="dim">Rohe strukturierte Fehler</td><td class="yes">Aktiviert</td></tr>
+        <tr><td>VeraPDF-Schicht für PDF-Eingaben</td><td class="dim">Als übersprungen gemeldet</td><td class="yes">Ausgeführt, wenn verfügbar und aktiviert</td></tr>
+      </tbody></table>
+    </div></section>
 
-                <h1 class="text-6xl md:text-8xl font-black tracking-tighter text-white uppercase leading-none mb-8">
-                    Übersetzungs<br>
-                    <span class="text-amber-500">schicht</span>
-                </h1>
-                <p class="max-w-2xl text-xl md:text-2xl text-slate-400 leading-relaxed font-light mb-12">
-                    Die selbstgehostete Brücke zwischen Ihrem <span class="text-white">ERP</span> und der E-Rechnung.
-                    Validieren, extrahieren und normalisieren Sie Factur-X, ZUGFeRD und XRechnung in JSON — oder
-                    generieren Sie konformes XML aus Ihren Geschäftsdaten.
-                </p>
-                <div class="flex flex-wrap gap-4">
-                    <a href="https://github.com/facturx-engine/facturx-engine#quickstart"
-                        class="px-8 py-4 bg-amber-500 text-black font-bold uppercase tracking-widest text-sm hover:bg-amber-400 transition-colors">
-                        Los geht's
-                    </a>
-                    <a href="https://github.com/facturx-engine/facturx-engine"
-                        class="px-8 py-4 border border-white/10 text-white font-bold uppercase tracking-widest text-sm hover:bg-white/5 transition-colors">
-                        GitHub
-                    </a>
-                </div>
-            </div>
+    <section class="section"><div class="wrap offer">
+      <article class="price-card"><p class="eyebrow">Kommerzielle Hypothese</p><h2>Intake-Lizenz zur internen Nutzung</h2><p class="price">299 € <small>zzgl. USt. · einmalig</small></p>
+        <ul class="checklist"><li>Eine Rechtseinheit</li><li>Interne Nutzung auf Ihrer Infrastruktur</li><li>Keine Lizenzgebühr pro Rechnung</li><li>Dasselbe öffentliche Docker-Image</li></ul>
+        <a class="button primary" href="https://facturx-engine.lemonsqueezy.com/checkout/buy/99a9ff62-baa6-4a24-ac61-3eebfacddab5">Intake 30 Tage evaluieren</a>
+        <p class="fine">Die Evaluation ist kostenlos. Die Lizenz für 299 € ist eine Preishypothese und noch nicht über einen öffentlichen Bezahl-Checkout erhältlich.</p>
+      </article>
+      <aside class="boundary"><h3>Bewusst nicht enthalten</h3><ul><li>OEM-Nutzung, Weitervertrieb oder Einbettung in ein kundenorientiertes SaaS</li><li>SLA, Prioritäts-Support oder garantierte Reaktionszeiten</li><li>Individuelle Mappings, Integrationsarbeit oder Sonderentwicklung</li><li>Steuer-, Buchhaltungs-, Rechts- oder Regulierungsberatung</li><li>Garantie der Annahme durch Empfänger oder Plattformen</li></ul>
+        <p class="notice"><strong>Verantwortungsgrenze:</strong> Auch nach einem erfolgreichen strikten Mapping bleiben Lieferanten-, Dubletten-, Bestell-, Steuer- und Zahlungsfreigabeprüfungen bei Ihrem System.</p>
+      </aside>
+    </div></section>
 
-            <div class="relative group">
-                <div class="absolute -inset-1 bg-amber-500/20 blur-xl rounded-full opacity-50"></div>
-                <div class="relative bg-black border border-white/10 p-1 rounded-sm overflow-hidden">
-                    <div class="flex items-center gap-2 px-4 py-2 bg-white/5 border-b border-white/10">
-                        <div class="w-2 h-2 rounded-full bg-red-500/50"></div>
-                        <div class="w-2 h-2 rounded-full bg-amber-500/50"></div>
-                        <div class="w-2 h-2 rounded-full bg-green-500/50"></div>
-                        <span class="text-[10px] font-mono text-slate-500 ml-4 italic">root@engine:~# curl -X POST
-                            /v1/serialize</span>
-                    </div>
-                    <div class="p-6 font-mono text-sm space-y-3">
-                        <div class="text-amber-500">JSON Transformation...</div>
-                        <div class="text-slate-400">
-                            {<br />
-                            &nbsp;&nbsp;"invoice_number": "R2024-001",<br />
-                            &nbsp;&nbsp;"totals": { "net": 1500.00 },<br />
-                            &nbsp;&nbsp;"compliance": "EN16931"<br />
-                            }
-                        </div>
-                        <div class="flex items-center gap-2 text-green-500">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M5 13l4 4L19 7">
-                                </path>
-                            </svg>
-                            200 OK
-                        </div>
-                        <div class="text-slate-500 text-xs">Zeit: 42ms</div>
-                        <div class="text-slate-500 text-xs">Modus: Business-Ready</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+    <section class="section alt"><div class="wrap"><p class="eyebrow">Evaluation</p><h2>Mit Ihren Rechnungen in Ihrer Umgebung testen.</h2><div class="steps">
+      <article class="step"><div><h3>Evaluierungsschlüssel für 0 € anfordern</h3><p>Der bestehende Lemon-Squeezy-Ablauf liefert einen 30 Tage gültigen Schlüssel.</p></div></article>
+      <article class="step"><div><h3>Dasselbe Image mit dem Schlüssel starten</h3><p><code>docker run -p 8000:8000 -e LICENSE_KEY='IHR_SCHLUESSEL' facturxengine/facturx-engine:latest</code></p></div></article>
+      <article class="step"><div><h3>Freischaltung prüfen, dann Datei senden</h3><p><code>GET /license/status</code> prüfen und anschließend <code>POST /v1/serialize</code> mit einem PDF mit eingebettetem XML oder einer XML-Rechnung aufrufen.</p></div></article>
+    </div></div></section>
 
-    <!-- Integration Recipes (DE) -->
-    <section class="py-24 bg-slate-950 border-b border-white/5">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="space-y-6">
-                <div class="flex items-center gap-4 mb-8">
-                    <h3 class="text-2xl font-bold text-white">Integrationsrezepte</h3>
-                    <div class="h-px bg-white/10 flex-grow"></div>
-                </div>
-                <div class="grid md:grid-cols-3 gap-4">
-                    <a href="../tutorials/python-facturx.html"
-                        class="group block p-6 bg-black border border-white/10 rounded hover:border-amber-500 transition-colors">
-                        <div class="text-amber-500 font-mono text-xs mb-2">PYTHON</div>
-                        <div class="text-white font-bold mb-2 group-hover:text-amber-500">Requests</div>
-                        <p class="text-xs text-slate-500">Integrationsleitfaden für FastAPI, Django, Flask.</p>
-                    </a>
-                    <a href="../tutorials/nodejs-facturx.html"
-                        class="group block p-6 bg-black border border-white/10 rounded hover:border-amber-500 transition-colors">
-                        <div class="text-amber-500 font-mono text-xs mb-2">NODE.JS</div>
-                        <div class="text-white font-bold mb-2 group-hover:text-amber-500">Axios</div>
-                        <p class="text-xs text-slate-500">Leitfaden für NestJS, Express, Serverless.</p>
-                    </a>
-                    <a href="../tutorials/php-facturx.html"
-                        class="group block p-6 bg-black border border-white/10 rounded hover:border-amber-500 transition-colors">
-                        <div class="text-amber-500 font-mono text-xs mb-2">PHP</div>
-                        <div class="text-white font-bold mb-2 group-hover:text-amber-500">Guzzle</div>
-                        <p class="text-xs text-slate-500">Leitfaden für Symfony, Laravel, WordPress.</p>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </section>
+    <section class="section"><div class="wrap"><p class="eyebrow">Fragen</p><h2>Vor der Integration</h2><div class="faq">
+      <details><summary>Werden Rechnungsdaten an eine gehostete API gesendet?</summary><p>Nein. Der Motor läuft in Ihrem Container. Sie kontrollieren Host, Netzwerk, Speicher, Protokolle und Zugriff.</p></details>
+      <details><summary>Garantiert eine erfolgreiche Antwort steuerliche oder regulatorische Konformität?</summary><p>Nein. Das Ergebnis beschreibt nur tatsächlich ausgeführte Regeln und Werkzeuge. Prüfen Sie die Vollständigkeit und behalten Sie Ihre fachlichen, buchhalterischen und empfangsseitigen Kontrollen bei.</p></details>
+      <details><summary>Was geschieht, wenn Intake ein Dokument nicht sicher abbilden kann?</summary><p>HTTP 422 mit stabilen Diagnosen. Intake repariert kein fehlerhaftes XML, erfindet keine erforderlichen Geschäftsdaten und kennzeichnet kein Teil-Mapping als erfolgreich.</p></details>
+      <details><summary>Ist die Lizenz für 299 € bereits erhältlich?</summary><p>Nicht über einen öffentlichen Bezahl-Checkout. Der Preis ist die getestete kommerzielle Hypothese. Der vollständige Intake-Pfad kann 30 Tage für 0 € evaluiert werden.</p></details>
+    </div></div></section>
+  </main>
 
-    <!-- Search Intent Content (SEO) -->
-    <section class="py-24 bg-slate-900 border-b border-white/5" id="api">
-        <div class="max-w-4xl mx-auto px-6 space-y-16">
-
-            <div class="space-y-4">
-                <h3 class="text-2xl font-bold text-white">Generieren Sie ZUGFeRD PDF/A-3 + XML</h3>
-                <p class="text-slate-400 leading-relaxed">
-                    Konvertieren Sie jedes Standard-PDF in eine konforme Hybrid-Rechnung. Die Engine verwaltet die
-                    komplexe PDF-Struktur,
-                    hängt die XML-Nutzlast an und erstellt automatisch die archivkonforme PDF/A-3 Dateistruktur.
-                </p>
-                <div class="bg-black p-4 rounded border border-white/10 font-mono text-xs text-slate-300">
-                    $ docker run -p 8000:8000 facturxengine/facturx-engine
-                </div>
-            </div>
-
-            <div class="space-y-4">
-                <h3 class="text-2xl font-bold text-white">Validieren Sie EN 16931 (Schematron)</h3>
-                <p class="text-slate-400 leading-relaxed">
-                    Entwickelt für die Konformität mit <strong>EN 16931</strong>. Die Engine enthält offizielle
-                    Schematron-Profile (CII & UBL),
-                    um strenge Geschäftsregeln (Summen, Steuerberechnungen, Pflichtfelder) zu validieren, bevor Sie die
-                    Rechnung versenden.
-                </p>
-            </div>
-
-            <div class="space-y-4">
-                <h3 class="text-2xl font-bold text-white">4. Business-Ready Serialisierung (JSON)</h3>
-                <p class="text-slate-400 leading-relaxed">
-                    Stoppen Sie das Parsen komplexer XML-Bäume. Die <strong>Pro Edition</strong> transformiert
-                    Factur-X/ZUGFeRD/CII in ein flaches, typisiertes JSON-Objekt. Optimiert für die direkte
-                    DB-Speicherung oder UI-Anzeige.
-                </p>
-            </div>
-
-            <div class="space-y-4">
-                <h3 class="text-2xl font-bold text-white">5. Erweiterte Diagnose (Smarte Validierung)</h3>
-                <p class="text-slate-400 leading-relaxed">
-                    Gehen Sie über die Standardvalidierung hinaus. Die <strong>Pro Edition</strong> erkennt proaktiv
-                    "Rechnungskiller": USt-IdNr/Steuer-Inkonsistenzen, negative Summen mit falschem Typ und verbotene
-                    Zeichen. Ein präventives Audit vor dem Versand.
-                </p>
-            </div>
-
-            <div class="space-y-4">
-                <h3 class="text-2xl font-bold text-white">Self-Hosted Docker Middleware</h3>
-                <p class="text-slate-400 leading-relaxed">
-                    Entwickelt für die Integration in ERP- und Buchhaltungssoftware. Stellen Sie es als Microservice in
-                    Ihrem Kubernetes-Cluster
-                    oder auf einer einfachen VM bereit. Es fungiert als Black-Box-Middleware: Senden Sie Rohdaten,
-                    erhalten Sie konforme Dokumente.
-                </p>
-            </div>
-
-        </div>
-    </section>
-
-
-
-    <!-- Specs Grid -->
-    <section id="security" class="py-32 border-y border-white/5 relative bg-slate-950/50">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="grid md:grid-cols-3 gap-16">
-                <div class="space-y-4">
-                    <div class="text-amber-500 font-mono text-xs tracking-widest uppercase">01 / Datenschutz</div>
-                    <h3 class="text-2xl font-bold text-white">Datensouveränität</h3>
-                    <p class="text-sm text-slate-500 leading-relaxed"><strong>Air-Gapped Design.</strong> Keine externen
-                        Aufrufe. Keine Telemetrie. Perfekt für Banken
-                        und hochsichere Umgebungen (KRITIS), wo keine Daten den Server verlassen dürfen.</p>
-                </div>
-                <div class="space-y-4">
-                    <div class="text-amber-500 font-mono text-xs tracking-widest uppercase">02 / Architektur</div>
-                    <h3 class="text-2xl font-bold text-white">Isolierte Subprozesse</h3>
-                    <p class="text-sm text-slate-500 leading-relaxed">Saxon-HE und VeraPDF laufen als sandboxed Java-Subprozesse.
-                        Speicher wird sofort vom OS zurückgewonnen — keine JVM-Speicherlecks unter Last.</p>
-                </div>
-                <div class="space-y-4">
-                    <div class="text-amber-500 font-mono text-xs tracking-widest uppercase">03 / Integrität</div>
-                    <h3 class="text-2xl font-bold text-white">Saxon-HE Prozess-Isolation</h3>
-                    <p class="text-sm text-slate-500 leading-relaxed">Nicht nur generieren. Validieren. Jede Rechnung
-                        wird
-                        gegen offizielle EN 16931 Regeln in isolierten Prozessen geprüft.</p>
-                </div>
-                <!-- Row 2 -->
-                <div class="space-y-4">
-                    <div class="text-amber-500 font-mono text-xs tracking-widest uppercase">04 / Observability</div>
-                    <h3 class="text-2xl font-bold text-white">Split Metrics</h3>
-                    <p class="text-sm text-slate-500 leading-relaxed">Monitoring auf Enterprise-Niveau. Ops-Metriken für
-                        alle,
-                        plus detaillierte Business-Intelligence-Metriken für Pro-Nutzer (Profile, Fehlertypen).</p>
-                </div>
-                <div class="space-y-4">
-                    <div class="text-amber-500 font-mono text-xs tracking-widest uppercase">05 / Supply Chain</div>
-                    <h3 class="text-2xl font-bold text-white">Trust Pack</h3>
-                    <p class="text-sm text-slate-500 leading-relaxed"> SBOM (CycloneDX) für jedes Release verfügbar.
-                        Alle
-                        Docker-Images sind kryptographisch mit Cosign signiert.</p>
-                </div>
-                <div class="space-y-4">
-                    <div class="text-amber-500 font-mono text-xs tracking-widest uppercase">06 / Konformität</div>
-                    <h3 class="text-2xl font-bold text-white">ZUGFeRD Ready</h3>
-                    <p class="text-sm text-slate-500 leading-relaxed">Abgestimmt auf die E-Rechnungspflicht (B2B).
-                        Generieren Sie Dateien,
-                        die strikt konform mit XRechnung und ZUGFeRD 2.x sind.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-
-    <!-- DORA / BANKING SECTION -->
-    <section class="container mx-auto px-6 py-24 border-t border-white/5">
-        <div class="max-w-4xl mx-auto">
-            <div class="flex items-center gap-4 mb-8">
-                <div
-                    class="px-3 py-1 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded font-mono text-xs uppercase tracking-widest">
-                    Enterprise & Datenschutz
-                </div>
-                <h2 class="text-3xl font-bold text-white">Datenschutz & Compliance Ready</h2>
-            </div>
-
-            <p class="text-xl text-slate-300 leading-relaxed mb-12">
-                Ob für <strong>DSGVO</strong> Datenminimierung oder <strong>DORA</strong> operative Resilienz, Factur-X
-                Engine ist so konzipiert, dass Ihre Finanzdaten sicher und souverän bleiben.
-            </p>
-
-            <div class="grid md:grid-cols-2 gap-8">
-                <div
-                    class="p-8 bg-slate-900 border border-white/5 rounded-sm hover:border-amber-500/30 transition-all group">
-                    <div
-                        class="w-12 h-12 bg-amber-500/10 rounded-full flex items-center justify-center mb-6 group-hover:bg-amber-500/20 transition-colors">
-                        <svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10">
-                            </path>
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-bold text-white mb-3">Keine Drittanbieter-Abhängigkeit</h3>
-                    <p class="text-slate-400 text-sm leading-relaxed">
-                        Eliminieren Sie systemische Risiken. Anders als bei SaaS-APIs läuft die Engine vollständig auf
-                        Ihrer Infrastruktur. Wenn wir verschwinden, funktioniert Ihre Rechnungsstellung weiter. Sie
-                        besitzen die Runtime.
-                    </p>
-                </div>
-
-                <div
-                    class="p-8 bg-slate-900 border border-white/5 rounded-sm hover:border-emerald-500/30 transition-all group">
-                    <div
-                        class="w-12 h-12 bg-emerald-500/10 rounded-full flex items-center justify-center mb-6 group-hover:bg-emerald-500/20 transition-colors">
-                        <svg class="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
-                            </path>
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-bold text-white mb-3">Datensouveränität (Air-Gapped)</h3>
-                    <p class="text-slate-400 text-sm leading-relaxed">
-                        Keine Finanzdaten verlassen jemals Ihr Netzwerk. Der Container benötigt keinen ausgehenden
-                        Internetzugriff. Vereinfacht DSGVO und DORA Datenmapping.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Compliance Norms (DE) -->
-    <section id="compliance" class="py-32">
-        <div class="max-w-7xl mx-auto px-6">
-            <h2 class="text-3xl font-bold text-white mb-16 text-center">Unterstützte Standards</h2>
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-px bg-white/5 border border-white/5">
-                <div
-                    class="bg-slate-950 p-12 flex flex-col items-center text-center group hover:bg-amber-500/5 transition-colors">
-                    <span class="text-amber-500 font-mono text-sm mb-4">v1.08</span>
-                    <span class="text-xl font-bold text-white">Factur-X</span>
-                </div>
-                <div
-                    class="bg-slate-950 p-12 flex flex-col items-center text-center group hover:bg-amber-500/5 transition-colors">
-                    <span class="text-amber-500 font-mono text-sm mb-4">v2.4</span>
-                    <span class="text-xl font-bold text-white">ZUGFeRD</span>
-                </div>
-                <div
-                    class="bg-slate-950 p-12 flex flex-col items-center text-center group hover:bg-amber-500/5 transition-colors">
-                    <span class="text-amber-500 font-mono text-sm mb-4">v3.0</span>
-                    <span class="text-xl font-bold text-white">XRechnung</span>
-                </div>
-                <div
-                    class="bg-slate-950 p-12 flex flex-col items-center text-center group hover:bg-amber-500/5 transition-colors">
-                    <span class="text-amber-500 font-mono text-sm mb-4">Core</span>
-                    <span class="text-xl font-bold text-white">EN 16931</span>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- OEM Integration Section -->
-    <section class="py-24 border-t border-white/5 bg-slate-900/30">
-        <div class="max-w-4xl mx-auto px-6 text-center">
-            <div
-                class="inline-flex items-center px-3 py-1 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded font-mono text-xs uppercase tracking-widest mb-6">
-                Für ERP-Integratoren entwickelt
-            </div>
-            <h2 class="text-3xl md:text-4xl font-black text-white uppercase tracking-tighter mb-6">
-                Die reibungslose OEM <span class="text-amber-500">Validierungs-Engine</span>
-            </h2>
-            <p class="text-lg text-slate-400 leading-relaxed mb-10 max-w-2xl mx-auto">
-                Hören Sie auf, das Rad mit komplexem XML-Parsing neu zu erfinden. Integrieren Sie die Factur-X Engine
-                direkt in Ihre ERP-, E-Commerce- oder Buchhaltungssoftware. Unsere OEM-Lizenz gewährt Ihnen volle
-                kommerzielle Weitergaberechte.
-            </p>
-            <div class="grid md:grid-cols-3 gap-6 text-left">
-                <div class="bg-black border border-white/5 p-6 rounded">
-                    <h4 class="text-white font-bold mb-2">Pauschale Jahreslizenz</h4>
-                    <p class="text-sm text-slate-500">Unbegrenzte Kunden, unbegrenztes Volumen. Keine
-                        versteckten Gebühren pro Rechnung. <a href="https://facturx-engine.lemonsqueezy.com" class="text-amber-500 hover:underline">Preise ansehen</a>.</p>
-                </div>
-                <div class="bg-black border border-white/5 p-6 rounded">
-                    <h4 class="text-white font-bold mb-2">White-Label Ready</h4>
-                    <p class="text-sm text-slate-500">Unsichtbar für Ihre Endnutzer. Es läuft als Microservice hinter
-                        Ihrer eigenen Anwendung.</p>
-                </div>
-                <div class="bg-black border border-white/5 p-6 rounded">
-                    <h4 class="text-white font-bold mb-2">JSON First</h4>
-                    <p class="text-sm text-slate-500">Wandeln Sie komplexes Factur-X XML direkt in normalisiertes,
-                        flaches JSON für eine einfache Datenbankeinfügung um.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Pricing Section -->
-    <section id="pricing" class="py-24 border-t border-white/5 bg-slate-950">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-4xl font-black text-white uppercase tracking-tighter">Einfache, transparente
-                    Preisgestaltung</h2>
-                <p class="text-slate-400 mt-4 max-w-2xl mx-auto">Sofort starten. Keine Verkaufsgespräche erforderlich.
-                </p>
-            </div>
-
-            <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-                <!-- Community -->
-                <div class="bg-slate-900/50 border border-white/10 p-8 rounded flex flex-col">
-                    <h3 class="text-xl font-bold text-white mb-2">Community</h3>
-                    <div class="text-3xl font-black text-white mb-4">Kostenlos <span
-                            class="text-sm text-slate-500 font-normal">MIT-Lizenz</span></div>
-                    <p class="text-sm text-slate-400 mb-8 flex-grow">Produktionsreif. Open Core mit transparentem Python-Quellcode.</p>
-                    <ul class="space-y-3 mb-8 text-sm text-slate-300">
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500" fill="none"
-                                stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M5 13l4 4L19 7"></path>
-                            </svg> <strong>Empfangen:</strong> /v1/extract — rohe XML-Felder</li>
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500" fill="none"
-                                stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M5 13l4 4L19 7"></path>
-                            </svg> <strong>Validieren:</strong> EN 16931 Schematron (rohe XPath-Fehler)</li>
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500" fill="none"
-                                stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M5 13l4 4L19 7"></path>
-                            </svg> <strong>Senden:</strong> Generieren, Konvertieren, Zusammenführen</li>
-                    </ul>
-                    <a href="https://github.com/facturx-engine/facturx-engine#quickstart"
-                        class="w-full py-3 border border-white/10 text-center font-bold uppercase tracking-widest text-xs hover:bg-white/5 transition-colors text-white">Auf
-                        GitHub ansehen</a>
-                </div>
-
-                <!-- Pro -->
-                <div
-                    class="bg-slate-900 border-2 border-amber-500 p-8 rounded flex flex-col relative transform md:-translate-y-4 shadow-2xl shadow-amber-500/10">
-                    <div
-                        class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-amber-500 text-black text-[10px] font-bold uppercase tracking-widest py-1 px-3 rounded-full">
-                        Für ERP-Integratoren</div>
-                    <h3 class="text-xl font-bold text-amber-500 mb-2">Pro Edition</h3>
-                    <div class="text-3xl font-black text-white mb-4">Jahreslizenz</div>
-                    <p class="text-sm text-slate-400 mb-8 flex-grow">ERP-Ready JSON-Serialisierung, Smarte Diagnose und PDF/A-3 Konformität.</p>
-                    <ul class="space-y-3 mb-8 text-sm text-slate-200">
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-amber-500" fill="none"
-                                stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M5 13l4 4L19 7"></path>
-                            </svg> Alles aus Community</li>
-                        <li class="flex items-center gap-2 font-bold"><svg class="w-4 h-4 text-amber-500" fill="none"
-                                stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M5 13l4 4L19 7"></path>
-                            </svg> <strong>Empfangen:</strong> /v1/serialize — normalisiertes, typisiertes JSON</li>
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-amber-500" fill="none"
-                                stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M5 13l4 4L19 7"></path>
-                            </svg> <strong>Validieren:</strong> Smarte Diagnose — lesbare Fehlermeldungen</li>
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-amber-500" fill="none"
-                                stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M5 13l4 4L19 7"></path>
-                            </svg> VeraPDF (PDF/A-3) Konformitätsprüfung</li>
-                    </ul>
-                    <a href="https://facturx-engine.lemonsqueezy.com"
-                        class="w-full py-3 bg-amber-500 text-black text-center font-bold uppercase tracking-widest text-xs hover:bg-amber-400 transition-colors">Preise
-                        & 30-Tage Evaluation</a>
-                </div>
-            </div>
-            <p class="text-center text-sm text-slate-500 mt-8">OEM- und Enterprise-Lizenzen verfügbar — <a href="https://facturx-engine.lemonsqueezy.com" class="text-amber-500 hover:underline">alle Optionen ansehen</a></p>
-        </div>
-    </section>
-
-    <!-- Evaluation Intent Capture -->
-    <section class="py-24 border-t border-amber-500/20 bg-amber-500/5 relative overflow-hidden">
-        <div class="glow-amber absolute -inset-10 opacity-10 pointer-events-none"></div>
-        <div class="max-w-4xl mx-auto px-6 text-center relative z-10">
-            <h2 class="text-3xl font-black text-white uppercase tracking-tighter mb-4">Starten Sie Ihre Integration noch
-                heute</h2>
-            <p class="text-slate-400 mb-8 max-w-xl mx-auto">Sichern Sie sich vollen Zugriff auf die Pro-Funktionen
-                (VeraPDF-Validierung, vollständige JSON-Extraktion und intelligente Diagnose) mit einem reibungslosen
-                30-Tage Evaluation Key.</p>
-            <a href="https://facturx-engine.lemonsqueezy.com"
-                class="inline-flex items-center px-8 py-4 bg-amber-500 text-black font-bold uppercase tracking-widest text-sm hover:bg-amber-400 transition-colors shadow-xl shadow-amber-500/20">
-                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z">
-                    </path>
-                </svg>
-                Evaluation Key anfordern
-            </a>
-            <p class="text-xs text-slate-500 mt-4">Sofortige Lieferung. Keine Kreditkarte erforderlich. Base64 als
-                Umgebungsvariable injizierbar.</p>
-        </div>
-    </section>
-
-    <!-- FAQ / GEO Section -->
-    <section id="faq" class="py-24 border-y border-white/5 bg-slate-950">
-        <div class="max-w-4xl mx-auto px-6">
-            <h2 class="text-3xl font-bold text-white mb-16 text-center">Häufig gestellte Fragen</h2>
-            <div class="grid gap-8">
-                <div class="space-y-2">
-                    <h4 class="text-lg font-bold text-amber-500">Warum einen Docker-Container verwenden?</h4>
-                    <p class="text-slate-400">PDF/A-3 Konvertierung ist komplex. Docker isoliert Abhängigkeiten
-                        (vermeidet die Ghostscript/Java-Hölle) und garantiert eine stabile <strong>"Iso-Prod"
-                            Umgebung</strong> überall.</p>
-                </div>
-                <div class="space-y-2">
-                    <h4 class="text-lg font-bold text-amber-500">Extrahiert es Daten zu JSON?</h4>
-                    <p class="text-slate-400">Ja! Die <strong>Community Edition</strong> (<code>/v1/extract</code>)
-                        extrahiert die rohen XML-Felder aus PDFs in ein Standard-JSON-Format. Die <strong>Pro
-                            Edition</strong> (<code>/v1/serialize</code>) geht weiter mit
-                        <strong>ERP-Ready Serialisierung</strong>: Sie normalisiert komplexe CII und UBL XML in ein
-                        typisiertes JSON mit versioniertem Schema — bereit für die direkte Datenbankeinfügung.
-                    </p>
-                </div>
-                <div class="space-y-2">
-                    <h4 class="text-lg font-bold text-amber-500">Kann ich reines XML ohne PDF generieren?</h4>
-                    <p class="text-slate-400">Absolut. Während der Haupt-Endpoint <code>/v1/convert</code> XML in Ihre
-                        vorhandenen PDFs einbettet, bietet die Engine einen dedizierten <code>/v1/xml</code> Endpoint.
-                        Übergeben Sie Ihre JSON-Metadaten, und Sie erhalten direkt ein vollständig konformes Cross
-                        Industry Invoice (Factur-X) oder XRechnung XML zurück.</p>
-                </div>
-                <div class="space-y-2">
-                    <h4 class="text-lg font-bold text-amber-500">Kann ich reine XML-Dateien validieren?</h4>
-                    <p class="text-slate-400">Ja! Obwohl sie PDF/A-3 verarbeitet, bietet die Engine einen dedizierten
-                        <code>/v1/xml</code> Endpoint zur Validierung von reinen XML-Dateien gegen alle B2B
-                        Schematron-Regeln (EN 16931, XRechnung), unabhängig von PDF-Containern.</p>
-                </div>
-                <div class="space-y-2">
-                    <h4 class="text-lg font-bold text-amber-500">Ist es konform mit der E-Rechnungspflicht?</h4>
-                    <p class="text-slate-400">Ja. Die Engine produziert Dateien, die strikt der <strong>EN
-                            16931</strong> Syntax entsprechen.
-                        Sie unterstützt alle erforderlichen Profile für XRechnung und ZUGFeRD.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="py-20 border-t border-white/5">
-        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-10">
-            <div class="flex flex-col gap-2">
-                <div class="flex items-center gap-3">
-                    <div
-                        class="w-8 h-8 border border-amber-500 flex items-center justify-center rounded-sm glow-amber bg-slate-900">
-                        <span class="font-mono font-bold text-amber-500 text-sm">FX</span>
-                    </div>
-                    <span class="text-lg font-bold tracking-tighter text-white uppercase">Factur-X <span
-                            class="text-amber-500">Engine</span></span>
-                </div>
-                <p class="text-xs text-slate-600">Performance und Konformität für souveräne Unternehmen.</p>
-            </div>
-
-            <div class="flex gap-8 text-[10px] font-mono uppercase tracking-widest text-slate-500">
-                <a href="https://github.com/facturx-engine/facturx-engine" class="hover:text-amber-500">Docs</a>
-                <a href="https://hub.docker.com/r/facturxengine/facturx-engine" class="hover:text-amber-500">System</a>
-                <a href="https://github.com/facturx-engine/facturx-engine"
-                    class="hover:text-amber-500 transition-colors">GitHub</a>
-            </div>
-
-            <div class="text-[10px] font-mono text-slate-600 uppercase tracking-widest">
-                © <span id="year"></span> FACTUR-X ENGINE. ALLE RECHTE VORBEHALTEN.
-            </div>
-        </div>
-    </footer>
-
-    <script>
-        document.getElementById('year').textContent = new Date().getFullYear();
-
-        // Navbar Scroll
-        const nav = document.getElementById('nav');
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 50) {
-                nav.classList.add('py-2', 'bg-slate-950/95', 'shadow-2xl');
-                nav.classList.remove('py-6');
-            } else {
-                nav.classList.remove('py-2', 'bg-slate-950/95', 'shadow-2xl');
-                nav.classList.add('py-6');
-            }
-        });
-    </script>
+  <footer><div class="wrap footer-grid"><div>Factur-X Engine ist eine technische Komponente und keine Steuer-, Buchhaltungs-, Rechts-, Regulierungs- oder Sicherheitsberatung.</div><div class="footer-links"><a href="../../LICENSE">MIT-Lizenz</a><a href="../../EULA_PRO.md">Evaluierungshinweis</a><a href="../../SECURITY.md">Sicherheit</a><a href="../ref/api-reference.html">API-Referenz</a></div></div></footer>
 </body>
-
 </html>

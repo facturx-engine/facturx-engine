@@ -3,7 +3,7 @@ from app.services.business_serializer import BusinessReadySerializer
 
 def test_serializer_xrechnung_profile_detection():
     """
-    BUG REPRODUCTION: Verify that serializer incorrectly tags XRechnung as en16931.
+    Verify profile detection independently from strict mapping completeness.
     """
     # Create a minimal XRechnung 3.0.x XML
     xml_content = b"""<?xml version="1.0" encoding="UTF-8"?>
@@ -35,8 +35,7 @@ def test_serializer_xrechnung_profile_detection():
     </ram:SupplyChainTradeTransaction>
 </rsm:CrossIndustryInvoice>"""
     
-    invoice = BusinessReadySerializer.serialize(xml_content)
-    
-    # This should be xrechnung_3.0, but current code hardcodes en16931
-    print(f"\nDetected Profile: {invoice.profile}")
-    assert invoice.profile == "xrechnung_3.0", f"Expected xrechnung_3.0 but got {invoice.profile}"
+    root = BusinessReadySerializer._parse_xml(xml_content)
+    profile = BusinessReadySerializer._cii_profile(root)
+
+    assert profile == "xrechnung_3.0"

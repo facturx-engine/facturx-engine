@@ -91,7 +91,7 @@
           "name": "Is there a reliable NPM package for generating Factur-X or XRechnung invoices?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "No mature NPM package handles the full EN 16931 Schematron validation required for legal compliance in France, Germany, and Belgium. The correct approach for Node.js is to call a self-hosted REST API (such as Factur-X Engine) via axios or the native fetch API. This keeps your Node.js environment lightweight while the Docker container handles Saxon-HE Schematron validation and PDF/A-3 embedding internally."
+            "text": "A self-hosted REST API is one option when you want PDF, XML Schema and Schematron tooling outside the Node.js process. Factur-X Engine reports which configured validation layers actually ran or were skipped; callers must inspect that evidence and retain their own legal and business controls."
           }
         },
         {
@@ -200,10 +200,9 @@ convertToFacturX('./input.pdf', myMetadata);</code></pre>
                 <div class="space-y-4">
                     <h2 class="text-2xl font-bold text-white">NPM Packages vs Docker API</h2>
                     <p class="text-slate-400">
-                        There is no mature NPM package that handles the full EN 16931 Schematron validation stack.
-                        Existing packages generate XML but skip the business-rule validation required by French, German,
-                        and Belgian mandates. The Docker API approach keeps Node.js dependency-free while the engine
-                        handles Saxon-HE and VeraPDF internally.
+                        An embedded NPM package and a containerized API make different trade-offs. A container can
+                        centralize PDF, XML Schema and Schematron dependencies and report which checks ran, while an
+                        embedded package avoids a service boundary. Test either approach against your own invoice corpus.
                     </p>
                     <div class="overflow-x-auto mt-4">
                         <table class="w-full text-sm text-slate-400 border border-white/10 rounded-lg">
@@ -304,8 +303,8 @@ export class InvoiceService {
                 <div class="space-y-4">
                     <h2 class="text-2xl font-bold text-white">Use Case: Validate Before Sending with Express Middleware</h2>
                     <p class="text-slate-400">
-                        Add a validation gate in your Express upload route. Reject non-compliant invoices before they
-                        reach your ERP or document archive:
+                        Add a technical validation step in your Express upload route. Route invoices with reported
+                        validation errors for review before they reach your ERP or document archive:
                     </p>
                     <div class="bg-black border border-white/10 rounded-lg p-6 overflow-x-auto">
                         <pre class="font-mono text-sm text-slate-300"><code>const express = require('express');

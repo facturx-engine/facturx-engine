@@ -8,7 +8,7 @@ from io import BytesIO
 from typing import Optional, Union
 
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
-from fastapi.responses import StreamingResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 
 from app.version import __version__
 
@@ -21,20 +21,27 @@ def _sanitize_header_value(name: str) -> str:
 
 # Magic-byte signatures for supported file types
 _PDF_MAGIC = b"%PDF-"
-_XML_MAGIC_BYTES = (b"<?xml", b"\xef\xbb\xbf<?xml", b"<rsm:", b"<ubl:")  # UTF-8 BOM + common root elements
-
 def _check_pdf_magic(content: bytes) -> bool:
     """Return True if content starts with the PDF magic bytes (%PDF-)."""
     return content[:5] == _PDF_MAGIC
 
 def _check_xml_magic(content: bytes) -> bool:
-    """Return True if content looks like XML (starts with <?xml or a known root element)."""
+    """Return True if content has an XML-like opening token.
+
+    Namespace prefixes are caller-defined, so restricting this check to `rsm`
+    or `ubl` would reject valid documents such as an unprefixed UBL `Invoice`.
+    Secure parsing and format detection perform the authoritative checks later.
+    """
     stripped = content.lstrip(b"\xef\xbb\xbf \t\r\n")  # strip UTF-8 BOM + whitespace
-    return stripped[:5] == b"<?xml" or stripped[:4] in (b"<rsm", b"<ubl", b"<Cro")
+    return stripped.startswith(b"<?xml") or stripped.startswith(b"<")
 
 from app.schemas.errors import ProblemDetails
 from app.schemas.extraction import ExtractionResult
-from app.schemas.integration import SerializationResponse
+from app.schemas.integration import (
+    SerializationDiagnostic,
+    SerializationFailureResponse,
+    SerializationResponse,
+)
 from app.schemas.validation import (
     InvoiceMetadata,
     ProValidationResult,
@@ -229,15 +236,15 @@ async def generate_facturx_xml(
              })
 async def validate_facturx(
     file: UploadFile = File(..., description="Factur-X PDF or XML file to validate"),
-    validate_pdfa: bool = Form(True, description="Run PDF/A-3b validation (VeraPDF). Allows bypassing for speed if PDF structure is already trusted. Pro only.")
+    validate_pdfa: bool = Form(True, description="Run PDF/A-3b validation (VeraPDF). Allows bypassing for speed if PDF structure is already trusted. Requires an Evaluation or Pro key.")
 ):
     """
     Validate a Factur-X PDF or XML file against EN 16931 standards.
     
     Returns a validation report with detected format, flavor, and any errors.
     
-    **Pro Edition**: Smart Diagnostics with actionable human-readable fixes.
-    **Community Edition**: Full raw validation report (Standard EN16931 error codes).
+    Some legacy licensed builds also return enhanced human-readable diagnostics.
+    In every build, inspect validation completeness and the executed/skipped layers.
     """
     import os
     import time
@@ -289,7 +296,7 @@ async def validate_facturx(
             try:
                 if is_licensed():
                     is_pro = True
-                    logger.info("PRO License validated - Full compliance report enabled")
+                    logger.info("Licensed enhanced diagnostics enabled")
             except Exception as e:
                 logger.warning(f"License check failed: {e}")
         
@@ -375,7 +382,7 @@ async def validate_facturx(
             )
         else:
             # COMMUNITY MODE: Open Validation (full error list, structured format)
-            from app.schemas.validation import ProHint, ValidationErrorDetail
+            from app.schemas.validation import ValidationErrorDetail
             structured_errors = []
             for e in all_errors:
                 structured_errors.append(ValidationErrorDetail(
@@ -383,26 +390,6 @@ async def validate_facturx(
                     message=e.get("message", str(e)),
                     severity=e.get("severity", "error")
                 ))
-
-            # Build pro_hint teaser so Community users see what they're missing
-            n_errors = len([e for e in all_errors if e.get("severity", "error") == "error"])
-            n_warnings = len([e for e in all_errors if e.get("severity") == "warning"])
-            pro_hint = None
-            if n_errors or n_warnings:
-                parts = []
-                if n_errors:
-                    parts.append(f"{n_errors} error{'s' if n_errors > 1 else ''}")
-                if n_warnings:
-                    parts.append(f"{n_warnings} warning{'s' if n_warnings > 1 else ''}")
-                pro_hint = ProHint(
-                    error_count=n_errors,
-                    warning_count=n_warnings,
-                    message=(
-                        f"Pro Smart Diagnostics would provide human-readable explanations "
-                        f"and fix suggestions for {' and '.join(parts)}. "
-                        f"Get your 30-day evaluation key at https://facturx-engine.lemonsqueezy.com"
-                    ),
-                )
 
             return ValidationResult(
                 valid=result["is_valid"],
@@ -414,7 +401,7 @@ async def validate_facturx(
                 validation_completeness=result.get("validation_completeness", "full"),
                 layers_executed=result.get("layers_executed", []),
                 layers_skipped=[SkippedLayer(**s) for s in result.get("layers_skipped", [])],
-                pro_hint=pro_hint,
+                pro_hint=None,
             )
         
     except HTTPException:
@@ -443,17 +430,22 @@ async def extract_facturx(
     file: UploadFile = File(..., description="Factur-X PDF file to extract data from")
 ):
     """
-    Extract Factur-X XML from a PDF and return heuristic best-effort invoice JSON.
+    Inspect a Factur-X PDF and return heuristic best-effort invoice data.
     
-    This endpoint is designed for invoice reception workflows:
+    This endpoint is a preview/inspection workflow:
     1. Detects if the PDF contains embedded Factur-X/ZUGFeRD XML
     2. Extracts and parses the XML
     3. Returns structured invoice data (parties, totals, line items)
+
+    The response always declares `mode=preview` and
+    `suitable_for_automatic_import=false`. Values may be absent, coerced, or
+    truncated by the heuristic extractor. Use `/v1/serialize` when a strict,
+    versioned mapping contract is required.
     
     Use cases:
-    - Automated invoice reception
-    - ERP integration
-    - Invoice validation before processing
+    - Human inspection and troubleshooting
+    - Discovering the embedded XML and detected profile
+    - Prototyping an integration before adopting a strict mapping contract
     """
     import time
 
@@ -481,7 +473,7 @@ async def extract_facturx(
 
         # Extract invoice data
         # Extraction: Always use the full ExtractionService (Open Core Policy)
-        # Pro features are now strictly on Validation and Metrics.
+        # Enhanced validation remains gated in historical licensed builds.
         from app.services.extractor import ExtractionService
         
         result = await ExtractionService.extract_invoice_data_async(
@@ -514,23 +506,32 @@ async def extract_facturx(
              response_model=SerializationResponse,
              responses={
                  400: {"model": ProblemDetails, "description": "Invalid input"},
+                 422: {"model": SerializationFailureResponse, "description": "Validation or strict mapping failed"},
                  500: {"model": ProblemDetails, "description": "Server error"}
              })
 async def serialize_facturx(
     file: UploadFile = File(..., description="Factur-X PDF or XML file to serialize")
 ):
     """
-    Business-Ready JSON Serialization (Pro Feature).
+    Strict, versioned JSON serialization.
+
+    A 200 response means that all configured validation layers passed and the
+    invoice was mapped without XML recovery, invented values, or silently
+    skipped material elements. The response still requires client-side supplier,
+    duplicate, purchase-order, tax-policy, and payment checks.
     
-    Transforms XML data into normalized ERP integration JSON with fallback transparency.
-    
-    **Community Mode**: Not available - returns 403 with a link to obtain a license key.
+    **Feature availability**: Builds without the strict serializer entitlement
+    return HTTP 403. A free 30-day evaluation is linked from the project
+    website; no public paid checkout is currently active.
     """
     import time
 
     from app.license import is_licensed
     from app.metrics import metrics
-    from app.services.business_serializer import BusinessReadySerializer
+    from app.services.business_serializer import (
+        BusinessReadySerializer,
+        SerializationMappingError,
+    )
     
     start_time = time.time()
     metrics.inc("requests_total")
@@ -563,7 +564,7 @@ async def serialize_facturx(
         
         try:
             if is_licensed():
-                logger.info("PRO License validated for /serialize")
+                logger.info("Licensed strict serialization enabled")
         except Exception:
             pass
 
@@ -572,8 +573,8 @@ async def serialize_facturx(
             raise HTTPException(
                 status_code=403,
                 detail={
-                    "error": "LICENSE_REQUIRED", 
-                    "message": "The Business-Ready Serialization is a Pro feature. Get your free 30-day evaluation key at https://facturx-engine.lemonsqueezy.com"
+                    "error": "FEATURE_NOT_ENABLED",
+                    "message": "Factur-X Engine Intake requires an Evaluation or Pro key. A free 30-day evaluation is linked from the project website; no public paid checkout is active."
                 }
             )
 
@@ -603,27 +604,93 @@ async def serialize_facturx(
         elif isinstance(xml_data, str):
             xml_data = xml_data.encode('utf-8')
 
-        # Serialize
-        try:
-            invoice_data, fallbacks_applied, xml_recovery_applied = BusinessReadySerializer.serialize_with_diagnostics(
-                xml_data,
-                is_pro=is_pro_tier
+        # Validate the structured invoice before mapping. PDF/A is deliberately
+        # outside this endpoint's success contract: /serialize normalizes invoice
+        # data and does not certify the PDF container.
+        from app.services.hybrid_validation_service import HybridValidationService
+
+        validation_result = HybridValidationService.validate(
+            xml_data,
+            "invoice.xml",
+            validate_pdfa=False,
+        )
+        validation_completeness = validation_result.get("validation_completeness", "partial")
+        if validation_completeness != "full":
+            skipped = validation_result.get("layers_skipped", [])
+            diagnostics = [
+                SerializationDiagnostic(
+                    code="VALIDATION_LAYER_SKIPPED",
+                    message=f"Validation layer '{item.get('layer', 'unknown')}' did not run: {item.get('reason', 'unknown reason')}",
+                    source="validation",
+                    path=item.get("layer"),
+                )
+                for item in skipped
+            ]
+            if not diagnostics:
+                diagnostics = [
+                    SerializationDiagnostic(
+                        code="VALIDATION_INCOMPLETE",
+                        message="The configured validation pipeline did not report a complete result.",
+                        source="validation",
+                    )
+                ]
+            failure = SerializationFailureResponse(
+                engine_version=__version__,
+                execution_status="complete",
+                mapping_status="not_started",
+                validation_status="incomplete",
+                suggested_route="manual_review",
+                errors=diagnostics,
             )
+            return JSONResponse(status_code=422, content=failure.model_dump(mode="json"))
+
+        if not validation_result.get("is_valid", False):
+            diagnostics = [
+                SerializationDiagnostic(
+                    code=error.get("rule_id") or "VALIDATION_REJECTED",
+                    message=error.get("message") or "The invoice failed validation.",
+                    source="validation",
+                    path=error.get("location"),
+                    severity="warning" if error.get("severity") == "warning" else "error",
+                )
+                for error in validation_result.get("errors", [])
+            ]
+            if not diagnostics:
+                diagnostics = [
+                    SerializationDiagnostic(
+                        code="VALIDATION_REJECTED",
+                        message="The invoice failed validation.",
+                        source="validation",
+                    )
+                ]
+            failure = SerializationFailureResponse(
+                engine_version=__version__,
+                execution_status="complete",
+                mapping_status="not_started",
+                validation_status="rejected",
+                suggested_route="reject_input",
+                errors=diagnostics,
+            )
+            return JSONResponse(status_code=422, content=failure.model_dump(mode="json"))
+
+        # Strict mapping
+        try:
+            invoice_data = BusinessReadySerializer.serialize(xml_data, is_pro=is_pro_tier)
             
             return SerializationResponse(
-                success=True,
                 engine_version=__version__,
                 invoice=invoice_data,
-                fallbacks_applied=fallbacks_applied,
-                xml_recovery_applied=xml_recovery_applied,
             )
-        except Exception as e:
-            logger.exception(f"Serialization failed: {e}")
-            return SerializationResponse(
-                success=False,
+        except SerializationMappingError as exc:
+            failure = SerializationFailureResponse(
                 engine_version=__version__,
-                errors=[{"error": "SERIALIZATION_FAILED", "message": str(e)}]
+                execution_status="complete",
+                mapping_status="failed",
+                validation_status="passed",
+                suggested_route="manual_review",
+                errors=exc.diagnostics,
             )
+            return JSONResponse(status_code=422, content=failure.model_dump(mode="json"))
         
     except HTTPException:
         metrics.inc("errors_total")
@@ -747,5 +814,3 @@ async def merge_facturx(
     finally:
         metrics.dec_gauge("active_requests")
         metrics.observe("request_duration_seconds", time.time() - start_time)
-
-

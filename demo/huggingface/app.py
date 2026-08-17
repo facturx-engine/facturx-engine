@@ -145,7 +145,7 @@ with gr.Blocks(title="Factur-X Engine", theme=theme, css=css) as demo:
             """
             <div class="center-content">
                 <h1>⚡ Factur-X Engine <span style="color: #f59e0b; font-size: 0.6em; vertical-align: middle;">PRO</span></h1>
-                <p><b>Official SaxonC Validation</b> | Air-Gapped | Python</p>
+                <p><b>Bundled technical validation</b> | Local demo | Python</p>
             </div>
             """
         )

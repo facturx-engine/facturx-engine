@@ -1,8 +1,4 @@
-"""
-Extraction service for Community Edition (Open Core).
-Parses Factur-X/ZUGFeRD XML and returns FULL invoice data.
-Pro edition adds advanced validation and compliance features.
-"""
+"""Heuristic invoice preview extraction used by the public demo."""
 import asyncio
 import logging
 from io import BytesIO

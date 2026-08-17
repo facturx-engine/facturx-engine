@@ -59,7 +59,7 @@ from app.version import __version__
 # Create FastAPI application
 app = FastAPI(
     title=PRODUCT_NAME,
-    description="Production-ready REST API for Factur-X (ZUGFeRD 2.4) conversions and data extraction.",
+    description="Demonstration REST API for invoice conversion, extraction and technical validation.",
     version=__version__
 )
 
@@ -219,7 +219,7 @@ async def startup_event():
                 logger.critical("   The application is refusing to start to prevent accidental fallback to Demo Mode.")
                 sys.exit(1) # Crash container immediately
             else:
-                logger.info("✅ PRO LICENSE VERIFIED. Full Engine Capabilities Unlocked.")
+                logger.info("✅ License key accepted. Licensed feature gates enabled.")
         else:
             logger.warning("ℹ️ No LICENSE_KEY found. Engine running in LIMITED DEMO MODE.")
             
@@ -432,9 +432,8 @@ async def metrics_endpoint(request: Request):
     """
     Prometheus-compatible metrics endpoint.
     
-    Security:
-    - Community Edition: Disabled (HTTP 403).
-    - Pro Edition: Disabled by default. Requires METRICS_ENABLED=true and METRICS_TOKEN=<secret>.
+    Disabled in the public demo. Self-hosted deployments can expose protected
+    metrics by explicit configuration.
     """
     import os
 
@@ -446,12 +445,12 @@ async def metrics_endpoint(request: Request):
     is_pro = os.getenv("LICENSE_KEY") and is_licensed()
     
     if not is_pro:
-        # Community Mode: Metrics disabled with upsell message
+        # Public demo: metrics disabled.
         return JSONResponse(
             status_code=403,
             content={
-                "error": "PRO_FEATURE_REQUIRED",
-                "message": "Prometheus metrics integration is a Pro feature. Get your evaluation key at https://facturx-engine.lemonsqueezy.com"
+                "error": "FEATURE_NOT_ENABLED",
+                "message": "Prometheus metrics are not enabled in the public demo."
             }
         )
         

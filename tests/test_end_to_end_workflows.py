@@ -43,10 +43,24 @@ class TestEndToEndWorkflows(unittest.TestCase):
                     data = response.json()
                     self.assertEqual(data["validation_mode"], "pro_smart_diagnostics")
                     self.assertIn("diagnostics", data)
-                    # 2. Test Serialization
-                    response = self.client.post("/v1/serialize", files=files)
+                    # 2. A MINIMUM-profile invoice has no line-level data and
+                    # cannot satisfy the strict normalized schema. Pro access
+                    # must not turn a partial document into a successful import.
+                    with patch(
+                        "app.services.hybrid_validation_service.HybridValidationService.validate",
+                        return_value={
+                            "is_valid": True,
+                            "validation_completeness": "full",
+                            "errors": [],
+                            "layers_executed": ["xsd", "schematron"],
+                            "layers_skipped": [],
+                        },
+                    ):
+                        response = self.client.post("/v1/serialize", files=files)
                     data = response.json()
-                    self.assertTrue(data["success"])
+                    self.assertEqual(response.status_code, 422)
+                    self.assertFalse(data["success"])
+                    self.assertEqual(data["mapping_status"], "failed")
 
 
 

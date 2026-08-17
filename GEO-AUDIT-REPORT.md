@@ -338,13 +338,13 @@ Google ignore `changefreq` et `priority`. Pas critique mais du bruit inutile.
 AVANT: "The self-hosted bridge between your ERP and e-invoicing."
 
 APRÈS: "Factur-X Engine is an open-source, self-hosted REST API that
-converts standard PDF invoices into EN 16931-compliant Factur-X documents.
-It validates incoming e-invoices against official Schematron rules and
+converts standard PDF invoices into Factur-X documents intended for EN 16931 workflows.
+It validates incoming e-invoices against bundled Schematron rules and
 normalizes Factur-X, ZUGFeRD 2.4, UBL, and XRechnung formats into
 structured JSON for ERP integration. Deployed as a Docker container
 (0.5 vCPU, 512MB RAM minimum), it processes invoices entirely on-premises
-with zero cloud dependencies, making it GDPR and DORA compliant by design.
-The Community edition is MIT-licensed and production-ready."
+without sending invoice payloads to a hosted API during normal processing.
+The published repository code is MIT-licensed; deployment and regulatory assessment remain the operator's responsibility."
 ```
 → 85 mots, auto-suffisant, citable par tout LLM.
 

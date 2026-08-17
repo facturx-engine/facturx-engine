@@ -6,7 +6,7 @@ It answers four questions:
 - Is the incoming invoice structurally valid?
 - Was PDF/A actually checked?
 - What is heuristic in `/v1/extract`?
-- What is explicit in `/v1/serialize` for ERP ingestion?
+- Can `/v1/serialize` produce the strict v2 mapping contract?
 
 ## Prerequisites
 
@@ -45,10 +45,11 @@ The script will:
   - `pdfa_valid`
 - `extract.json`
   - `invoice_json._meta.limitations`
-- `serialize.json` when Pro is available
-  - `fallbacks_applied`
-  - `xml_recovery_applied`
-  - versioned ERP JSON payload
+- `serialize.json` when strict serialization is enabled in the running build
+  - `mapping_status`
+  - `validation_status`
+  - `suggested_route`
+  - versioned schema v2 payload or HTTP 422 diagnostics
 
 ## Manual curl version
 
@@ -70,7 +71,9 @@ curl -X POST "http://localhost:8000/v1/serialize" \
 
 - `validation_completeness = partial` means some applicable layers did not run.
 - `pdfa_valid = null` means PDF/A was not checked or did not apply.
-- `/v1/extract` is heuristic best-effort extraction.
-- `/v1/serialize` is the ERP-oriented contract, with transparent fallbacks.
+- `/v1/extract` is a heuristic preview with `suitable_for_automatic_import=false`.
+- `/v1/serialize` never recovers malformed XML or invents missing values.
+- A successful mapping still requires the ERP's own supplier, duplicate, order,
+  tax-policy and payment checks.
 
 For the full semantics, read [../../TRUST_MODEL.md](../../TRUST_MODEL.md).
