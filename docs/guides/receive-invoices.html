@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Receive Factur-X and XRechnung safely</title><meta name="description" content="Validate and inspect incoming Factur-X, ZUGFeRD and XRechnung without treating preview data as an automatic accounting import."><link rel="stylesheet" href="../assets/site.css"></head><body>
+<title>Receive Factur-X and XRechnung safely</title><meta name="description" content="Validate and inspect incoming Factur-X, ZUGFeRD and XRechnung without treating preview data as an automatic accounting import."><link rel="canonical" href="https://facturx-engine.github.io/facturx-engine/guides/receive-invoices.html"><link rel="stylesheet" href="../assets/site.css"></head><body>
 <header class="topbar"><nav class="nav wrap"><a class="brand" href="../">Factur-X <span>Engine</span></a><div class="nav-links"><a href="../">Home</a><a href="erp-integration.html">ERP integration</a><a href="../ref/api-reference.html">API</a></div></nav></header>
 <main class="article"><p class="eyebrow">Inbound workflow</p><h1>Receive invoices with explicit trust levels</h1>
 <h2>1. Validate</h2><pre><code>curl -X POST http://localhost:8000/v1/validate \
