@@ -5,6 +5,7 @@ import logging
 import multiprocessing
 import os
 import subprocess
+import tempfile
 
 # For Windows multiprocessing support (spawn)
 if os.name == 'nt':
@@ -469,8 +470,59 @@ async def readiness_check():
         except Exception as exc:
             return {"status": "error", "detail": str(exc)}
 
+    def check_saxon(jar_path: str) -> dict:
+        """Execute a minimal transform so readiness covers temp I/O and Saxon."""
+        if not jar_path:
+            return {"status": "not_configured"}
+        if not os.path.exists(jar_path):
+            return {"status": "jar_missing", "jar": jar_path}
+
+        try:
+            with tempfile.TemporaryDirectory(prefix="facturx-health-") as temp_dir:
+                probe_dir = Path(temp_dir)
+                source_path = probe_dir / "source.xml"
+                stylesheet_path = probe_dir / "probe.xsl"
+                output_path = probe_dir / "result.xml"
+                source_path.write_text("<root/>", encoding="utf-8")
+                stylesheet_path.write_text(
+                    '<?xml version="1.0" encoding="UTF-8"?>'
+                    '<xsl:stylesheet version="1.0" '
+                    'xmlns:xsl="http://www.w3.org/1999/XSL/Transform">'
+                    '<xsl:output method="xml" omit-xml-declaration="yes"/>'
+                    '<xsl:template match="/"><probe>ok</probe></xsl:template>'
+                    '</xsl:stylesheet>',
+                    encoding="utf-8",
+                )
+                proc = subprocess.run(
+                    [
+                        "java",
+                        "-Xms32m",
+                        "-Xmx128m",
+                        "-jar",
+                        os.path.abspath(jar_path),
+                        f"-s:{source_path}",
+                        f"-xsl:{stylesheet_path}",
+                        f"-o:{output_path}",
+                    ],
+                    cwd=temp_dir,
+                    capture_output=True,
+                    timeout=10,
+                )
+                if proc.returncode != 0 or not output_path.exists():
+                    detail = (proc.stderr or proc.stdout).decode(errors="replace")[:200]
+                    return {"status": "execution_error", "jar": jar_path, "detail": detail}
+                if "<probe>ok</probe>" not in output_path.read_text(encoding="utf-8"):
+                    return {"status": "invalid_probe_output", "jar": jar_path}
+                return {"status": "available", "jar": jar_path}
+        except FileNotFoundError:
+            return {"status": "java_not_found"}
+        except subprocess.TimeoutExpired:
+            return {"status": "execution_timeout", "jar": jar_path}
+        except Exception as exc:
+            return {"status": "execution_error", "jar": jar_path, "detail": str(exc)[:200]}
+
     verapdf_status = check_jar(verapdf_jar)
-    saxon_status = check_jar(saxon_jar)
+    saxon_status = check_saxon(saxon_jar)
     dependency_statuses = [verapdf_status.get("status"), saxon_status.get("status")]
     has_hard_failure = any(s not in ("available", "not_configured") for s in dependency_statuses)
     has_config_gap = any(s == "not_configured" for s in dependency_statuses)

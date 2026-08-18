@@ -11,6 +11,14 @@ from unittest.mock import patch
 from fastapi.testclient import TestClient
 
 from app.main import app
+from app.services.hybrid_validation_service import HybridValidationService
+from app.services.hybrid_validator import (
+    ValidationError,
+    ValidationLayer,
+)
+from app.services.hybrid_validator import (
+    ValidationResult as HybridValidationResult,
+)
 
 # Minimal valid CII EN16931 XML for testing (no PDF wrapper needed)
 MINIMAL_CII_XML = b"""<?xml version="1.0" encoding="UTF-8"?>
@@ -140,6 +148,40 @@ class TestValidationCompleteness(unittest.TestCase):
                 self.assertIsInstance(data["layers_executed"], list)
                 self.assertIsInstance(data["layers_skipped"], list)
                 self.assertIn(data["validation_completeness"], ("full", "partial"))
+
+    def test_saxon_runtime_failure_is_skipped_not_executed(self):
+        """A runtime failure must never be reported as a completed layer."""
+        fake_saxon = os.path.abspath(__file__)
+        failed_result = HybridValidationResult(
+            is_valid=False,
+            xsd_valid=True,
+            schematron_valid=False,
+            errors=[
+                ValidationError(
+                    rule_id="SYS-SAXON",
+                    message="Saxon Execution Failed",
+                    location="",
+                    severity="error",
+                    layer=ValidationLayer.SYSTEM,
+                )
+            ],
+        )
+
+        with patch("app.services.hybrid_validation_service.SAXON_JAR", fake_saxon):
+            with patch.object(HybridValidationService, "_extract_seller_country", return_value="DE"):
+                with patch(
+                    "app.services.hybrid_validation_service.HybridValidator.validate",
+                    return_value=failed_result,
+                ):
+                    result = HybridValidationService.validate(MINIMAL_CII_XML, "test.xml")
+
+        self.assertIn("xsd", result["layers_executed"])
+        self.assertNotIn("schematron", result["layers_executed"])
+        self.assertIn(
+            {"layer": "schematron", "reason": "execution_failed"},
+            result["layers_skipped"],
+        )
+        self.assertEqual(result["validation_completeness"], "partial")
 
 
 if __name__ == "__main__":

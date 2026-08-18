@@ -22,6 +22,12 @@ class BillingPeriod(BaseModel):
     end: str = Field(..., description="End date (YYYYMMDD)")
 
 
+class PrecedingInvoice(BaseModel):
+    """Invoice referenced by a credit note or corrective document (BG-3)."""
+    reference: str = Field(..., description="Preceding invoice identifier (BT-25)")
+    issue_date: str = Field(..., description="Preceding invoice issue date (BT-26, YYYYMMDD)")
+
+
 class ShipToParty(BaseModel):
     """Ship-to / Delivery party information."""
     id: Optional[str] = Field(None, description="Internal delivery location ID")
@@ -90,6 +96,10 @@ class TaxDetail(BaseModel):
     basis_amount: str = Field(..., description="Taxable basis amount")
     rate: str = Field(..., description="VAT rate (e.g. 20.00)")
     category_code: str = Field(default="S", description="VAT Category Code (S=Standard, Z=Zero...)")
+    exemption_reason: Optional[str] = Field(
+        None,
+        description="VAT exemption reason text (BT-120; required by applicable rules for categories such as AE, E, or G)",
+    )
 
 
 class LineItem(BaseModel):
@@ -146,8 +156,22 @@ class InvoiceMetadata(BaseModel):
     business_process_type: Optional[str] = Field(None, description="Business process type / billing mode (BT-23, e.g. B1 for France)")
     notes: Optional[List[Union[str, dict]]] = Field(None, description="Header notes")
     buyer_reference: Optional[str] = Field(None, description="Buyer reference (e.g. order number)")
+    purchase_order_reference: Optional[str] = Field(None, description="Purchase order reference (BT-13)")
     contract_reference: Optional[str] = Field(None, description="Contract reference")
     delivery_date: Optional[str] = Field(None, description="Actual delivery date (YYYYMMDD)")
+    billing_period: Optional[BillingPeriod] = Field(None, description="Document-level billing period (BG-14)")
+    preceding_invoices: List[PrecedingInvoice] = Field(
+        default_factory=list,
+        description="Invoices referenced by a credit note or corrective document (BT-25/BT-26)",
+    )
+    tax_accounting_currency_code: Optional[str] = Field(
+        None,
+        description="Tax accounting currency code (BT-6), when different from invoice currency",
+    )
+    tax_accounting_currency_amount: Optional[str] = Field(
+        None,
+        description="Total VAT amount in the tax accounting currency (BT-111)",
+    )
     ship_to: Optional[ShipToParty] = Field(None, description="Delivery party/address")
     creditor_reference: Optional[str] = Field(None, description="Creditor Reference ID (e.g. SEPA)")
     allowances: Optional[List[AllowanceCharge]] = Field(None, description="Document level allowances")
@@ -189,8 +213,24 @@ class InvoiceMetadata(BaseModel):
                 (Decimal(item.calculated_amount) for item in self.tax_details),
                 Decimal("0"),
             )
+            if self.tax_accounting_currency_amount is not None:
+                Decimal(self.tax_accounting_currency_amount)
         except InvalidOperation as exc:
             raise ValueError("monetary amounts and tax_details must contain valid decimals") from exc
+
+        if (self.tax_accounting_currency_code is None) != (
+            self.tax_accounting_currency_amount is None
+        ):
+            raise ValueError(
+                "tax_accounting_currency_code and tax_accounting_currency_amount must be provided together"
+            )
+        if (
+            self.tax_accounting_currency_code is not None
+            and self.tax_accounting_currency_code == self.currency_code
+        ):
+            raise ValueError(
+                "tax_accounting_currency_code must differ from currency_code"
+            )
 
         tolerance = Decimal("0.01")
         if self.tax_details and abs(breakdown_basis - basis_total) > tolerance:

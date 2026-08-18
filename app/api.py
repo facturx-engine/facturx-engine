@@ -67,7 +67,14 @@ router = APIRouter(prefix="/v1")
              })
 async def convert_to_facturx(
     pdf: UploadFile = File(..., description="Original PDF invoice (Bring Your Own PDF)"),
-    metadata: str = Form(..., description="Invoice metadata as JSON")
+    metadata: str = Form(
+        ...,
+        description=(
+            "InvoiceMetadata JSON. Optional fields include tax_details[].exemption_reason, "
+            "billing_period, purchase_order_reference, preceding_invoices, "
+            "tax_accounting_currency_code, and tax_accounting_currency_amount."
+        ),
+    )
 ):
     """
     Attach Factur-X/CII XML to an existing standard PDF invoice (BYOPDF).
@@ -162,7 +169,14 @@ async def convert_to_facturx(
                  500: {"model": ProblemDetails, "description": "Server error"}
              })
 async def generate_facturx_xml(
-    metadata: str = Form(..., description="Invoice metadata as JSON")
+    metadata: str = Form(
+        ...,
+        description=(
+            "InvoiceMetadata JSON. Optional fields include tax_details[].exemption_reason, "
+            "billing_period, purchase_order_reference, preceding_invoices, "
+            "tax_accounting_currency_code, and tax_accounting_currency_amount."
+        ),
+    )
 ):
     """
     Generate the Factur-X/CII XML content directly from JSON metadata.

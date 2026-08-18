@@ -86,6 +86,26 @@ diagnostics containing `code`, `source`, `path`, and `message`.
 | `POST /v1/convert` | Generates CII XML and embeds it into a supplied PDF. Validate the result separately when PDF/A evidence is required. |
 | `POST /v1/merge` | Embeds an existing supported XML document into a supplied PDF/A-3 container. |
 
+The generation metadata model includes VAT exemption reason text, document and
+line billing periods, purchase-order and preceding-invoice references, and an
+optional VAT total in a distinct tax-accounting currency:
+
+```json
+{
+  "tax_details": [{ "exemption_reason": "Reverse charge" }],
+  "billing_period": { "start": "20260701", "end": "20260731" },
+  "purchase_order_reference": "BC-1234",
+  "preceding_invoices": [
+    { "reference": "FA-2026-0042", "issue_date": "20260715" }
+  ],
+  "tax_accounting_currency_code": "GBP",
+  "tax_accounting_currency_amount": "85.00"
+}
+```
+
+The two tax-accounting currency fields must be provided together, and that
+currency must differ from `currency_code`.
+
 Example:
 
 ```bash
@@ -114,7 +134,7 @@ curl -X POST "http://localhost:8000/v1/xml" \
 | Endpoint | Purpose |
 | --- | --- |
 | `GET /health` | Lightweight liveness probe. |
-| `GET /healthz` | Readiness and validation-tool availability. |
+| `GET /healthz` | Readiness and validation-tool availability, including an actual Saxon transform and temporary-file I/O probe. |
 | `GET /diagnostics` | Protected runtime diagnostics. Configure `DIAGNOSTICS_TOKEN` outside development. |
 | `GET /metrics` | Protected Prometheus output when explicitly enabled. |
 

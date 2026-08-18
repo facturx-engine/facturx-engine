@@ -62,9 +62,10 @@ required.
 
 ## Operational endpoints
 
-`/health` is a liveness probe. `/healthz` exposes readiness and missing validation
-tools. `/diagnostics` and `/metrics` disclose operational information and are
-disabled or protected by tokens in production configurations.
+`/health` is a liveness probe. `/healthz` exposes readiness and runs a minimal
+Saxon transform that also checks temporary input/output I/O. `/diagnostics` and
+`/metrics` disclose operational information and are disabled or protected by
+tokens in production configurations.
 
 ## Common integration mistakes this model prevents
 

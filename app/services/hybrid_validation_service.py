@@ -105,6 +105,7 @@ class HybridValidationService:
             "errors": [],
             "xml_content": None,
             "validation_mode": "hybrid",  # vs "lite" for Community fallback
+            "validation_completeness": "partial",
             "layers_executed": [],
             "layers_skipped": [],
         }
@@ -261,14 +262,30 @@ class HybridValidationService:
                 ])
 
                 # --- Layer tracking ---
-                if has_xsd:
+                system_rule_ids = {
+                    e.rule_id
+                    for e in validation_result.errors
+                    if e.layer.value == "system"
+                }
+                xsd_execution_failed = any(
+                    rule_id.startswith("SYS-XSD") for rule_id in system_rule_ids
+                )
+                schematron_execution_failed = any(
+                    rule_id.startswith("SYS-SAXON") for rule_id in system_rule_ids
+                )
+
+                if has_xsd and not xsd_execution_failed:
                     result["layers_executed"].append("xsd")
+                elif has_xsd:
+                    result["layers_skipped"].append({"layer": "xsd", "reason": "execution_failed"})
                 elif effective_xsd_path:
                     # Path was selected but file doesn't exist
                     result["layers_skipped"].append({"layer": "xsd", "reason": "artifact_missing"})
 
-                if has_xslt and has_saxon:
+                if has_xslt and has_saxon and not schematron_execution_failed:
                     result["layers_executed"].append("schematron")
+                elif has_xslt and has_saxon:
+                    result["layers_skipped"].append({"layer": "schematron", "reason": "execution_failed"})
                 elif has_xslt and not has_saxon:
                     result["layers_skipped"].append({"layer": "schematron", "reason": "tool_missing:saxon_jar"})
                 elif not has_xslt and effective_xslt_path:
@@ -283,7 +300,7 @@ class HybridValidationService:
                 })
                 return result
 
-            # 5.5 French regulatory rules — BR-FR CTC v1.2.0
+            # 5.5 French regulatory rules — BR-FR CTC v1.4.0
             # Activated when the seller's country is France (FR), Saxon-HE is available,
             # and the BR-FR XSLT artifacts exist.
             try:
@@ -291,7 +308,7 @@ class HybridValidationService:
                 if seller_country == "FR":
                     fr_xslt = BR_FR_CTC_CII_XSLT if detected_format != "ubl" else BR_FR_CTC_UBL_XSLT
                     if fr_xslt.exists() and SAXON_JAR and os.path.exists(SAXON_JAR):
-                        logger.info("Seller country is FR — applying BR-FR CTC v1.2.0 rules")
+                        logger.info("Seller country is FR — applying BR-FR CTC v1.4.0 rules")
                         fr_validator = HybridValidator(
                             xsd_path=None,
                             xslt_path=str(fr_xslt),
@@ -306,9 +323,16 @@ class HybridValidationService:
                                 "severity": e.severity,
                                 "layer": e.layer.value,
                             })
+                        fr_execution_failed = any(
+                            e.layer.value == "system" and e.rule_id.startswith("SYS-SAXON")
+                            for e in fr_result.errors
+                        )
                         if not fr_result.schematron_valid:
                             result["is_valid"] = False
-                        result["layers_executed"].append("br_fr_ctc")
+                        if fr_execution_failed:
+                            result["layers_skipped"].append({"layer": "br_fr_ctc", "reason": "execution_failed"})
+                        else:
+                            result["layers_executed"].append("br_fr_ctc")
                     else:
                         logger.debug("BR-FR CTC skipped: Saxon JAR or XSLT not available")
                         if not has_saxon:
@@ -318,6 +342,7 @@ class HybridValidationService:
                 # seller_country != "FR" → br_fr_ctc is not applicable, don't add to skipped
             except Exception as fr_ex:
                 logger.warning(f"BR-FR CTC validation failed (non-blocking): {fr_ex}")
+                result["layers_skipped"].append({"layer": "br_fr_ctc", "reason": "execution_failed"})
 
             # 6. PDF/A-3b validation via VeraPDF subprocess (PDF inputs only)
             # VeraPDF remains gated in historical licensed builds.
@@ -348,9 +373,13 @@ class HybridValidationService:
                                 })
                             if pdfa_valid is False:
                                 result["is_valid"] = False
-                            result["layers_executed"].append("pdfa3b")
+                            if pdfa_valid is None:
+                                result["layers_skipped"].append({"layer": "pdfa3b", "reason": "execution_failed"})
+                            else:
+                                result["layers_executed"].append("pdfa3b")
                         except Exception as e:
                             logger.error("VeraPDF integration error: %s", e)
+                            result["layers_skipped"].append({"layer": "pdfa3b", "reason": "execution_failed"})
                     else:
                         if VERAPDF_JAR:
                             logger.warning("VERAPDF_JAR configured but not found: %s", VERAPDF_JAR)

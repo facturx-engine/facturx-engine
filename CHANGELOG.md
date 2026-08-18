@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-08-18
+
+### Added
+- **Generation**: Preserve and render VAT exemption reason text (BT-120), document-level billing periods (BG-14), purchase-order references (BT-13), preceding invoice references and dates (BT-25/BT-26), and tax totals in accounting currency (BT-6/BT-111).
+
+### Fixed
+- **Generation diagnostics**: `/v1/convert` now reports up to five blocking `error`/`fatal` findings before non-blocking warnings, including their rule identifiers.
+- **Validation evidence**: Runtime failures in XSD, Saxon/Schematron, French CTC, or VeraPDF are reported as skipped `execution_failed` layers and force `validation_completeness=partial`; a failed layer is no longer listed as executed.
+- **Readiness**: `/healthz` now runs a minimal Saxon transform, including temporary input/output I/O, instead of checking only the JAR and `java -version`.
+
 ## [2.0.0] - 2026-08-17
 
 ### Changed

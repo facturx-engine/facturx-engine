@@ -67,7 +67,7 @@
       "Body_convert_to_facturx_v1_convert_post": {
         "properties": {
           "metadata": {
-            "description": "Invoice metadata as JSON",
+            "description": "InvoiceMetadata JSON. Optional fields include tax_details[].exemption_reason, billing_period, purchase_order_reference, preceding_invoices, tax_accounting_currency_code, and tax_accounting_currency_amount.",
             "title": "Metadata",
             "type": "string"
           },
@@ -103,7 +103,7 @@
       "Body_generate_facturx_xml_v1_xml_post": {
         "properties": {
           "metadata": {
-            "description": "Invoice metadata as JSON",
+            "description": "InvoiceMetadata JSON. Optional fields include tax_details[].exemption_reason, billing_period, purchase_order_reference, preceding_invoices, tax_accounting_currency_code, and tax_accounting_currency_amount.",
             "title": "Metadata",
             "type": "string"
           }
@@ -1988,7 +1988,7 @@
   "info": {
     "description": "Self-hosted REST API for technical Factur-X/ZUGFeRD and XRechnung workflows.",
     "title": "Factur-X Engine",
-    "version": "2.0.0"
+    "version": "2.1.0"
   },
   "openapi": "3.1.0",
   "paths": {

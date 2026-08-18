@@ -165,6 +165,11 @@
         </ram:SpecifiedTaxRegistration>
         {% endif %}
       </ram:BuyerTradeParty>
+      {% if purchase_order_reference %}
+      <ram:BuyerOrderReferencedDocument>
+        <ram:IssuerAssignedID>{{ purchase_order_reference }}</ram:IssuerAssignedID>
+      </ram:BuyerOrderReferencedDocument>
+      {% endif %}
       {% if contract_reference %}
       <ram:ContractReferencedDocument>
         <ram:IssuerAssignedID>{{ contract_reference }}</ram:IssuerAssignedID>
@@ -193,6 +198,7 @@
     </ram:ApplicableHeaderTradeDelivery>
     <ram:ApplicableHeaderTradeSettlement>
       {% if creditor_reference %}<ram:CreditorReferenceID>{{ creditor_reference }}</ram:CreditorReferenceID>{% endif %}
+      {% if tax_accounting_currency_code %}<ram:TaxCurrencyCode>{{ tax_accounting_currency_code }}</ram:TaxCurrencyCode>{% endif %}
       <ram:InvoiceCurrencyCode>{{ currency_code | default('EUR') }}</ram:InvoiceCurrencyCode>
       {% if seller.iban or payment_means_code %}
       <ram:SpecifiedTradeSettlementPaymentMeans>
@@ -275,10 +281,19 @@
         {% if amounts.allowance_total is defined %}<ram:AllowanceTotalAmount>{{ amounts.allowance_total }}</ram:AllowanceTotalAmount>{% endif %}
         <ram:TaxBasisTotalAmount>{{ amounts.tax_basis_total }}</ram:TaxBasisTotalAmount>
         <ram:TaxTotalAmount currencyID="{{ currency_code | default('EUR') }}">{{ amounts.tax_total }}</ram:TaxTotalAmount>
+        {% if tax_accounting_currency_amount %}<ram:TaxTotalAmount currencyID="{{ tax_accounting_currency_code }}">{{ tax_accounting_currency_amount }}</ram:TaxTotalAmount>{% endif %}
         <ram:GrandTotalAmount>{{ amounts.grand_total }}</ram:GrandTotalAmount>
         {% if amounts.prepaid %}<ram:TotalPrepaidAmount>{{ amounts.prepaid }}</ram:TotalPrepaidAmount>{% endif %}
 		<ram:DuePayableAmount>{{ amounts.due_payable }}</ram:DuePayableAmount>
       </ram:SpecifiedTradeSettlementHeaderMonetarySummation>
+      {% for preceding_invoice in preceding_invoices | default([]) %}
+      <ram:InvoiceReferencedDocument>
+        <ram:IssuerAssignedID>{{ preceding_invoice.reference }}</ram:IssuerAssignedID>
+        <ram:FormattedIssueDateTime>
+          <qdt:DateTimeString format="102">{{ preceding_invoice.issue_date }}</qdt:DateTimeString>
+        </ram:FormattedIssueDateTime>
+      </ram:InvoiceReferencedDocument>
+      {% endfor %}
     </ram:ApplicableHeaderTradeSettlement>
   </rsm:SupplyChainTradeTransaction>
 </rsm:CrossIndustryInvoice>

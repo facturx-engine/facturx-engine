@@ -29,6 +29,25 @@ class GeneratorService:
     """Service for generating Factur-X PDFs."""
 
     @staticmethod
+    def _format_validation_errors(errors: list[dict], limit: int = 5) -> str:
+        """Return actionable diagnostics, prioritising blocking findings."""
+        blocking = [
+            error
+            for error in errors
+            if str(error.get("severity", "")).lower() in ("error", "fatal")
+        ]
+        selected = (blocking or errors)[:limit]
+        if not selected:
+            return "Unknown validation error"
+
+        messages = []
+        for error in selected:
+            rule_id = error.get("rule_id")
+            message = error.get("message") or "Validation failed"
+            messages.append(f"[{rule_id}] {message}" if rule_id else message)
+        return "; ".join(messages)
+
+    @staticmethod
     def _generate_pdf_with_xml(
         pdf_content: bytes,
         xml_bytes: bytes,
@@ -135,7 +154,7 @@ class GeneratorService:
             
             if not validation_res["is_valid"]:
                 errors = validation_res.get("errors", [])
-                error_msg = errors[0].get("message") if errors else "Unknown validation error"
+                error_msg = GeneratorService._format_validation_errors(errors)
                 logger.error(f"Generated PDF failed the configured validation checks: {errors}")
                 raise ValueError(f"Generated Factur-X PDF failed validation: {error_msg}")
                 

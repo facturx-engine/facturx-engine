@@ -5,6 +5,7 @@ import json
 
 import pytest
 from fastapi.testclient import TestClient
+from lxml import etree
 
 from app.main import app
 
@@ -152,6 +153,49 @@ def test_xml_generation_does_not_invent_delivery_date(client):
 
     assert response.status_code == 200
     assert "ActualDeliverySupplyChainEvent" not in response.text
+
+
+def test_xml_generation_preserves_document_level_en16931_fields(client):
+    metadata = valid_metadata()
+    metadata["tax_details"][0]["exemption_reason"] = "Reverse charge"
+    metadata["billing_period"] = {"start": "20260701", "end": "20260731"}
+    metadata["purchase_order_reference"] = "BC-1234"
+    metadata["preceding_invoices"] = [
+        {"reference": "FA-2026-0042", "issue_date": "20260715"}
+    ]
+    metadata["tax_accounting_currency_code"] = "GBP"
+    metadata["tax_accounting_currency_amount"] = "85.00"
+
+    response = client.post("/v1/xml", data={"metadata": json.dumps(metadata)})
+
+    assert response.status_code == 200
+    root = etree.fromstring(response.content)
+    ns = {
+        "ram": "urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100",
+        "qdt": "urn:un:unece:uncefact:data:standard:QualifiedDataType:100",
+    }
+    assert root.xpath("string(//ram:ApplicableTradeTax/ram:ExemptionReason)", namespaces=ns) == "Reverse charge"
+    assert root.xpath("string(//ram:BillingSpecifiedPeriod/ram:StartDateTime/*)", namespaces=ns) == "20260701"
+    assert root.xpath("string(//ram:BillingSpecifiedPeriod/ram:EndDateTime/*)", namespaces=ns) == "20260731"
+    assert root.xpath("string(//ram:BuyerOrderReferencedDocument/ram:IssuerAssignedID)", namespaces=ns) == "BC-1234"
+    assert root.xpath("string(//ram:InvoiceReferencedDocument/ram:IssuerAssignedID)", namespaces=ns) == "FA-2026-0042"
+    assert root.xpath("string(//ram:InvoiceReferencedDocument/ram:FormattedIssueDateTime/qdt:DateTimeString)", namespaces=ns) == "20260715"
+    assert root.xpath("string(//ram:TaxCurrencyCode)", namespaces=ns) == "GBP"
+    tax_totals = root.xpath("//ram:TaxTotalAmount", namespaces=ns)
+    assert [(node.get("currencyID"), node.text) for node in tax_totals] == [
+        ("EUR", "100.00"),
+        ("GBP", "85.00"),
+    ]
+
+
+def test_xml_generation_rejects_incomplete_tax_accounting_currency_pair(client):
+    metadata = valid_metadata()
+    metadata["tax_accounting_currency_code"] = "GBP"
+
+    response = client.post("/v1/xml", data={"metadata": json.dumps(metadata)})
+
+    assert response.status_code == 400
+    assert "must be provided together" in response.text
 
 
 if __name__ == "__main__":
