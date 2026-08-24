@@ -1,175 +1,46 @@
-# Factur-X Engine — complete machine-readable product context
+# Factur-X Engine — archived project context
 
-Factur-X Engine is a self-hosted Docker API for technical electronic-invoice
-workflows. It processes supported Factur-X/ZUGFeRD CII and XRechnung UBL
+Factur-X Engine was a self-hosted Docker API for technical electronic-invoice
+workflows. It processed supported Factur-X/ZUGFeRD CII and XRechnung UBL
 documents without sending invoice payloads to a Factur-X Engine hosted service.
-The operator remains responsible for network isolation, access control, logs,
-storage and deployment security.
+
+The project was discontinued on 24 August 2026. Version 2.1.0 is the final
+frozen release. There will be no support, security fixes, vulnerability
+monitoring, regulatory monitoring, or standards updates. Do not adopt it as a
+maintained production dependency.
 
 Repository: https://github.com/facturx-engine/facturx-engine
-Documentation: https://facturx-engine.github.io/facturx-engine/
-OpenAPI: https://facturx-engine.github.io/facturx-engine/openapi.json
-Strict schema v2: https://facturx-engine.github.io/facturx-engine/schemas/serialize-response.v2.schema.json
-Free 30-day Intake evaluation: https://facturx-engine.lemonsqueezy.com/checkout/buy/99a9ff62-baa6-4a24-ac61-3eebfacddab5
+
+## Frozen runtime
+
+    docker run -d -p 8000:8000 --name facturx-engine \
+      facturxengine/facturx-engine:2.1.0
+
+The former commercial evaluation ended on 24 August 2026. No new evaluation or
+commercial keys are issued.
 
 ## Responsibility boundary
 
 Factur-X Engine is a document-processing component. An API success is not tax,
-accounting, legal, regulatory or security advice. It is not a guarantee that a
-recipient, portal, auditor or tax authority will accept a document.
+accounting, legal, regulatory, or security advice and does not guarantee
+recipient, portal, auditor, or tax-authority acceptance.
 
-Validation results describe only the rules and tools that actually ran. Always
-inspect:
+Validation results describe only the rules and tools that actually ran. Inspect
+`validation_completeness`, `layers_executed`, `layers_skipped`, and
+`pdfa_valid` where relevant. The caller retains supplier matching, duplicate
+detection, purchase-order matching, tax-policy, payment, filing, reporting, and
+acceptance decisions.
 
-- `validation_completeness`
-- `layers_executed`
-- `layers_skipped`
-- `pdfa_valid` when PDF/A evidence is relevant
+## Frozen endpoints
 
-The caller retains at least these controls:
+- `POST /v1/validate`: technical validation evidence
+- `POST /v1/extract`: heuristic, non-importable preview
+- `POST /v1/serialize`: strict schema-v2 mapping when enabled
+- `POST /v1/xml`: supported CII generation
+- `POST /v1/convert`: CII generation and PDF embedding
+- `POST /v1/merge`: existing XML and PDF/A-3 embedding
+- `GET /health`: liveness
+- `GET /healthz`: readiness and validator-tool probe
 
-- supplier-master matching
-- duplicate-invoice detection
-- purchase-order matching
-- tax-policy decisions
-- payment approval
-- filing, reporting and recipient-acceptance decisions
-
-## Runtime
-
-Community quickstart:
-
-    docker run -d -p 8000:8000 --name facturx-engine \
-      facturxengine/facturx-engine:latest
-
-Intake evaluation:
-
-    docker run -d -p 8000:8000 --name facturx-engine \
-      -e LICENSE_KEY='YOUR_EVALUATION_KEY' \
-      facturxengine/facturx-engine:latest
-
-Runtime API documentation is available at `http://localhost:8000/docs`.
-`GET /license/status` reports whether the key was accepted without exposing it.
-
-Do not expose an unauthenticated container directly to the public internet. Use
-an authenticated reverse proxy or a private network.
-
-## Receive-invoice endpoints
-
-### POST /v1/validate
-
-Accepts a supported PDF or XML invoice and runs the validation layers available
-in the container. The response reports detected format and profile, errors,
-validation completeness, and executed or skipped layers.
-
-Community returns structured validation errors. An Evaluation or Pro key also
-enables enhanced human-readable diagnostics. For PDF inputs, the VeraPDF layer
-is run only when the licensed feature is enabled, VeraPDF is available and the
-request/configuration has not disabled it.
-
-Do not interpret `valid: true` without inspecting validation completeness and
-skipped layers.
-
-### POST /v1/extract
-
-Returns a best-effort inspection preview of an embedded invoice. Every response
-declares:
-
-    "mode": "preview"
-    "suitable_for_automatic_import": false
-
-Extraction may expose missing, coerced or truncated values. Do not use it as an
-automatic accounting-import decision and do not describe it as repairing an
-invoice.
-
-### POST /v1/serialize — Factur-X Engine Intake
-
-Requires an Evaluation or Pro key. It accepts a raw supported CII/UBL XML
-invoice or a PDF containing supported invoice XML.
-
-A successful response means:
-
-- the configured validation completed and passed;
-- XML parsing did not use tolerant recovery;
-- required mapped values were not invented;
-- supported material groups were not silently skipped;
-- arithmetic and contract invariants passed;
-- the result conforms to strict response schema version `2.0.0`.
-
-Example success metadata:
-
-    {
-      "success": true,
-      "schema_version": "2.0.0",
-      "execution_status": "complete",
-      "mapping_status": "complete",
-      "validation_status": "passed",
-      "suggested_route": "continue_client_checks",
-      "client_checks_required": [
-        "supplier_master_match",
-        "duplicate_invoice_check",
-        "purchase_order_match",
-        "tax_policy_check",
-        "payment_approval"
-      ]
-    }
-
-Malformed, invalid, incomplete or unsupported documents return HTTP 422 with
-stable diagnostics containing `code`, `source`, `path` and `message`. Intake
-prefers an explicit refusal over a plausible partial invoice.
-
-Without a qualifying key, `/v1/serialize` returns HTTP 403 with
-`FEATURE_NOT_ENABLED`.
-
-## Send-invoice endpoints
-
-### POST /v1/xml
-
-Generates supported CII XML from the documented metadata model. Generation is
-not proof that every validation applicable to a recipient has run.
-
-### POST /v1/convert
-
-Generates CII XML from metadata and embeds it in a supplied PDF. Validate the
-result separately when XSD, Schematron or PDF/A evidence is required.
-
-### POST /v1/merge
-
-Embeds an existing supported XML document into a supplied PDF/A-3 container.
-It does not transform arbitrary source XML into a different invoice syntax.
-Validate the resulting artifact separately.
-
-## Operations endpoints
-
-- `GET /health`: lightweight liveness probe
-- `GET /healthz`: readiness and validation-tool availability
-- `GET /license/status`: license tier and expiry without the key value
-- `GET /diagnostics`: protected runtime diagnostics; configure a token outside development
-- `GET /metrics`: protected Prometheus output when explicitly enabled
-
-## Commercial and licensing status
-
-All code published in the repository is MIT licensed. Community and Intake use
-the same repository and public Docker image. A key controls packaged feature
-availability; it does not reduce MIT rights over published source code.
-
-Factur-X Engine Intake is currently a controlled product and price test:
-
-- free evaluation: 30 days
-- proposed price: €299 excluding VAT, paid once
-- scope: one legal entity, internal use on its own infrastructure
-- no per-invoice licence fee
-- no public paid checkout currently active
-
-The proposed scope excludes:
-
-- redistribution and OEM use
-- embedding in a customer-facing SaaS
-- SLA or guaranteed response times
-- priority or custom support
-- bespoke mappings, integration or development
-- tax, accounting, legal or regulatory advice
-- conformity or recipient-acceptance guarantees
-
-No payment should be collected until final commercial terms and vendor details
-have been reviewed and activated.
+All published source code remains available as-is under the MIT licence. Anyone
+continuing to use it must maintain a fork or choose a maintained alternative.

@@ -1,24 +1,17 @@
-# Factur-X Engine
+# Factur-X Engine — discontinued
 
-Self-hosted Docker API for technical Factur-X/ZUGFeRD CII and XRechnung UBL workflows.
+Factur-X Engine was discontinued on 24 August 2026. Version 2.1.0 is the final
+frozen release. There will be no support, security fixes, regulatory monitoring,
+or standards updates. Do not treat it as a maintained production dependency.
 
-## Trust boundaries
+The source remains available as-is under the MIT licence. Fork it and assume
+maintenance internally, or choose a maintained alternative.
+
+## Technical boundaries
 
 - `/v1/validate` reports executed and skipped validation layers.
-- `/v1/extract` is a heuristic preview and always declares `suitable_for_automatic_import: false`.
-- `/v1/serialize` is a strict schema v2 mapping or HTTP 422; it never repairs XML or invents values.
-- Generation endpoints create artifacts but do not prove that every applicable validation layer ran.
-- The caller retains supplier, duplicate, purchase-order, tax-policy and payment decisions.
-- The software does not provide tax, accounting, legal, regulatory or security advice.
+- `/v1/extract` is a heuristic preview and is not suitable for automatic import.
+- `/v1/serialize` is strict but does not replace client accounting controls.
+- Results are not tax, accounting, legal, regulatory, or security advice.
 
-## Commercial and licensing status
-
-All published repository code is MIT licensed. Factur-X Engine Intake is being tested in the same Docker image with free 30-day evaluation keys. The tested price is €299 excl. VAT, one-time, for one legal entity and internal use. There is no public paid checkout, SLA or paid support commitment.
-
-## Links
-
-- Documentation: https://facturx-engine.github.io/facturx-engine/
-- Free 30-day Intake evaluation: https://facturx-engine.lemonsqueezy.com/checkout/buy/99a9ff62-baa6-4a24-ac61-3eebfacddab5
-- Repository: https://github.com/facturx-engine/facturx-engine
-- OpenAPI: https://facturx-engine.github.io/facturx-engine/openapi.json
-- Strict schema: https://facturx-engine.github.io/facturx-engine/schemas/serialize-response.v2.schema.json
+Repository: https://github.com/facturx-engine/facturx-engine

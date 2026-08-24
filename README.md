@@ -1,5 +1,12 @@
 # Factur-X Engine
 
+> [!IMPORTANT]
+> **Project discontinued on 24 August 2026.** This repository is archived and
+> no longer maintained. Version `2.1.0` is the final frozen release. It will
+> receive no support, security fixes, regulatory monitoring, or standards
+> updates. Do not adopt it as a maintained production dependency. Fork it and
+> assume maintenance internally, or choose a maintained alternative.
+
 Self-hosted Docker API for technical e-invoice workflows. It generates,
 validates, inspects, and normalizes Factur-X/ZUGFeRD CII and XRechnung UBL
 documents without uploading invoice data to a hosted service.
@@ -23,7 +30,7 @@ a result.
 
 ```bash
 docker run -d -p 8000:8000 --name facturx-engine \
-  facturxengine/facturx-engine:latest
+  facturxengine/facturx-engine:2.1.0
 ```
 
 Open `http://localhost:8000/docs` for the runtime OpenAPI documentation.
@@ -47,15 +54,11 @@ document can be represented by schema version `2.0.0` without recovery or
 fallback values. A successful response deliberately routes the caller to its
 own remaining controls:
 
-The contract is currently being tested as **Factur-X Engine Intake**. A free
-[30-day evaluation key](https://facturx-engine.lemonsqueezy.com/checkout/buy/99a9ff62-baa6-4a24-ac61-3eebfacddab5)
-enables it in the same public Docker image; without a key, the endpoint returns
-`FEATURE_NOT_ENABLED`. There is no public **paid** checkout during the test.
-
-The tested commercial hypothesis is **€299 excl. VAT, one-time, for one legal
-entity and internal use**. Redistribution, OEM use, SLA, custom integration and
-tax or accounting decisions are outside the proposed scope. This is a price
-test, not an active offer for sale.
+The former Factur-X Engine Intake evaluation ended on 24 August 2026. No new
+evaluation or commercial keys are issued. In the published image, the endpoint
+returns `FEATURE_NOT_ENABLED` without a previously issued, unexpired key. The
+published source remains MIT licensed and may be forked and adapted without any
+support or maintenance commitment from this repository.
 
 ```json
 {
@@ -144,20 +147,16 @@ do not expose an unauthenticated container directly to the internet.
 
 ## Documentation
 
-- [API reference](https://facturx-engine.github.io/facturx-engine/ref/api-reference.html)
+- [API reference](docs/ref/api-reference.html)
 - [OpenAPI specification](docs/openapi.json)
 - [Strict serialization schema](docs/schemas/serialize-response.v2.schema.json)
 - [Security policy](SECURITY.md)
 - [Changelog](CHANGELOG.md)
 
-## Licensing and commercial status
+## Licensing and project status
 
 All code published in this repository is licensed under the [MIT License](LICENSE).
-Intake is being tested in the same repository and Docker image through 30-day
-evaluation keys. The key controls packaged feature availability; it does not
-change the MIT rights granted over published source code.
-
-There is currently no public paid checkout, SLA, custom support, or compliance
-commitment. Commercial terms for the tested €299 internal-use offer must be
-activated and reviewed before accepting the first payment. See
-[the evaluation notice](EULA_PRO.md).
+The commercial evaluation has ended. There is no checkout, new key issuance,
+paid offer, SLA, custom support, security response commitment, or compliance
+commitment. Existing copies remain available as-is under MIT; see the
+[discontinuation notice](EULA_PRO.md).

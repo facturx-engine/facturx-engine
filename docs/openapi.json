@@ -2284,7 +2284,7 @@
     },
     "/v1/serialize": {
       "post": {
-        "description": "Strict, versioned JSON serialization.\n\nA 200 response means that all configured validation layers passed and the\ninvoice was mapped without XML recovery, invented values, or silently\nskipped material elements. The response still requires client-side supplier,\nduplicate, purchase-order, tax-policy, and payment checks.\n\n**Feature availability**: Builds without the strict serializer entitlement\nreturn HTTP 403. A free 30-day evaluation is linked from the project\nwebsite; no public paid checkout is currently active.",
+        "description": "Strict, versioned JSON serialization.\n\nA 200 response means that all configured validation layers passed and the\ninvoice was mapped without XML recovery, invented values, or silently\nskipped material elements. The response still requires client-side supplier,\nduplicate, purchase-order, tax-policy, and payment checks.\n\n**Archived project**: Builds without the strict serializer entitlement return\nHTTP 403. The former evaluation ended on 24 August 2026 and no new keys are\nissued. Version 2.1.0 is frozen and unmaintained.",
         "operationId": "serialize_facturx_v1_serialize_post",
         "requestBody": {
           "content": {

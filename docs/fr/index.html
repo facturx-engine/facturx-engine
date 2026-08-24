@@ -3,123 +3,28 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Factur-X Engine Intake — JSON ERP strict, auto-hébergé</title>
-  <meta name="description" content="Transformez les factures Factur-X, ZUGFeRD et XRechnung prises en charge en JSON ERP strict et versionné, sur votre propre infrastructure. Évaluation Intake gratuite pendant 30 jours.">
-  <link rel="canonical" href="https://facturx-engine.github.io/facturx-engine/fr/">
-  <link rel="alternate" hreflang="en" href="https://facturx-engine.github.io/facturx-engine/">
-  <link rel="alternate" hreflang="fr" href="https://facturx-engine.github.io/facturx-engine/fr/">
-  <link rel="alternate" hreflang="de" href="https://facturx-engine.github.io/facturx-engine/de/">
-  <link rel="alternate" hreflang="x-default" href="https://facturx-engine.github.io/facturx-engine/">
-  <link rel="stylesheet" href="../assets/site.css">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Factur-X Engine — projet arrêté</title>
+  <style>
+    body { margin: 0; background: #07111f; color: #e5edf8; font: 18px/1.6 system-ui, sans-serif; }
+    main { max-width: 760px; margin: 12vh auto; padding: 2rem; }
+    h1 { font-size: clamp(2rem, 6vw, 4rem); line-height: 1.05; }
+    .notice { border-left: 5px solid #f59e0b; padding: 1rem 1.25rem; background: #111d2e; }
+    a { color: #7dd3fc; }
+  </style>
 </head>
 <body>
-  <header class="topbar">
-    <nav class="nav wrap" aria-label="Navigation principale">
-      <a class="brand" href="../">Factur-X <span>Engine</span></a>
-      <div class="nav-links">
-        <a href="#intake">Intake</a><a href="#perimetre">Périmètre</a><a href="../ref/api-reference.html">API</a><a href="https://github.com/facturx-engine/facturx-engine">GitHub</a><a class="lang" href="../">EN</a><a class="lang" href="../de/">DE</a>
-      </div>
-    </nav>
-  </header>
-
-  <main>
-    <section class="hero">
-      <div class="wrap hero-grid">
-        <div>
-          <p class="eyebrow">Auto-hébergé · hors ligne · Docker</p>
-          <h1>Un JSON de facture strict pour votre ERP.</h1>
-          <p class="lead">Transformez les factures Factur-X/ZUGFeRD CII et XRechnung UBL prises en charge en un contrat JSON unique et versionné. Intake produit un mapping complet ou refuse le document avec des diagnostics explicites.</p>
-          <div class="actions">
-            <a class="button primary" href="https://facturx-engine.lemonsqueezy.com/checkout/buy/99a9ff62-baa6-4a24-ac61-3eebfacddab5">Obtenir une clé gratuite 30 jours</a>
-            <a class="button" href="https://github.com/facturx-engine/facturx-engine#quickstart">Lancer Community</a>
-          </div>
-          <p class="fine">Évaluation à 0 €. Même image Docker publique. Licence interne proposée : 299 € HT, paiement unique. Aucun checkout payant n’est actif.</p>
-        </div>
-        <div class="terminal" aria-label="Exemple de réponse de sérialisation stricte">
-          <div class="terminal-head">POST /v1/serialize → 200</div>
-          <pre><code>{
-  <span class="key">"schema_version"</span>: <span class="string">"2.0.0"</span>,
-  <span class="key">"execution_status"</span>: <span class="string">"complete"</span>,
-  <span class="key">"validation_status"</span>: <span class="string">"passed"</span>,
-  <span class="key">"mapping_status"</span>: <span class="string">"complete"</span>,
-  <span class="key">"suggested_route"</span>:
-    <span class="string">"continue_client_checks"</span>
-}
-
-<span class="ok">Aucune récupération XML. Aucune valeur inventée.</span></code></pre>
-        </div>
-      </div>
-    </section>
-
-    <section class="strip" aria-label="Propriétés du produit"><div class="wrap strip-grid">
-      <div class="strip-item"><strong>Traitement local</strong><span>Aucun envoi vers notre service</span></div>
-      <div class="strip-item"><strong>CII + UBL</strong><span>Un contrat JSON documenté</span></div>
-      <div class="strip-item"><strong>Refus strict</strong><span>HTTP 422 et diagnostics stables</span></div>
-      <div class="strip-item"><strong>Même image</strong><span>Community et clé d’évaluation</span></div>
-    </div></section>
-
-    <section class="section" id="intake"><div class="wrap">
-      <p class="eyebrow">Pourquoi Intake</p>
-      <h2>Moins de code de raccordement spécifique aux factures.</h2>
-      <p class="section-intro">Une bibliothèque XML expose des nœuds. Intake définit une frontière plus étroite pour l’import ERP : preuve des validations exécutées, schéma de réponse stable et refus explicite lorsqu’un document ne peut pas être représenté sans ambiguïté.</p>
-      <div class="grid-3">
-        <article class="card"><span class="number">1</span><h3>Valider d’abord</h3><p>Indique les couches XSD, Schematron et PDF/A exécutées ou ignorées. Une validation incomplète ne peut pas produire une sérialisation stricte réussie.</p></article>
-        <article class="card"><span class="number">2</span><h3>Normaliser strictement</h3><p>Mappe les factures CII et UBL prises en charge vers le schéma v2, sans récupération XML tolérante, valeur par défaut inventée ou groupe matériel ignoré.</p></article>
-        <article class="card"><span class="number">3</span><h3>Expliquer les refus</h3><p>Retourne un contexte de validation lisible ou des diagnostics de mapping stables avec code, chemin source et message, jamais une facture partielle présentée comme fiable.</p></article>
-      </div>
-    </div></section>
-
-    <section class="section alt" id="perimetre"><div class="wrap">
-      <p class="eyebrow">Une image, deux modes</p>
-      <h2>Une extension commerciale étroite du moteur existant.</h2>
-      <p class="section-intro">Community reste utilisable sans clé. La clé d’évaluation active Intake dans le même conteneur.</p>
-      <table class="comparison">
-        <thead><tr><th>Fonction</th><th>Community</th><th>Évaluation Intake</th></tr></thead>
-        <tbody>
-          <tr><td>Génération et intégration de XML CII pris en charge</td><td class="yes">Inclus</td><td class="yes">Inclus</td></tr>
-          <tr><td>Validation CII/UBL et détail des couches exécutées</td><td class="yes">Inclus</td><td class="yes">Inclus</td></tr>
-          <tr><td>Aperçu d’extraction heuristique</td><td class="yes">Inclus, jamais déclaré importable</td><td class="yes">Inclus</td></tr>
-          <tr><td>JSON strict schéma v2 via <code>/v1/serialize</code></td><td class="dim">Clé requise</td><td class="yes">Activé</td></tr>
-          <tr><td>Diagnostics enrichis et lisibles</td><td class="dim">Erreurs brutes structurées</td><td class="yes">Activé</td></tr>
-          <tr><td>Couche VeraPDF pour les entrées PDF</td><td class="dim">Signalée comme ignorée</td><td class="yes">Exécutée si disponible et activée</td></tr>
-        </tbody>
-      </table>
-    </div></section>
-
-    <section class="section"><div class="wrap offer">
-      <article class="price-card">
-        <p class="eyebrow">Hypothèse commerciale</p><h2>Licence Intake, usage interne</h2>
-        <p class="price">299 € <small>HT · paiement unique</small></p>
-        <ul class="checklist"><li>Une entité juridique</li><li>Usage interne sur votre infrastructure</li><li>Aucun coût de licence par facture</li><li>Même image Docker publique</li></ul>
-        <a class="button primary" href="https://facturx-engine.lemonsqueezy.com/checkout/buy/99a9ff62-baa6-4a24-ac61-3eebfacddab5">Évaluer Intake pendant 30 jours</a>
-        <p class="fine">L’évaluation est gratuite. La licence à 299 € est une hypothèse de prix et n’est pas disponible via un checkout payant public.</p>
-      </article>
-      <aside class="boundary"><h3>Délibérément hors périmètre</h3>
-        <ul><li>OEM, redistribution ou intégration dans un SaaS destiné à vos clients</li><li>SLA, support prioritaire ou délai de réponse garanti</li><li>Mapping personnalisé, intégration ou développement sur mesure</li><li>Conseil fiscal, comptable, juridique ou réglementaire</li><li>Garantie d’acceptation par un destinataire ou une plateforme</li></ul>
-        <p class="notice"><strong>Limite de responsabilité :</strong> même après un mapping strict réussi, votre système conserve les contrôles fournisseur, doublon, commande, politique fiscale et autorisation de paiement.</p>
-      </aside>
-    </div></section>
-
-    <section class="section alt"><div class="wrap">
-      <p class="eyebrow">Évaluation</p><h2>Testez sur vos factures, dans votre environnement.</h2>
-      <div class="steps">
-        <article class="step"><div><h3>Obtenez la clé d’évaluation à 0 €</h3><p>Le parcours Lemon Squeezy existant délivre une clé valable 30 jours.</p></div></article>
-        <article class="step"><div><h3>Lancez la même image avec la clé</h3><p><code>docker run -p 8000:8000 -e LICENSE_KEY='VOTRE_CLE' facturxengine/facturx-engine:latest</code></p></div></article>
-        <article class="step"><div><h3>Vérifiez puis envoyez un fichier</h3><p>Contrôlez <code>GET /license/status</code>, puis appelez <code>POST /v1/serialize</code> avec un PDF contenant le XML ou une facture XML brute.</p></div></article>
-      </div>
-    </div></section>
-
-    <section class="section"><div class="wrap">
-      <p class="eyebrow">Questions</p><h2>Avant d’intégrer</h2>
-      <div class="faq">
-        <details><summary>Les factures sont-elles envoyées vers une API hébergée ?</summary><p>Non. Le moteur s’exécute dans votre conteneur. Vous contrôlez l’hôte, le réseau, le stockage, les journaux et les accès.</p></details>
-        <details><summary>Une réponse réussie garantit-elle la conformité fiscale ou réglementaire ?</summary><p>Non. Le résultat décrit uniquement les règles et outils réellement exécutés. Vérifiez la complétude et conservez vos contrôles métier, comptables et d’acceptation.</p></details>
-        <details><summary>Que se passe-t-il si Intake ne peut pas mapper un document proprement ?</summary><p>Il retourne HTTP 422 avec des diagnostics stables. Il ne répare pas le XML, n’invente pas de donnée métier requise et ne présente pas un mapping partiel comme réussi.</p></details>
-        <details><summary>La licence à 299 € est-elle achetable maintenant ?</summary><p>Pas via un checkout payant public. Le prix affiché est l’hypothèse commerciale testée. Le parcours Intake complet peut être évalué gratuitement pendant 30 jours.</p></details>
-      </div>
-    </div></section>
-  </main>
-
-  <footer><div class="wrap footer-grid"><div>Factur-X Engine est un composant technique, pas un conseil fiscal, comptable, juridique, réglementaire ou de sécurité.</div><div class="footer-links"><a href="../../LICENSE">Licence MIT</a><a href="../../EULA_PRO.md">Notice d’évaluation</a><a href="../../SECURITY.md">Sécurité</a><a href="../ref/api-reference.html">Référence API</a></div></div></footer>
+<main>
+  <h1>Factur-X Engine est arrêté.</h1>
+  <div class="notice">
+    <p>Le projet a été arrêté le 24 août 2026. La version <code>2.1.0</code>
+    est la dernière version figée.</p>
+    <p>Il n'y aura aucun support, correctif de sécurité, suivi réglementaire ou
+    mise à jour des standards. Ne l'adoptez pas comme dépendance de production maintenue.</p>
+  </div>
+  <p>Le code source reste disponible en l'état sous licence MIT. Maintenez votre
+  propre fork ou choisissez une solution activement maintenue.</p>
+  <p><a href="https://github.com/facturx-engine/facturx-engine">Dépôt archivé</a></p>
+</main>
 </body>
 </html>
